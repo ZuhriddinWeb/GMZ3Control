@@ -23,7 +23,7 @@
         <VaSidebarItem :active="'Settings' === activeElement" @click="activeElement = 'Settings'">
           <VaSidebarItemContent>
             <VaIcon name="settings" />
-            <VaSidebarItemTitle>Settings</VaSidebarItemTitle>
+            <VaSidebarItemTitle>Sozlamalar</VaSidebarItemTitle>
           </VaSidebarItemContent>
         </VaSidebarItem>
       </router-link>
@@ -38,7 +38,14 @@ const activeElement = ref('Address book')
 
 const items = [
   { title: 'Dashboard', icon: 'dashboard', path: '/' },
-  { title: 'Units', icon: 'room', path: '/units' },
+  { title: 'Birliklar', icon: 'ad_units', path: '/units' },
+  { title: 'Grafiklar', icon: 'schedule', path: '/graphics' },
+  { title: 'Grafik vaqtlari', icon: 'alarm', path: '/graphictimes' },
+  { title: 'Parameter turlari', icon: 'format_list_numbered', path: '/paramtypes' },
+  { title: 'Parameterlar', icon: 'format_list_bulleted', path: '/units' },
+  { title: 'Manbalar', icon: 'content_copy', path: '/sources' },
+  { title: 'Smenalar', icon: 'content_copy', path: '/changes' },
+
 ]
 </script>
 

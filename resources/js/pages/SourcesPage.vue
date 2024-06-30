@@ -129,7 +129,7 @@ async function getDelete(e) {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
+    const response = await axios.get('/sources');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; // Adjust based on actual structure
   } catch (error) {
     console.error('Error fetching data:', error);

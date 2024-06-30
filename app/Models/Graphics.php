@@ -8,4 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Graphics extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'Name',
+        'Comment',
+        'Created',
+        'Creator',
+        'Changed',
+        'Changer'
+    ];
 }

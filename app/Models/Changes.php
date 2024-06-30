@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Changes extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'FactoryID',
+        'Change',
+        'StartingDay',
+        'StartingTime',
+        'EndingDay',
+        'EndingTime',
+        'Comment'
+    ];
 }

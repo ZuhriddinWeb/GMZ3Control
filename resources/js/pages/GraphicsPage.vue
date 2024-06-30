@@ -4,16 +4,13 @@
     <!-- Add new Elements start -->
     <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
       <h3 class="va-h3">
-        O'lchov birliklarini kiritish
+        Grafik ma'lumotlarini kiritish
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
           <VaInput class="w-full" v-model="result.Name"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             label="Nomlanishi" />
-          <VaInput class="w-full" v-model="result.ShortName"
-            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-            label="Qisqa nomi" />
           <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
         </VaForm>
       </div>
@@ -73,14 +70,12 @@ const getEditRow = ref(false);
 
 const result = reactive({
   Name: "",
-  ShortName: "",
   Comment: ""
 });
 
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
-  { headerName: "Qisqa nomi", field: "ShortName" },
   { headerName: "Izoh", field: "Comment" },
   {
     headerName: "",
@@ -111,13 +106,13 @@ const defaultColDef = {
 async function getEdit(e) {
   if (e.id != "") {
     axios.get(`units/${e.id}`).then((res) => {
-    result.Name = res.data.Name
-    result.ShortName = res.data.ShortName
-    result.Comment = res.data.Comment
-    
-})
+      result.Name = res.data.Name
+      result.ShortName = res.data.ShortName
+      result.Comment = res.data.Comment
+
+    })
     store.state.selectedRowId = e.id;
-    getEditRow.value=true;
+    getEditRow.value = true;
   }
 }
 async function getDelete(e) {
@@ -129,7 +124,7 @@ async function getDelete(e) {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
+    const response = await axios.get('/graphics');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; // Adjust based on actual structure
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -138,11 +133,10 @@ const fetchData = async () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/units", result);
+    const { data } = await axios.post("/graphics", result);
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';
-      result.ShortName = '';
       result.Comment = '';
       await fetchData();
     } else {

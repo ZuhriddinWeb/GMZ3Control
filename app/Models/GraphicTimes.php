@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class GraphicTimes extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'GraphicsID',
+        'Change',
+        'Name',
+        'StartTime',
+        'EndTime'
+    ];
 }

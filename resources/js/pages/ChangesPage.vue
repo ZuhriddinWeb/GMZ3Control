@@ -79,8 +79,12 @@ const result = reactive({
 
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
-  { headerName: "Nomlanishi", field: "Name", flex: 1 },
-  { headerName: "Qisqa nomi", field: "ShortName" },
+  { headerName: "Nomlanishi", field: "FactoryID", flex: 1 },
+  { headerName: "Smena", field: "Change" },
+  { headerName: "Boshlanish kuni", field: "StartingDay" },
+  { headerName: "Boshlanish soati", field: "StartingTime" },
+  { headerName: "Tugash kuni", field: "EndingDay" },
+  { headerName: "Tugash soati", field: "EndingTime" },
   { headerName: "Izoh", field: "Comment" },
   {
     headerName: "",
@@ -129,7 +133,7 @@ async function getDelete(e) {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
+    const response = await axios.get('/changes');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; // Adjust based on actual structure
   } catch (error) {
     console.error('Error fetching data:', error);

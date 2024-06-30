@@ -4,17 +4,21 @@
     <!-- Add new Elements start -->
     <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
       <h3 class="va-h3">
-        O'lchov birliklarini kiritish
+        Grafik vaqtlarini kiritish
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-          <VaInput class="w-full" v-model="result.Name"
-            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-            label="Nomlanishi" />
-          <VaInput class="w-full" v-model="result.ShortName"
-            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-            label="Qisqa nomi" />
-          <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
+          <div class="grid grid-cols-2 md:grid-cols-2  gap-2 items-end w-full">
+            <VaSelect v-model="value" class="mb-6" label="Grafikni tanlang" :options="options" clearable />
+            <VaSelect v-model="value" class="mb-6" label="Smenani tanlang" :options="options" clearable />
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
+            <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" label="Nomlanishi" v-model="result.Name" />
+            <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" label="Boshlanish vaqti"
+              v-model="result.Name" />
+            <VaTimeInput v-model="result.EndTime" clearable clearable-icon="cancel" color="textPrimary"
+              label="Tugash vaqti" />
+          </div>
         </VaForm>
       </div>
     </VaModal>
@@ -64,7 +68,6 @@
 import { ref, reactive, onMounted, defineComponent } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue'
 
 const rowData = ref([]);
 const showModal = ref(false);
@@ -73,15 +76,17 @@ const getEditRow = ref(false);
 
 const result = reactive({
   Name: "",
-  ShortName: "",
-  Comment: ""
+  EndTime: ""
 });
 
 const columnDefs = reactive([
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
+  { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 120 },
+  { headerName: "Smena", field: "Change", width: 120 },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
-  { headerName: "Qisqa nomi", field: "ShortName" },
-  { headerName: "Izoh", field: "Comment" },
+  { headerName: "Boshlanish vaqti", field: "StartTime" },
+  { headerName: "Tugash vaqti", field: "EndTime" },
+  { headerName: "Izoh", field: "Comment", flex: 1 },
+
   {
     headerName: "",
     field: "",
@@ -111,13 +116,13 @@ const defaultColDef = {
 async function getEdit(e) {
   if (e.id != "") {
     axios.get(`units/${e.id}`).then((res) => {
-    result.Name = res.data.Name
-    result.ShortName = res.data.ShortName
-    result.Comment = res.data.Comment
-    
-})
+      result.Name = res.data.Name
+      result.ShortName = res.data.ShortName
+      result.Comment = res.data.Comment
+
+    })
     store.state.selectedRowId = e.id;
-    getEditRow.value=true;
+    getEditRow.value = true;
   }
 }
 async function getDelete(e) {
@@ -129,7 +134,7 @@ async function getDelete(e) {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
+    const response = await axios.get('/graphictimes');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; // Adjust based on actual structure
   } catch (error) {
     console.error('Error fetching data:', error);

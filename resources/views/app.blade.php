@@ -17,6 +17,8 @@
         href="https://fonts.googleapis.com/icon?family=Material+Icons"
         rel="stylesheet"
         />
+        <!-- <link rel="stylesheet" href="{{mix('/css/app.css')}}"> -->
+        <link rel="stylesheet" href="{{ asset('awesome/css/all.min.css') }}">
         @vite('resources/css/app.css')
 
     </head>

@@ -1,9 +1,9 @@
 <template>
-    <section class="bg-gray-400 h-screen w-full flex flex-row justify-between">
+    <section class="bg-gray-400 h-screen w-full flex flex-row">
         <transition name="fade">
             <Sidebar class="no-print"/>
         </transition>        
-        <router-view class="p-12 flex-grow no-print" />
+        <router-view class="p-2 flex-grow no-print" />
     </section>
 </template>
 

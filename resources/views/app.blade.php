@@ -22,8 +22,7 @@
         @vite('resources/css/app.css')
 
     </head>
-    <body>
-       <div id="app"></div>
-       @vite('resources/js/app.js')
+    <body id="app" class="h-screen">
     </body>
+    @vite('resources/js/app.js')
 </html>

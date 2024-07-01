@@ -20,9 +20,9 @@ class UnitsController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request);
+                return $this->update($request,$id);
             case 'DELETE':
-                return $this->delete($request);
+                return $this->delete($request,$id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
@@ -82,18 +82,16 @@ class UnitsController extends Controller
         ]);
     }
 
-    private function delete(Request $request)
+    public function delete(Request $request, $id)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-        ]);
+        try {
+            $unit = Units::findOrFail($id);
+            $unit->delete();
 
-        $unit = Units::find($request->id);
-        $unit->delete();
-
-        return response()->json([
-            'status' => 200,
-            'message' => "Javob muvafaqiyatli o'chirildi",
-        ]);
+            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
+        }
     }
+    
 }

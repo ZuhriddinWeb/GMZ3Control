@@ -30,7 +30,9 @@ class GraphicTimesController extends Controller
 
     private function index()
     {
-        $GraphicTimes = GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')->get();
+        $GraphicTimes = GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
+        ->select('graphics.Name as GName','graphics.Comment','graphic_times.*')
+        ->get('graphics');
         return response()->json($GraphicTimes);
     }
     private function getRowUnit($id)
@@ -40,16 +42,13 @@ class GraphicTimesController extends Controller
     }
     private function create(Request $request)
     {
-        $request->validate([
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
-
         $unit = GraphicTimes::create([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
+            'GraphicsID' => $request->GraphicId['value'],
+            'Change' => $request->ChangeId['value'],
+            'Name' => $request->Name,            
+            'StartTime' => $request->Name,
+            'EndTime' => $request->EndTime,
+
         ]);
 
         return response()->json([
@@ -84,12 +83,8 @@ class GraphicTimesController extends Controller
 
     private function delete(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-        ]);
-
-        $unit = GraphicTimes::find($request->id);
-        $unit->delete();
+        $GraphicTimes = GraphicTimes::find($request->id);
+        $GraphicTimes->delete();
 
         return response()->json([
             'status' => 200,

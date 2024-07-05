@@ -20,7 +20,7 @@ class GraphicsController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request);
+                return $this->update($request,$id);
             case 'DELETE':
                 return $this->delete($request);
             default:
@@ -35,7 +35,7 @@ class GraphicsController extends Controller
     }
     private function getRowUnit($id)
     {
-        $unit = Units::find($id);
+        $unit = Graphics::find($id);
         return response()->json($unit);
     }
     private function create(Request $request)
@@ -60,16 +60,13 @@ class GraphicsController extends Controller
     private function update(Request $request)
     {
         $request->validate([
-            'id' => 'required|integer|exists:units,id',
             'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = Units::find($request->id);
+        $unit = Graphics::find($request->id);
         $unit->update([
             'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
         ]);
 
@@ -82,12 +79,9 @@ class GraphicsController extends Controller
 
     private function delete(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-        ]);
 
-        $unit = Units::find($request->id);
-        $unit->delete();
+        $graphic = Graphics::find($request->id);
+        $graphic->delete();
 
         return response()->json([
             'status' => 200,

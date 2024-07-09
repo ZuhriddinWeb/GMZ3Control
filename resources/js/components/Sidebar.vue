@@ -68,7 +68,7 @@
     { title: 'Grafiklar', icon: 'schedule', path: '/graphics' },
     { title: 'Grafik vaqtlari', icon: 'alarm', path: '/graphictimes' },
     { title: 'Parameter turlari', icon: 'format_list_numbered', path: '/paramtypes' },
-    { title: 'Parameterlar', icon: 'format_list_bulleted', path: '/units' },
+    { title: 'Parameterlar', icon: 'format_list_bulleted', path: '/params' },
     { title: 'Manbalar', icon: 'content_copy', path: '/sources' },
     { title: 'Smenalar', icon: 'content_copy', path: '/changes' },
   ]

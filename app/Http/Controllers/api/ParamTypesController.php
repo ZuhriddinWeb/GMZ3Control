@@ -4,7 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\ParametersTypes;
+use App\Models\ParamentersTypes;
 
 class ParamTypesController extends Controller
 {
@@ -30,65 +30,52 @@ class ParamTypesController extends Controller
 
     private function index()
     {
-        $units = ParametersTypes::all();
-        return response()->json($units);
+        $params = ParamentersTypes::all();
+        return response()->json($params);
     }
     private function getRowUnit($id)
     {
-        $unit = Units::find($id);
+        $unit = ParamentersTypes::find($id);
         return response()->json($unit);
     }
     private function create(Request $request)
     {
         $request->validate([
             'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = Units::create([
+        $params = ParamentersTypes::create([
             'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
         ]);
 
         return response()->json([
             'status' => 200,
-            'message' => "Javob muvafaqiyatli qo'shildi",
-            'unit' => $unit
+            'message' => "Muvafaqiyatli qo'shildi",
+            'unit' => $params
         ]);
     }
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
 
-        $unit = Units::find($request->id);
-        $unit->update([
+        $params = ParamentersTypes::find($request->id);
+        $params->update([
             'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
         ]);
 
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $unit
+            'unit' => $params
         ]);
     }
 
     private function delete(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-        ]);
-
-        $unit = Units::find($request->id);
+        $unit = ParamentersTypes::find($request->id);
         $unit->delete();
 
         return response()->json([

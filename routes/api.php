@@ -8,6 +8,7 @@ use App\Http\Controllers\api\SourcesController;
 use App\Http\Controllers\api\ChangesController;
 use App\Http\Controllers\api\GraphicsController;
 use App\Http\Controllers\api\ParamTypesController;
+use App\Http\Controllers\api\ParamsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,5 +30,6 @@ Route::match(['get', 'post', 'put', 'delete'], '/graphictimes/{id?}', [GraphicTi
 Route::match(['get', 'post', 'put', 'delete'], '/sources/{id?}', [SourcesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/changes/{id?}', [ChangesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/graphics/{id?}', [GraphicsController::class, 'handle']);
-Route::match(['get', 'post', 'put', 'delete'], '/paramtypes/{id?}', [GraphicsController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/paramtypes/{id?}', [ParamTypesController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/params/{id?}', [ParamsController::class, 'handle']);
 

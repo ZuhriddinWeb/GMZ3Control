@@ -25,6 +25,11 @@ export default [
 		component: () => import('../pages/ParametersTypesPage.vue'),
 	},
 	{
+		path: '/params',
+		name:'params',
+		component: () => import('../pages/ParametersPage.vue'),
+	},
+	{
 		path: '/sources',
 		name:'sources',
 		component: () => import('../pages/SourcesPage.vue'),

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id');
             $table->string('Name');
             $table->string('ShortName');
-            $table->integer('ParamenterTypeID');
+            $table->integer('ParametrTypeID');
             $table->integer('UnitsID')->nullable();
             $table->text('Comment')->nullable();
             $table->dateTime('Created')->nullable();

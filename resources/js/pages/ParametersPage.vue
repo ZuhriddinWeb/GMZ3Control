@@ -8,13 +8,22 @@
       </div>
       <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-          Parametr turlarini kiritish
+          Parametr qiymatlarini kiritish
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Nomlanishi" />
+            <VaInput class="w-full" v-model="result.ShortName"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qisqa nomi" />
+            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
+              <VaSelect v-model="result.ParamsTypeID" class="mb-6" label="Parametr turini tanlang" :options="paramsOptions"
+                clearable  />
+              <VaSelect v-model="result.UnitsID" class="mb-6" label="Birlik qiymatini tanlang" :options="unitsOptions"
+                clearable  />
+            </div>
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
@@ -28,21 +37,25 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, reactive, onMounted, provide } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import  EditParamTypesModal from '../components/ParamTypesComponent/EditParamTypesModal.vue'
-import  DeleteParamTypesModal from '../components/ParamTypesComponent/DeleteParamTypesModal.vue'
+import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue'
+import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
+const paramsOptions = ref([]);
+const unitsOptions = ref([]);
 
 const result = reactive({
   Name: "",
-  Comment: "",
+  ShortName: "",
+  ParamsTypeID:"",
+  UnitsID:"",
+  Comment: ""
 });
 
 function ondeleted(selectedData) {
@@ -57,23 +70,26 @@ provide('ondeleted', ondeleted)
 provide('onupdated', onupdated)
 
 const columnDefs = reactive([
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 120 },
-  { headerName: "ID", field: "id", width: 120 },
+  { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
+  { headerName: "Qisqa nomi", field: "ShortName" },
+  { headerName: "Parametr turi", field: "PName" },
+  { headerName: "Birlik qiymati", field: "UName" },
+
   { headerName: "Izoh", field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: EditParamTypesModal,
+    cellRenderer: EditUnitsModal,
   },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: DeleteParamTypesModal,
+    cellRenderer: DeleteUnitsModal,
   },
 ]);
 
@@ -85,20 +101,37 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/paramtypes');
-    console.log(response);
+    const response = await axios.get('/params');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
-
+const fetchParams = async () => {
+  try {
+    const responseGraphics = await axios.get('/paramtypes');
+    const responseChanges = await axios.get('/units');
+    paramsOptions.value = responseGraphics.data.map(graphic => ({
+      value: graphic.id,
+      text: graphic.Name
+    }));
+    unitsOptions.value = responseChanges.data.map(change => ({
+      value: change.id,
+      text: change.Name
+    }));
+  } catch (error) {
+    console.error('Error fetching graphics data:', error);
+  }
+};
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/paramtypes", result);
+    const { data } = await axios.post("/params", result);
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';
+      result.ShortName = '';
+      result.ParamsTypeID='';
+      result.UnitsID='',
       result.Comment = '';
       await fetchData();
     } else {
@@ -108,11 +141,9 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-const onSelectChange = (value) => {
-  console.log('Selected graphic:', value);
-};
 onMounted(() => {
   fetchData()
+  fetchParams()
 });
 </script>
 
@@ -122,6 +153,7 @@ onMounted(() => {
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
+
   display: inline-block;
   line-height: 1;
   text-transform: none;

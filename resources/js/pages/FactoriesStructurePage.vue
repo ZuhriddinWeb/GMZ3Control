@@ -8,7 +8,7 @@
       </div>
       <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-         Manbalar ma`lumotlarini kiritish
+          O'lchov birliklarini kiritish
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
@@ -35,8 +35,8 @@
 import { ref, reactive, onMounted, provide } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteSource from '../components/SourcesComponent/DeleteSource.vue'
-import EditSource from '../components/SourcesComponent/EditSource.vue';
+import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue'
+import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -63,20 +63,19 @@ const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
   { headerName: "Qisqa nomi", field: "ShortName" },
-  { headerName: "Izoh", field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: EditSource,
+    cellRenderer: EditUnitsModal,
   },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: DeleteSource,
+    cellRenderer: DeleteUnitsModal,
   },
 ]);
 
@@ -88,7 +87,7 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/source');
+    const response = await axios.get('/structure');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; 
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -97,7 +96,7 @@ const fetchData = async () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/source", result);
+    const { data } = await axios.post("/structure", result);
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';

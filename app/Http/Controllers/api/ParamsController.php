@@ -32,14 +32,18 @@ class ParamsController extends Controller
     {
         $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
         ->join('units', 'parameters.UnitsID', '=', 'units.id')
-        ->select('parameters.*','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
+        ->select('parameters.id as Uuid','parameters.Name','parameters.ShortName','parameters.Comment','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
         ->get();
         return response()->json($params);
     }
     private function getRowParam($id)
     {
-        $unit = Parameters::join('paramenters_types', 'paramenters.ParametrTypeId', '=', 'paramenters_types.id')->get();
-        return response()->json($unit);
+        $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
+        ->join('units', 'parameters.UnitsID', '=', 'units.id')
+        ->where('parameters.id',$id)
+        ->select('parameters.id as Uuid','parameters.Name','parameters.ShortName','parameters.Comment','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
+        ->get();
+        return response()->json($params);
     }
     private function create(Request $request)
     {
@@ -64,15 +68,15 @@ class ParamsController extends Controller
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
+        // $request->validate([
+        //     'id' => 'required|integer|exists:units,id',
+        //     'Name' => 'required|string|max:255',
+        //     'ShortName' => 'required|string|max:255',
+        //     'Comment' => 'nullable|string|max:255',
+        // ]);
 
-        $unit = Units::find($request->id);
-        $unit->update([
+        $params = Parameters::find($request->id);
+        $params->update([
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
@@ -81,15 +85,15 @@ class ParamsController extends Controller
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $unit
+            'unit' => $params
         ]);
     }
 
     public function delete(Request $request, $id)
     {
         try {
-            $unit = Units::findOrFail($id);
-            $unit->delete();
+            $params = Parameters::findOrFail($id);
+            $params->delete();
 
             return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
         } catch (\Exception $e) {

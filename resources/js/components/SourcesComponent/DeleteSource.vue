@@ -1,6 +1,6 @@
 <template>
   <main class="h-full w-full text-center content-center">
-    <VaButton round icon="delete"  preset="primary" class="mt-1" @click="selectedDataDelete = true" />
+    <VaButton round icon="delete" preset="primary" class="mt-1" @click="selectedDataDelete = true" />
     <VaModal v-model="selectedDataDelete" ok-text="Apply" @close="selectedDataDelete = false"  @ok="onSubmit" close-button>
       <h3 class="va-h3">Ma'lumotni o'chirish</h3>
       <p>
@@ -21,8 +21,9 @@ const  props = defineProps(["params"]);
 const ondeleted = inject('ondeleted')
 
 const onSubmit = async () => {
+  console.log(props.params.data['id']);
   try {
-    const { data } = await axios.delete(`/units/${props.params.data['id']}`);
+    const { data } = await axios.delete(`/source/${props.params.data['id']}`);
     if (data.status === 200) {
       ondeleted(props.params.data)
       selectedDataDelete.value = false;

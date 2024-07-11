@@ -5,6 +5,16 @@ export default [
 		component: () => import('../pages/HomePage.vue'),
 	},
 	{
+		path: '/factory',
+		name:'factory',
+		component: () => import('../pages/FactoriesPage.vue'),
+	},
+	{
+		path: '/structure',
+		name:'structure',
+		component: () => import('../pages/FactoriesStructurePage.vue'),
+	},
+	{
 		path: '/units',
 		name:'units',
 		component: () => import('../pages/UnitsPage.vue'),

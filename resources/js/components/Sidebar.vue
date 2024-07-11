@@ -64,6 +64,8 @@
 
   const menu = [
     { title: 'Dashboard', icon: 'dashboard', path: '/' },
+    { title: 'GMZ', icon: 'factory', path: '/factory' },
+    { title: 'GMZ Tuzilmasi', icon: 'dashboard', path: '/structure' },
     { title: 'Birliklar', icon: 'ad_units', path: '/units' },
     { title: 'Grafiklar', icon: 'schedule', path: '/graphics' },
     { title: 'Grafik vaqtlari', icon: 'alarm', path: '/graphictimes' },

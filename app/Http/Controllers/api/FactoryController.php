@@ -4,14 +4,14 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Sources;
+use App\Models\TypeFactory;
 
-class SourcesController extends Controller
+class FactoryController extends Controller
 {
     public function handle(Request $request, $id = null)
     {
         if ($id !== null && $request->isMethod('get')) {
-            return $this->getRowSource($id);
+            return $this->getRowFactory($id);
         }
 
         switch ($request->method()) {
@@ -20,9 +20,9 @@ class SourcesController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request);
+                return $this->update($request,$id);
             case 'DELETE':
-                return $this->delete($request);
+                return $this->delete($request,$id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
@@ -30,13 +30,13 @@ class SourcesController extends Controller
 
     private function index()
     {
-        $units = Sources::all();
-        return response()->json($units);
+        $factory = TypeFactory::all();
+        return response()->json($factory);
     }
-    private function getRowSource($id)
+    private function getRowFactory($id)
     {
-        $source = Sources::find($id);
-        return response()->json($source);
+        $factory = TypeFactory::find($id);
+        return response()->json($factory);
     }
     private function create(Request $request)
     {
@@ -46,7 +46,7 @@ class SourcesController extends Controller
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = Sources::create([
+        $factory = TypeFactory::create([
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
@@ -55,7 +55,7 @@ class SourcesController extends Controller
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",
-            'unit' => $unit
+            'unit' => $factory
         ]);
     }
 
@@ -68,8 +68,8 @@ class SourcesController extends Controller
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $source = Sources::find($request->id);
-        $source->update([
+        $factory = TypeFactory::find($request->id);
+        $factory->update([
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
@@ -78,22 +78,20 @@ class SourcesController extends Controller
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $source
+            'unit' => $factory
         ]);
     }
 
-    private function delete(Request $request)
+    public function delete(Request $request, $id)
     {
-        // $request->validate([
-        //     'id' => 'required|integer|exists:units,id',
-        // ]);
+        try {
+            $factory = TypeFactory::findOrFail($id);
+            $factory->delete();
 
-        $source = Sources::find($request->id);
-        $source->delete();
-
-        return response()->json([
-            'status' => 200,
-            'message' => "Javob muvafaqiyatli o'chirildi",
-        ]);
+            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
+        }
     }
+
 }

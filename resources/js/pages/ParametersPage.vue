@@ -41,8 +41,8 @@
 import { ref, reactive, onMounted, provide } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue'
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
+import DeleteParam from '../components/ParamsPageComponent/DeleteParam.vue';
+import EditParam from '../components/ParamsPageComponent/EditParam.vue'
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -71,25 +71,25 @@ provide('onupdated', onupdated)
 
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
+  { headerName: "Id", field: "Uuid", flex: 1 },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
   { headerName: "Qisqa nomi", field: "ShortName" },
   { headerName: "Parametr turi", field: "PName" },
   { headerName: "Birlik qiymati", field: "UName" },
-
   { headerName: "Izoh", field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: EditUnitsModal,
+    cellRenderer: EditParam,
   },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: DeleteUnitsModal,
+    cellRenderer: DeleteParam,
   },
 ]);
 
@@ -101,8 +101,9 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/params');
+    const response = await axios.get('/param');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
+    console.log(rowData.value);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -125,7 +126,7 @@ const fetchParams = async () => {
 };
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/params", result);
+    const { data } = await axios.post("/param", result);
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';

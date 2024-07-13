@@ -69,10 +69,12 @@
     { title: 'Birliklar', icon: 'ad_units', path: '/units' },
     { title: 'Grafiklar', icon: 'schedule', path: '/graphics' },
     { title: 'Grafik vaqtlari', icon: 'alarm', path: '/graphictimes' },
-    { title: 'Parameter turlari', icon: 'format_list_numbered', path: '/paramtypes' },
-    { title: 'Parameterlar', icon: 'format_list_bulleted', path: '/params' },
+    { title: 'Parametr turlari', icon: 'format_list_numbered', path: '/paramtypes' },
+    { title: 'Parametrlar', icon: 'format_list_bulleted', path: '/params' },
     { title: 'Manbalar', icon: 'content_copy', path: '/sources' },
     { title: 'Smenalar', icon: 'content_copy', path: '/changes' },
+    { title: 'Parametr qiymatlari', icon: 'content_copy', path: '/vparams' },
+    { title: 'Foydalanuvchilar', icon: 'person', path: '/users' },
   ]
 </script>
 

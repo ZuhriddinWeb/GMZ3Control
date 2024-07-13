@@ -50,6 +50,16 @@ export default [
 		component: () => import('../pages/ChangesPage.vue'),
 	},
 	{
+		path: '/vparams',
+		name:'vparams',
+		component: () => import('../pages/ParametrValue.vue'),
+	},
+	{
+		path: '/users',
+		name:'users',
+		component: () => import('../pages/ParametrValue.vue'),
+	},
+	{
 		path: '/:pathMatch(.*)*',
 		redirect: '/',
 		name: 'pathMatch',

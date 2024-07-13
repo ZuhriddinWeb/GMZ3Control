@@ -8,7 +8,7 @@
       </div>
       <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-          O'lchov birliklarini kiritish
+         Grafik vaqtlarini kiritish
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">

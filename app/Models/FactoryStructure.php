@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class FactoryStructure extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'ParentID',
+        'Name',
+        'ShortName',
+        'Comment',
+        'Created',
+        'Creator',
+        'Changed',
+        'Changer',
+    ];
 }

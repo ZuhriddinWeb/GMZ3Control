@@ -10,7 +10,8 @@ use App\Http\Controllers\api\GraphicsController;
 use App\Http\Controllers\api\ParamTypesController;
 use App\Http\Controllers\api\ParamsController;
 use App\Http\Controllers\api\FactoryController;
-
+use App\Http\Controllers\api\FactoryStructureController;
+use App\Http\Controllers\api\ParametrValueController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -35,4 +36,6 @@ Route::match(['get', 'post', 'put', 'delete'], '/paramtypes/{id?}', [ParamTypesC
 Route::match(['get', 'post', 'put', 'delete'], '/param/{id?}', [ParamsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/source/{id?}', [SourcesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/factory/{id?}', [FactoryController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/structure/{id?}', [FactoryStructureController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/vparams/{id?}', [ParametrValueController::class, 'handle']);
 

@@ -8,21 +8,24 @@
       </div>
       <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-          Zavod tuzilmasini  yaratish
+          Qiymatlarni kiritish
         </h3>
         <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
-            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-              <VaSelect v-model="result.GraphicId" class="mb-1" label="Ishlab chiqarish zavodi":options="factoryOptions"
-                clearable @change="onSelectChange" />
-               
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <div class="grid grid-cols-3 md:grid-cols-3 gap-2 items-end w-full">
+              <VaSelect v-model="result.ParamsTypeID" class="mb-1" label="Parametr turini tanlang" :options="ParamOptions"
+                clearable  />
+              <VaSelect v-model="result.UnitsID" class="mb-1" label="Manbani tanlang" :options="SourceOptions"
+                clearable  />
+                <VaSelect v-model="result.GTime" class="mb-1" label="Grafik vaqtini tanlang" :options="TimesOptions"
+                clearable  />
             </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Nomlanishi" />
-            <VaInput class="w-full" v-model="result.ShortName"
+              label="Qiymat" />
+            <!-- <VaInput class="w-full" v-model="result.ShortName"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Qisqa nomi" />
+              label="Qisqa nomi" /> -->
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
@@ -46,12 +49,16 @@ import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
-const factoryOptions = ref([]);
+const ParamOptions = ref([]);
+const SourceOptions = ref([]);
+const TimesOptions = ref([]);
 
 const result = reactive({
   Name: "",
   ShortName: "",
-  Comment: ""
+  Comment: "",
+  GTime: ""
+
 });
 
 function ondeleted(selectedData){
@@ -67,9 +74,9 @@ provide('onupdated',onupdated)
 
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
-  { headerName: "Ishalb chiqarish zavodi", field: "fName" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
   { headerName: "Qisqa nomi", field: "ShortName" },
+  { headerName: "Izoh", field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],
     headerName: "",
@@ -94,7 +101,7 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/structure');
+    const response = await axios.get('/vparams');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; 
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -102,10 +109,20 @@ const fetchData = async () => {
 };
 const fetchGraphics = async () => {
   try {
-    const responseGraphics = await axios.get('/factory');
-    factoryOptions.value = responseGraphics.data.map(factory => ({
+    const responseParams = await axios.get('/param');
+    ParamOptions.value = responseParams.data.map(factory => ({
+      value: factory.Uuid,
+      text: factory.Name
+    }));
+    const responseSources = await axios.get('/source');
+    SourceOptions.value = responseSources.data.map(factory => ({
       value: factory.id,
       text: factory.Name
+    }));
+    const responseTimes = await axios.get('/graphictimes');
+    TimesOptions.value = responseTimes.data.map(factory => ({
+      value: factory.id,
+      text: factory.GName
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
@@ -113,7 +130,7 @@ const fetchGraphics = async () => {
 };
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/structure", result);
+    const { data } = await axios.post("/units", result);
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';

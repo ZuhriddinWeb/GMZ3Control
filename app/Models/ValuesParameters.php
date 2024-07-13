@@ -8,4 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class ValuesParameters extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'ParametersID',
+        'SourcesID',
+        'Time',
+        'Value',
+        'Comment',
+        'GraphicsTimesID',
+        'Created',
+        'Creator',
+        'Changed',
+        'Changer',
+    ];
 }

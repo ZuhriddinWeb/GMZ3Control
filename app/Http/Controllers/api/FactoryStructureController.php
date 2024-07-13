@@ -4,10 +4,9 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\GraphicTimes;
-use Carbon\Carbon;
-
-class GraphicTimesController extends Controller
+use App\Models\FactoryStructure;
+use DB;
+class FactoryStructureController extends Controller
 {
     public function handle(Request $request, $id = null)
     {
@@ -21,9 +20,9 @@ class GraphicTimesController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request);
+                return $this->update($request,$id);
             case 'DELETE':
-                return $this->delete($request);
+                return $this->delete($request,$id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
@@ -31,26 +30,31 @@ class GraphicTimesController extends Controller
 
     private function index()
     {
-        $GraphicTimes = GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
-        ->select('graphics.Name as GName','graphics.Comment','graphic_times.*')
-        ->get('graphics');
-        return response()->json($GraphicTimes);
+        $fstructure = FactoryStructure::join('type_factories','factory_structures.ParentID','=','type_factories.id')
+        ->select('type_factories.Name as fName','factory_structures.*')
+        ->get();
+        return response()->json($fstructure);
     }
     private function getRowUnit($id)
     {
-        $unit = GraphicTimes::find($id);
+        $unit = FactoryStructure::find($id);
         return response()->json($unit);
     }
     private function create(Request $request)
     {
-        $unit = GraphicTimes::create([
-            'GraphicsID' => $request->GraphicId['value'],
-            'Change' => $request->ChangeId['value'],
-            'Name' => Carbon::parse($request->Name)->addHours(5),
-            'StartTime' => Carbon::parse($request->Name)->addHours(5),
-            'EndTime' =>Carbon::parse($request->EndTime)->addHours(5),
+        // $request->validate([
+        //     'Name' => 'required|string|max:255',
+        //     'ShortName' => 'required|string|max:255',
+        //     'Comment' => 'nullable|string|max:255',
+        // ]);
 
+        $unit = FactoryStructure::create([
+            'ParentID'=>$request->GraphicId['value'],
+            'Name' => $request->Name,
+            'ShortName' => $request->ShortName,
+            'Comment' => $request->Comment,
         ]);
+
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",
@@ -67,7 +71,7 @@ class GraphicTimesController extends Controller
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = GraphicTimes::find($request->id);
+        $unit = FactoryStructure::find($request->id);
         $unit->update([
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
@@ -81,14 +85,15 @@ class GraphicTimesController extends Controller
         ]);
     }
 
-    private function delete(Request $request)
+    public function delete(Request $request, $id)
     {
-        $GraphicTimes = GraphicTimes::find($request->id);
-        $GraphicTimes->delete();
+        try {
+            $unit = FactoryStructure::findOrFail($id);
+            $unit->delete();
 
-        return response()->json([
-            'status' => 200,
-            'message' => "Javob muvafaqiyatli o'chirildi",
-        ]);
+            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
+        }
     }
 }

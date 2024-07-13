@@ -68,6 +68,9 @@ class DatabaseSeeder extends Seeder
             [ 'Name' => 'cекунд','ShortName'=>'s'],
             [ 'Name' => 'сатхи','ShortName'=>'Sh'],
         ]);
+        DB::table('type_factories')->insert([
+            [ 'Name' => '3-gidrometallurgiya zavodi','ShortName'=>'GMZ-3'],
+        ]);
         // \App\Models\User::factory(10)->create();
 
         // \App\Models\User::factory()->create([

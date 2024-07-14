@@ -57,7 +57,7 @@ export default [
 	{
 		path: '/users',
 		name:'users',
-		component: () => import('../pages/ParametrValue.vue'),
+		component: () => import('../pages/UsersPage.vue'),
 	},
 	{
 		path: '/:pathMatch(.*)*',

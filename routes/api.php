@@ -12,6 +12,10 @@ use App\Http\Controllers\api\ParamsController;
 use App\Http\Controllers\api\FactoryController;
 use App\Http\Controllers\api\FactoryStructureController;
 use App\Http\Controllers\api\ParametrValueController;
+use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -38,4 +42,7 @@ Route::match(['get', 'post', 'put', 'delete'], '/source/{id?}', [SourcesControll
 Route::match(['get', 'post', 'put', 'delete'], '/factory/{id?}', [FactoryController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/structure/{id?}', [FactoryStructureController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/vparams/{id?}', [ParametrValueController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/users/{id?}', [UserController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/role/{id?}', [RoleController::class, 'handle']);
+
 

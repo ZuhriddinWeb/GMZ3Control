@@ -77,13 +77,13 @@ const columnDefs = reactive([
     width: 70,
     cellRenderer: RolesComponent,
   },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditUserModal,
-  },
+  // {
+  //   cellClass: ['px-0'],
+  //   headerName: "",
+  //   field: "",
+  //   width: 70,
+  //   cellRenderer: EditUserModal,
+  // },
   {
     cellClass: ['px-0'],
     headerName: "",

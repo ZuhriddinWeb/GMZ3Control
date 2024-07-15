@@ -20,6 +20,7 @@
     "dependencies": {
         "@vuestic/tailwind": "^0.1.5",
         "ag-grid-vue3": "^31.3.2",
+        "sweetalert2": "^11.12.2",
         "vue-router": "^4.4.0",
         "vuestic-ui": "^1.9.12",
         "vuex": "^4.0.2"

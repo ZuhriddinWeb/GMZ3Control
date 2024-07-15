@@ -1,10 +1,10 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="settings" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
-    <VaModal v-model="selectedDataEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit"
+    <VaModal max-width="45%" v-model="selectedDataEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
-      <h3 class="va-h3">
-        Foydalanuvchi parametrlari
+      <h3>
+       <span class="va-h3">Foydalanuvchi: {{ result.userName }}</span>  
       </h3>
       <div>
         <div class="va-table-responsive">
@@ -12,7 +12,7 @@
             <thead>
               <tr>
                 <th>Nomi</th>
-                <th>Ko'rish</th>
+                <th>Ruxsat</th>
                 <th>Yaratish</th>
                 <th>O'zgartirish</th>
                 <th>O'chirish</th>
@@ -22,17 +22,22 @@
               <tr v-for="role in roles" :key="role.id">
                 <td>{{ role.name }}</td>
                 <td>
-                  <VaSwitch  @change="onChange" :checked="checked"  color="success" />
+
+                  <VaSwitch :model-value="role.view" @change="() => onChange(role, 'view')"
+                    :color="getColor(role.view)" />
                 </td>
-                <td>
-                  <VaSwitch v-model="checked" color="success" />
+                <td v-if="role.view">
+                  <VaSwitch :model-value="role.create" @change="() => onChange(role, 'create')"
+                    :color="getColor(role.create)" />
                 </td>
-                <td>
-                  <VaSwitch v-model="checked" color="success" />
+                <td v-if="role.view">
+                  <VaSwitch :model-value="role.edit" @change="() => onChange(role, 'edit')"
+                    :color="getColor(role.edit)" />
                 </td>
-                <td>
-                  <VaSwitch v-model="checked" color="success" />
-                </td>            
+                <td v-if="role.view">
+                  <VaSwitch :model-value="role.delete" @change="() => onChange(role, 'delete')"
+                    :color="getColor(role.delete)" />
+                </td>
               </tr>
             </tbody>
           </table>
@@ -41,30 +46,57 @@
     </VaModal>
   </main>
 </template>
+
 <script setup>
 import { ref, reactive, inject, onMounted } from 'vue';
 import axios from 'axios';
 
-const props = defineProps(["params"]);
+const props = defineProps(['params']);
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
 const roles = ref([]);
-const checked = ref(false);
 
 const result = reactive({
-  Name: "",
-  ShortName: "",
-  Comment: "",
-  id: props.params.data['id']
+  id: props.params.data['id'],
+  userName:props.params.data['name']
 });
-const  onChange= () =>{
-  checked.value = !checked.value;
-  console.log(checked.value);
+
+const onChange = (role, action) => {
+  role[action] = !role[action];
+  console.log(`${action} for ${role.name} changed to ${role[action]}`);
+};
+
+const getColor = (value) => {
+  return value ? 'success' : 'danger';
+};
+
+
+async function getUserRole() {
+  axios.get(`/user_role/${props.params.data['id']}`).then((res) => {
+    res.data.forEach((user_role) => {
+      const selectedRole = roles.value.find((role) => role.id == user_role.role_id)
+      if (selectedRole == null) return
+      selectedRole.view = user_role.view
+      selectedRole.create = user_role.create
+      selectedRole.update = user_role.update
+      selectedRole.delete = user_role.delete
+    })
+  })
 }
-const fetchData = async () => {
+
+
+async function fetchData() {
   try {
     const response = await axios.get('/role');
     roles.value = Array.isArray(response.data) ? response.data : response.data.items;
+    roles.value.forEach(role => {
+      role.id = role.id
+      role.view = role.view || false;
+      role.create = role.create || false;
+      role.edit = role.edit || false;
+      role.delete = role.delete || false;
+    });
+
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -72,10 +104,29 @@ const fetchData = async () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.put("/units", result);
+    const rolesData = roles.value.map(role => ({
+      id: role.id,
+      name: role.name,
+      view: role.view,
+      create: role.create,
+      edit: role.edit,
+      delete: role.delete
+    }));
+
+    const { data } = await axios.post('/user_role', {
+      ...result,
+      roles: rolesData
+    });
+
     if (data.status === 200) {
-      onupdated(props.params.node, data.unit);
+      // onupdated(props.params.node, data.unit);
       selectedDataEdit.value = false;
+      Swal.fire({
+        position: "top-end",
+        title: "Muvafaqiyatli saqlandi!",
+        showConfirmButton: false,
+        timer: 1500
+      });
     } else {
       console.error('Error saving data:', data.message);
     }
@@ -83,8 +134,27 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-onMounted(() => {
-  fetchData()
-});
 
+onMounted(async () => {
+  await fetchData();
+  getUserRole()
+});
 </script>
+
+<style>
+.va-table-responsive {
+  overflow-x: auto;
+}
+
+.va-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.va-table th,
+.va-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+</style>

@@ -11,7 +11,7 @@ class UserRoleController extends Controller
     public function handle(Request $request, $id = null)
     {
         if ($id !== null && $request->isMethod('get')) {
-            return $this->getRowUnit($id);
+            return $this->getRowUserRole($id);
         }
 
         switch ($request->method()) {
@@ -33,52 +33,54 @@ class UserRoleController extends Controller
         $user = UserRole::all();
         return response()->json($user);
     }
-    private function getRowUnit($id)
+    private function getRowUserRole($id)
     {
-        $user = UserRole::find($id);
+        $user = UserRole::with('role')->where('user_id', $id)->get();
         return response()->json($user);
     }
     private function create(Request $request)
     {
-        $request->validate([
-            'Login' => 'required|string|max:255',
-            'password' => 'required|min:6|max:255|confirmed',
-        ]);
-        if($request->fails()){
-            return response()->json($request->errors(),299);
+        
+        foreach ($request['roles'] as $role) {
+            $roles = UserRole::updateOrCreate(
+                [
+                    'user_id' => $request['id'],
+                    'role_id' => $role['id'],
+                ],
+                [
+                    'view' => $role['view'],
+                    'create' => $role['create'],
+                    'update' => $role['edit'],
+                    'delete' => $role['delete'],
+                ]
+            );
         }
-        $unit = UserRole::create([
-            'Login' => $request->Login,
-            'Password' =>  Hash::make($request->Password),
-        ]);
+    
 
         return response()->json([
             'status' => 200,
             'message' => "Foydalanuvchi muvafaqiyatli qo'shildi",
-            'unit' => $unit
+            'unit' => $roles
         ]);
     }
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
-
-        $unit = UserRole::find($request->id);
-        $unit->update([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
-        ]);
+        foreach ($request['roles'] as $role) {
+            $roles = UserRole::create([
+                'user_id' => $request['id'],
+                'role_id' => $role['id'],
+                'view' => $role['view'],
+                'create' => $role['create'],
+                'update' => $role['edit'],
+                'delete' => $role['delete'],
+            ]);
+        }
 
         return response()->json([
             'status' => 200,
-            'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $unit
+            'message' => "Foydalanuvchi muvafaqiyatli qo'shildi",
+            'unit' => $roles
         ]);
     }
 

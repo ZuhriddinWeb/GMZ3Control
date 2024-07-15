@@ -22,9 +22,14 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'GMZ'],
             ['Name' => 'GMZ Tuzilmasi'],
             ['Name' => 'Birliklar'],
-            ['Name' => 'Parametrlar']
-
-
+            ['Name' => 'Grafiklar'],
+            ['Name' => 'Grafik vaqtlari'],
+            ['Name' => 'Parametr turlari'],
+            ['Name' => 'Parametrlar'],
+            ['Name' => 'Manbalar'],
+            ['Name' => 'Smenalar'],
+            ['Name' => 'Parametr qiymatlari'],
+            ['Name' => 'Foydlanauvchilar'],
         ]);
         DB::table('graphic_times')->insert([
             ['GraphicsID' => 1, 'Change' => 1, 'Name' => '8:00', 'StartTime' => '08:00:00.0000000', 'EndTime' => '08:05:00.0000000'],

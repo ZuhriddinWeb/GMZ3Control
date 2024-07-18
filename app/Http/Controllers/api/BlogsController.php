@@ -4,9 +4,8 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\FactoryStructure;
-use DB;
-class FactoryStructureController extends Controller
+use App\Models\Blogs;
+class BlogsController extends Controller
 {
     public function handle(Request $request, $id = null)
     {
@@ -30,12 +29,14 @@ class FactoryStructureController extends Controller
 
     private function index()
     {
-        $fstructure = FactoryStructure::all();
-        return response()->json($fstructure);
+        $units = Blogs::join('factory_structures','blogs.StructureID','=','factory_structures.id')
+        ->select('factory_structures.Name as SName','blogs.*')
+        ->get();
+        return response()->json($units);
     }
     private function getRowUnit($id)
     {
-        $unit = FactoryStructure::find($id);
+        $unit = Blogs::find($id);
         return response()->json($unit);
     }
     private function create(Request $request)
@@ -46,7 +47,8 @@ class FactoryStructureController extends Controller
         //     'Comment' => 'nullable|string|max:255',
         // ]);
 
-        $unit = FactoryStructure::create([
+        $unit = Blogs::create([
+            'StructureID'=>$request->StructureID['value'],
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
@@ -62,12 +64,13 @@ class FactoryStructureController extends Controller
     private function update(Request $request)
     {
         $request->validate([
+            'id' => 'required|integer|exists:units,id',
             'Name' => 'required|string|max:255',
             'ShortName' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = FactoryStructure::find($request->id);
+        $unit = Blogs::find($request->id);
         $unit->update([
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
@@ -84,7 +87,7 @@ class FactoryStructureController extends Controller
     public function delete(Request $request, $id)
     {
         try {
-            $unit = FactoryStructure::findOrFail($id);
+            $unit = Blogs::findOrFail($id);
             $unit->delete();
 
             return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);

@@ -5,12 +5,14 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ValuesParameters;
+use DB;
+
 class ParametrValueController extends Controller
 {
     public function handle(Request $request, $id = null)
     {
         if ($id !== null && $request->isMethod('get')) {
-            return $this->getRowUnit($id);
+            return $this->getRowPram($id);
         }
 
         switch ($request->method()) {
@@ -19,38 +21,46 @@ class ParametrValueController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request,$id);
+                return $this->update($request, $id);
             case 'DELETE':
-                return $this->delete($request,$id);
+                return $this->delete($request, $id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
     }
-
+// Ro'ziboyev muroddin  
     private function index()
     {
         $units = ValuesParameters::all();
         return response()->json($units);
     }
-    private function getRowUnit($id)
+    private function getRowPram($id)
     {
-        $unit = ValuesParameters::find($id);
+        $currentTime = date("H:i");
+        $unit = DB::table('graphics_paramenters')
+            ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
+            ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+            ->where('BlogsID', '=', $id)
+            ->whereTime('graphic_times.StartTime', '>=', '08:00')
+            ->whereTime('graphic_times.EndTime', '<=', '20:00')
+            ->select('graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'graphics_paramenters.*')
+            ->get();
         return response()->json($unit);
     }
     private function create(Request $request)
     {
+        dd($request);
         $request->validate([
             'Name' => 'required|string|max:255',
             'ShortName' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = ValuesParameters::create([
-            'Name' => $request->Name,
+        $unit = ValuesParameters::updateOrCreate([
+            'ParametersID' => $request->ParametersID,
             'ShortName' => $request->ShortName,
             'Comment' => $request->Comment,
         ]);
-
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",

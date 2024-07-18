@@ -8,13 +8,21 @@
       </div>
       <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-          Parametr turlarini kiritish
+          Zavod tuzilmasini  yaratish
         </h3>
         <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+              <VaSelect v-model="result.StructureID" class="mb-1" label="Tuzilma nomi":options="factoryOptions"
+                clearable @change="onSelectChange" />
+               
+            </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Nomlanishi" />
+            <VaInput class="w-full" v-model="result.ShortName"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qisqa nomi" />
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
@@ -28,52 +36,54 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, reactive, onMounted, provide } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import  EditParamTypesModal from '../components/ParamTypesComponent/EditParamTypesModal.vue'
-import  DeleteParamTypesModal from '../components/ParamTypesComponent/DeleteParamTypesModal.vue'
+import DeleteBlog from '../components/BlogsComponent/DeleteBlog.vue'
+import EditBlog from '../components/BlogsComponent/EditBlog.vue';
 
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
+const factoryOptions = ref([]);
 
 const result = reactive({
+  StructureID:"",
   Name: "",
-  Comment: "",
+  ShortName: "",
+  Comment: ""
 });
 
-function ondeleted(selectedData) {
+function ondeleted(selectedData){
   gridApi.value.applyTransaction({ remove: [selectedData] })
 }
 
-function onupdated(rowNode, data) {
+function onupdated(rowNode,data){
   rowNode.setData(data)
 }
 
-provide('ondeleted', ondeleted)
-provide('onupdated', onupdated)
+provide('ondeleted',ondeleted)
+provide('onupdated',onupdated)
 
 const columnDefs = reactive([
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 120 },
-  { headerName: "ID", field: "id", width: 120 },
+  { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
+  { headerName: "Tuzilma", field: "SName" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
-  { headerName: "Izoh", field: "Comment", flex: 1 },
+  { headerName: "Qisqa nomi", field: "ShortName" },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: EditParamTypesModal,
+    cellRenderer: EditBlog,
   },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: DeleteParamTypesModal,
+    cellRenderer: DeleteBlog,
   },
 ]);
 
@@ -85,20 +95,30 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/paramtypes');
-    // console.log(response);
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
+    const response = await axios.get('/blogs');
+    rowData.value = Array.isArray(response.data) ? response.data : response.data.items; 
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
-
+const fetchGraphics = async () => {
+  try {
+    const responseGraphics = await axios.get('/structure');
+    factoryOptions.value = responseGraphics.data.map(factory => ({
+      value: factory.id,
+      text: factory.Name
+    }));
+  } catch (error) {
+    console.error('Error fetching graphics data:', error);
+  }
+};
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/paramtypes", result);
+    const { data } = await axios.post("/blogs", result);
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';
+      result.ShortName = '';
       result.Comment = '';
       await fetchData();
     } else {
@@ -108,11 +128,9 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-const onSelectChange = (value) => {
-  console.log('Selected graphic:', value);
-};
 onMounted(() => {
   fetchData()
+  fetchGraphics()
 });
 </script>
 
@@ -122,6 +140,7 @@ onMounted(() => {
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
+  
   display: inline-block;
   line-height: 1;
   text-transform: none;

@@ -5,19 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class GraphicsParamenters extends Model
+class Blogs extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'OrderNumber',
-        'ParametersID',
-        'FactoryStructureID',
-        'GrapicsID',
-        'BlogsID',
-        'CurrentTime',
-        'EndingTime',
-        'Min',
-        'Max',
+        'StructureID',
+        'Name',
+        'ShortName',
+        'Comment',
         'Created',
         'Creator',
         'Changed',

@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('values_parameters', function (Blueprint $table) {
-            $table->uuid('id');
-            $table->integer('ParametersID')->nullable();
-            $table->integer('SourcesID')->nullable();
-            // $table->dateTime('Time')->nullable();
-            $table->double('Value')->nullable();
-            $table->text('Comment')->nullable();
-            $table->integer('GraphicsTimesID')->nullable();
+        Schema::create('blogs', function (Blueprint $table) {
+            $table->id();
+            $table->integer('StructureID');
+            $table->string('Name')->nullable();
+            $table->string('ShortName')->nullable();;
+            $table->string('Comment')->nullable();;
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();
             $table->dateTime('Changed')->nullable();
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('values_parameters');
+        Schema::dropIfExists('blogs');
     }
 };

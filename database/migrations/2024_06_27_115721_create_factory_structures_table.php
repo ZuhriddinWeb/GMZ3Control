@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('factory_structures', function (Blueprint $table) {
             $table->id();
-            $table->integer('ParentID')->nullable();
+            // $table->integer('ParentID')->nullable();
             $table->string('Name')->nullable();
             $table->string('ShortName')->nullable();
             $table->text('Comment')->nullable();

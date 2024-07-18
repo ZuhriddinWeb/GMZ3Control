@@ -9,7 +9,6 @@ class FactoryStructure extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'ParentID',
         'Name',
         'ShortName',
         'Comment',

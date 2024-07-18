@@ -15,6 +15,11 @@ export default [
 		component: () => import('../pages/FactoriesStructurePage.vue'),
 	},
 	{
+		path: '/blogs',
+		name:'blogs',
+		component: () => import('../pages/BlogsPage.vue'),
+	},
+	{
 		path: '/units',
 		name:'units',
 		component: () => import('../pages/UnitsPage.vue'),
@@ -28,6 +33,11 @@ export default [
 		path: '/graphictimes',
 		name:'graphictimes',
 		component: () => import('../pages/GraphicTimesPage.vue'),
+	},
+	{
+		path: '/paramgraphics',
+		name:'paramgraphics',
+		component: () => import('../pages/ParameterGraphics.vue'),
 	},
 	{
 		path: '/paramtypes',

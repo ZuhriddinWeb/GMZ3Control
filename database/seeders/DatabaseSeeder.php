@@ -31,6 +31,49 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'Parametr qiymatlari'],
             ['Name' => 'Foydlanauvchilar'],
         ]);
+        DB::table('factory_structures')->insert([
+            ['Name' => 'Maydalash sexi'],
+        ]);
+        DB::table('parameters')->insert([
+            ['id'=>'62f0a8e1-b7cd-47f3-a25b-6f6f837e6079','Name' => 'Chiziqli o\'lchov','ShortName'=>'Chiziqli o\'lchov','ParametrTypeID'=>1,'UnitsID'=>9],
+            ['id'=>'fb3a19c0-89fe-4a00-bd3c-19f4ede0afeb','Name' => 'Differensial transformator','ShortName'=>'Differensial transformator`','ParametrTypeID'=>1,'UnitsID'=>9],
+            ['id'=>'f78fedae-d7d1-4f2b-9d6d-1d883299feb9','Name' => 'Ekscentrik harorati №1','ShortName'=>'Differensial transformator`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'366280ab-7800-43f3-84a8-f86b5b1c9f2e','Name' => 'Ekscentrik harorati №2','ShortName'=>'Differensial transformator`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'ca1abe46-a810-400e-b4d8-1a596de974ce','Name' => 'Ekscentrik harorati №3','ShortName'=>'Differensial transformator`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'ca1abe46-a810-400e-b4d8-1a596de974ce','Name' => 'Ekscentrik harorati №4','ShortName'=>'Differensial transformator`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'f2b4ee93-9a6c-4373-ab8a-c8f9f84f1098','Name' => 'Moy kirishi','ShortName'=>'Moy kirishi`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'c62cc14c-5dde-4cbc-ba11-91e2f5a1225e','Name' => 'Moy chiqishi','ShortName'=>'Moy chiqishi`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'b21d769d-f63c-4ce3-bf58-26e7ca1fda79','Name' => 'Moy baki','ShortName'=>'Moy baki`','ParametrTypeID'=>1,'UnitsID'=>6],
+            ['id'=>'f38678ff-9b4e-4e14-acac-c5e64c944d40','Name' => 'Yog\'ta\'minot bosimi','ShortName'=>'Yog\'ta\'minot bosimi`','ParametrTypeID'=>1,'UnitsID'=>10],
+            ['id'=>'74859597-8263-440e-b912-b24fe544a62d','Name' => 'Vagonlar soni','ShortName'=>'Vagonlar soni`','ParametrTypeID'=>1,'UnitsID'=>11],
+        ]);
+        DB::table('blogs')->insert([
+            ['StructureID' => 1,'Name'=>'Maydalagichni tushirish uyasi kengligi'],
+            ['StructureID' => 1,'Name'=>'Buzg\'unchi pozitsiyakonus'],
+            ['StructureID' => 1,'Name'=>'Maydalagich'],
+            ['StructureID' => 1,'Name'=>'Maydalagich'],
+            ['StructureID' => 1,'Name'=>'Maydalagich'],
+            ['StructureID' => 1,'Name'=>'Maydalagich'],
+            ['StructureID' => 1,'Name'=>'Moy baki'],
+            ['StructureID' => 1,'Name'=>'Moy baki'],
+            ['StructureID' => 1,'Name'=>'Moy baki'],
+            ['StructureID' => 1,'Name'=>'Moy baki'],
+            ['StructureID' => 1,'Name'=>'Vagonlar'],
+        ]);
+        DB::table('graphics_paramenters')->insert([
+            ['OrderNumber' => 1,'ParametersID'=>'62f0a8e1-b7cd-47f3-a25b-6f6f837e6079','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'5','Max'=>'5'],
+            ['OrderNumber' => 1,'ParametersID'=>'fb3a19c0-89fe-4a00-bd3c-19f4ede0afeb','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'500','Max'=>'700'],
+            ['OrderNumber' => 1,'ParametersID'=>'f78fedae-d7d1-4f2b-9d6d-1d883299feb9','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'366280ab-7800-43f3-84a8-f86b5b1c9f2e','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'ca1abe46-a810-400e-b4d8-1a596de974ce','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'ca1abe46-a810-400e-b4d8-1a596de974ce','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'f2b4ee93-9a6c-4373-ab8a-c8f9f84f1098','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'c62cc14c-5dde-4cbc-ba11-91e2f5a1225e','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'b21d769d-f63c-4ce3-bf58-26e7ca1fda79','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'50','Max'=>'70'],
+            ['OrderNumber' => 1,'ParametersID'=>'f38678ff-9b4e-4e14-acac-c5e64c944d40','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'1','Max'=>'1.2'],
+            ['OrderNumber' => 1,'ParametersID'=>'74859597-8263-440e-b912-b24fe544a62d','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'Min'=>'','Max'=>''],
+
+        ]);
         DB::table('graphic_times')->insert([
             ['GraphicsID' => 1, 'Change' => 1, 'Name' => '8:00', 'StartTime' => '08:00:00.0000000', 'EndTime' => '08:05:00.0000000'],
             ['GraphicsID' => 1, 'Change' => 1, 'Name' => '9:00', 'StartTime' => '09:00:00.0000000', 'EndTime' => '09:05:00.0000000'],
@@ -80,6 +123,9 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'харорат', 'ShortName' => '°С'],
             ['Name' => 'cекунд', 'ShortName' => 's'],
             ['Name' => 'сатхи', 'ShortName' => 'Sh'],
+            ['Name' => 'Миллиметр', 'ShortName' => 'мм'],
+            ['Name' => 'Килограмм-сила', 'ShortName' => 'kg/sm2'],
+            ['Name' => 'Дона', 'ShortName' => 'шт'],
         ]);
         DB::table('type_factories')->insert([
             ['Name' => '3-gidrometallurgiya zavodi', 'ShortName' => 'GMZ-3'],

@@ -12,11 +12,6 @@
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
-            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-              <VaSelect v-model="result.GraphicId" class="mb-1" label="Ishlab chiqarish zavodi":options="factoryOptions"
-                clearable @change="onSelectChange" />
-               
-            </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Nomlanishi" />
@@ -40,8 +35,8 @@
 import { ref, reactive, onMounted, provide } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue'
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
+import DeleteStructure from '../components/StructureComponent/DeleteStructure.vue'
+import EditStructure from '../components/StructureComponent/EditStructure.vue';
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -67,7 +62,6 @@ provide('onupdated',onupdated)
 
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
-  { headerName: "Ishalb chiqarish zavodi", field: "fName" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
   { headerName: "Qisqa nomi", field: "ShortName" },
   {
@@ -75,14 +69,14 @@ const columnDefs = reactive([
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: EditUnitsModal,
+    cellRenderer: EditStructure,
   },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: DeleteUnitsModal,
+    cellRenderer: DeleteStructure,
   },
 ]);
 
@@ -100,17 +94,7 @@ const fetchData = async () => {
     console.error('Error fetching data:', error);
   }
 };
-const fetchGraphics = async () => {
-  try {
-    const responseGraphics = await axios.get('/factory');
-    factoryOptions.value = responseGraphics.data.map(factory => ({
-      value: factory.id,
-      text: factory.Name
-    }));
-  } catch (error) {
-    console.error('Error fetching graphics data:', error);
-  }
-};
+
 const onSubmit = async () => {
   try {
     const { data } = await axios.post("/structure", result);
@@ -129,7 +113,6 @@ const onSubmit = async () => {
 };
 onMounted(() => {
   fetchData()
-  fetchGraphics()
 });
 </script>
 

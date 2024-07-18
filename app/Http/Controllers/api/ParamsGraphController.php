@@ -4,9 +4,8 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\FactoryStructure;
-use DB;
-class FactoryStructureController extends Controller
+use App\Models\GraphicsParamenters;
+class ParamsGraphController extends Controller
 {
     public function handle(Request $request, $id = null)
     {
@@ -30,44 +29,49 @@ class FactoryStructureController extends Controller
 
     private function index()
     {
-        $fstructure = FactoryStructure::all();
-        return response()->json($fstructure);
+        $Gparams = GraphicsParamenters::join('parameters','graphics_paramenters.ParametersID','=','parameters.id')
+        ->join('factory_structures','graphics_paramenters.FactoryStructureID','=','factory_structures.id')
+        ->join('graphics','graphics_paramenters.GrapicsID','=','graphics.id')
+        ->select('graphics.id as Gid','graphics.name as GName','parameters.id as Puuid','parameters.name as PName','factory_structures.id as Fid','factory_structures.name as FName','graphics_paramenters.*')
+        ->get();
+        return response()->json($Gparams);
     }
     private function getRowUnit($id)
     {
-        $unit = FactoryStructure::find($id);
+        $unit = GraphicsParamenters::find($id);
         return response()->json($unit);
     }
     private function create(Request $request)
     {
-        // $request->validate([
-        //     'Name' => 'required|string|max:255',
-        //     'ShortName' => 'required|string|max:255',
-        //     'Comment' => 'nullable|string|max:255',
-        // ]);
-
-        $unit = FactoryStructure::create([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
+        $GParams = GraphicsParamenters::create([
+            'OrderNumber'=>$request->OrderNumber,
+            'ParametersID' => $request->ParametersID['value'],
+            'FactoryStructureID' => $request->FactoryStructureID['value'],
+            'BlogsID'=>$request->BlogID['value'],
+            'GrapicsID' => $request->GrapicsID['value'],
+            'Min'=>$request->Min,
+            'Max'=>$request->Max,
+            'CurrentTime' => $request->CurrentTime,
+            'EndingTime' => $request->EndingTime,
         ]);
 
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",
-            'unit' => $unit
+            'unit' => $GParams
         ]);
     }
 
     private function update(Request $request)
     {
         $request->validate([
+            'id' => 'required|integer|exists:units,id',
             'Name' => 'required|string|max:255',
             'ShortName' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
-        $unit = FactoryStructure::find($request->id);
+        $unit = GraphicsParamenters::find($request->id);
         $unit->update([
             'Name' => $request->Name,
             'ShortName' => $request->ShortName,
@@ -84,7 +88,7 @@ class FactoryStructureController extends Controller
     public function delete(Request $request, $id)
     {
         try {
-            $unit = FactoryStructure::findOrFail($id);
+            $unit = GraphicsParamenters::findOrFail($id);
             $unit->delete();
 
             return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);

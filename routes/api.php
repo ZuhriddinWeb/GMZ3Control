@@ -15,6 +15,8 @@ use App\Http\Controllers\api\ParametrValueController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\api\ParamsGraphController;
+use App\Http\Controllers\api\BlogsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,5 +47,7 @@ Route::match(['get', 'post', 'put', 'delete'], '/vparams/{id?}', [ParametrValueC
 Route::match(['get', 'post', 'put', 'delete'], '/users/{id?}', [UserController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/role/{id?}', [RoleController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/user_role/{id?}', [UserRoleController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/paramsgraph/{id?}', [ParamsGraphController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/blogs/{id?}', [BlogsController::class, 'handle']);
 
 

@@ -13,9 +13,14 @@ return new class extends Migration
     {
         Schema::create('graphics_paramenters', function (Blueprint $table) {
             $table->id();
-            $table->integer('ParametersID');
+            $table->integer('OrderNumber');
+            $table->string('ParametersID');
+            $table->integer('FactoryStructureID');
+            $table->integer('BlogsID');
             $table->integer('GrapicsID');
-            $table->dateTime('UpdateTime')->nullable();
+            $table->string('Min')->nullable();
+            $table->string('Max')->nullable();
+            $table->dateTime('CurrentTime')->nullable();
             $table->dateTime('EndingTime')->nullable();
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();

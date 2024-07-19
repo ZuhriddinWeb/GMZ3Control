@@ -87,25 +87,6 @@ const columnDefs = reactive([
       { field: 'Max' }
     ]
   },
-  {
-    headerName: "Manba",
-    field: "Value",
-    editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: {
-      values: optionMap.value 
-    },
-    valueGetter: params => {
-      const map = optionMap.value;
-      console.log(map);
-      return Object.keys(map).find(key => map[key] === params.data.Value) || params.data.Value;
-    },
-    valueSetter: params => {
-      const map = optionMap.value;
-      params.data.Value = map[params.newValue] || params.newValue;
-      return true;
-    }
-  },
   { headerName: "Qiymat", field: "Value", flex: 1, editable: true, cellEditor: "agNumberCellEditor", },
   {
     headerName: "Izoh", field: "Comment", flex: 1, editable: true, cellEditor: 'agLargeTextCellEditor', cellEditorPopup: true,
@@ -123,15 +104,6 @@ const fetchData = async () => {
   try {
     const response = await axios.get(`/vparams/${1}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
-
-    const source = await axios.get(`/source`);
-    const options = source.data;
-    
-    optionMap.value = options.reduce((acc, option) => {
-      acc[option.Name] = option.id;
-      return acc;
-    }, {});
-
   } catch (error) {
     console.error('Error fetching data:', error);
   }

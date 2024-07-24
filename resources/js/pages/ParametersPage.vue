@@ -19,10 +19,18 @@
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Qisqa nomi" />
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.ParamsTypeID" class="mb-6" label="Parametr turini tanlang" :options="paramsOptions"
-                clearable  />
+              <VaInput class="w-full" v-model="result.Min"
+                :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+                label="Min" />
+              <VaInput class="w-full" v-model="result.Max"
+                :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+                label="Max" />
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
+              <VaSelect v-model="result.ParamsTypeID" class="mb-6" label="Parametr turini tanlang"
+                :options="paramsOptions" clearable />
               <VaSelect v-model="result.UnitsID" class="mb-6" label="Birlik qiymatini tanlang" :options="unitsOptions"
-                clearable  />
+                clearable />
             </div>
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
@@ -53,8 +61,8 @@ const unitsOptions = ref([]);
 const result = reactive({
   Name: "",
   ShortName: "",
-  ParamsTypeID:"",
-  UnitsID:"",
+  ParamsTypeID: "",
+  UnitsID: "",
   Comment: ""
 });
 
@@ -76,6 +84,8 @@ const columnDefs = reactive([
   { headerName: "Qisqa nomi", field: "ShortName" },
   { headerName: "Parametr turi", field: "PName" },
   { headerName: "Birlik qiymati", field: "UName" },
+  { headerName: "Min", field: "Min" },
+  { headerName: "Max", field: "Max" },
   { headerName: "Izoh", field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],
@@ -131,9 +141,9 @@ const onSubmit = async () => {
       showModal.value = false;
       result.Name = '';
       result.ShortName = '';
-      result.ParamsTypeID='';
-      result.UnitsID='',
-      result.Comment = '';
+      result.ParamsTypeID = '';
+      result.UnitsID = '',
+        result.Comment = '';
       await fetchData();
     } else {
       console.error('Error saving data:', data.message);

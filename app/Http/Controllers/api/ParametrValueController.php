@@ -28,7 +28,6 @@ class ParametrValueController extends Controller
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
     }
-// Ro'ziboyev muroddin  
     private function index()
     {
         $units = ValuesParameters::all();

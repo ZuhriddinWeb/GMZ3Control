@@ -15,8 +15,12 @@ return new class extends Migration
             $table->uuid('id');
             $table->string('Name');
             $table->string('ShortName');
+            $table->string('NameRus')->nullable();
+            $table->string('ShortNameRus')->nullable();
             $table->integer('ParametrTypeID');
-            $table->integer('UnitsID')->nullable();
+            $table->integer('UnitsID')->nullable();            
+            $table->string('Min')->nullable();
+            $table->string('Max')->nullable();
             $table->text('Comment')->nullable();
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();

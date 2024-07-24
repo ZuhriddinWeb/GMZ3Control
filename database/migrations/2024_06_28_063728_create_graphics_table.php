@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('graphics', function (Blueprint $table) {
             $table->id();
             $table->string('Name')->nullable();
+            $table->string('NameRus')->nullable();
             $table->text('Comment')->nullable();
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();

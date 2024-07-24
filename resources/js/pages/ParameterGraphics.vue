@@ -24,13 +24,9 @@
               <VaSelect v-model="result.BlogID" class="mb-1" label="Uchastkani tanlang"
                 :options="BlogsOptions" clearable />
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaInput class="w-full" v-model="result.Min"
-                :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-                label="Min" />
-              <VaInput class="w-full" v-model="result.Max"
-                :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-                label="Max" />
+            <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+              <VaSelect v-model="result.SourceID" class="mb-1" label="Ma`lumot manbasini tanlang"
+                :options="SourceOptions" clearable />
             </div>
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
               <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" label="Joriy etish vaqti"
@@ -67,11 +63,13 @@ const paramsOptions = ref([]);
 const structureOptions = ref([]);
 const GraphicTimeOptions = ref([]);
 const BlogsOptions = ref([]);
+const SourceOptions = ref([]);
 
 const result = reactive({
   ParametersID: "",
   FactoryStructureID: "",
   GrapicsID: "",
+  SourceID: "",
   CurrentTime: "",
   EndingTime: "",
   Min: "",
@@ -96,8 +94,7 @@ const columnDefs = reactive([
   { headerName: "Parametr nomi", field: "PName", flex: 1 },
   { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
   { headerName: "Grafik", field: "GName" },
-  { headerName: "Min", field: "Min" },
-  { headerName: "Max", field: "Max" },
+  
   { headerName: "Joriy etish vaqti", field: "CurrentTime" },
   { headerName: "Tugatish vaqti", field: "EndingTime" },
 
@@ -137,6 +134,7 @@ const fetchParams = async () => {
     const responseChanges = await axios.get('/structure');
     const responseTimes = await axios.get('/graphics');
     const responseBlogs = await axios.get('/blogs');
+    const responseSource = await axios.get('/source');
 
     paramsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.Uuid,
@@ -151,6 +149,10 @@ const fetchParams = async () => {
       text: change.Name
     }));
     BlogsOptions.value = responseBlogs.data.map(change => ({
+      value: change.id,
+      text: change.Name
+    }));
+    SourceOptions.value = responseSource.data.map(change => ({
       value: change.id,
       text: change.Name
     }));

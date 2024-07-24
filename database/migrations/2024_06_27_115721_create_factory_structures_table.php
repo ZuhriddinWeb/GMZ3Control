@@ -16,6 +16,8 @@ return new class extends Migration
             // $table->integer('ParentID')->nullable();
             $table->string('Name')->nullable();
             $table->string('ShortName')->nullable();
+            $table->string('NameRus')->nullable();
+            $table->string('ShortNameRus')->nullable();
             $table->text('Comment')->nullable();
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();

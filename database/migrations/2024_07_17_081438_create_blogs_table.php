@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->integer('StructureID');
             $table->string('Name')->nullable();
-            $table->string('ShortName')->nullable();;
+            $table->string('ShortName')->nullable();
+            $table->string('NameRus')->nullable();
+            $table->string('ShortNameRus')->nullable();;
             $table->string('Comment')->nullable();;
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();

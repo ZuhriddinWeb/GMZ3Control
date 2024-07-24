@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('Name');
             $table->string('ShortName');
+            $table->string('NameRus')->nullable();
+            $table->string('ShortNameRus')->nullable();
             $table->timestamps();
         });
     }

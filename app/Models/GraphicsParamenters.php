@@ -14,6 +14,7 @@ class GraphicsParamenters extends Model
         'FactoryStructureID',
         'GrapicsID',
         'BlogsID',
+        'SourceID',
         'CurrentTime',
         'EndingTime',
         'Min',

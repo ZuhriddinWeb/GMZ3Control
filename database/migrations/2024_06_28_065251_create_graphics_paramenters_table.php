@@ -18,8 +18,8 @@ return new class extends Migration
             $table->integer('FactoryStructureID');
             $table->integer('BlogsID');
             $table->integer('GrapicsID');
-            $table->string('Min')->nullable();
-            $table->string('Max')->nullable();
+            $table->integer('SourceID');
+
             $table->dateTime('CurrentTime')->nullable();
             $table->dateTime('EndingTime')->nullable();
             $table->dateTime('Created')->nullable();

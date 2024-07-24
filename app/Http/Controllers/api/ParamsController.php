@@ -32,7 +32,7 @@ class ParamsController extends Controller
     {
         $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
         ->join('units', 'parameters.UnitsID', '=', 'units.id')
-        ->select('parameters.id as Uuid','parameters.Name','parameters.ShortName','parameters.Comment','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
+        ->select('parameters.id as Uuid','parameters.Name','parameters.ShortName','parameters.Comment','parameters.Min','parameters.Max','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
         ->get();
         return response()->json($params);
     }

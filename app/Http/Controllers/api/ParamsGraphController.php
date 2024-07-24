@@ -49,8 +49,7 @@ class ParamsGraphController extends Controller
             'FactoryStructureID' => $request->FactoryStructureID['value'],
             'BlogsID'=>$request->BlogID['value'],
             'GrapicsID' => $request->GrapicsID['value'],
-            'Min'=>$request->Min,
-            'Max'=>$request->Max,
+            'SourceID' => $request->SourceID['value'],
             'CurrentTime' => $request->CurrentTime,
             'EndingTime' => $request->EndingTime,
         ]);

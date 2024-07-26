@@ -12,7 +12,7 @@ class ParamsGraphController extends Controller
         if ($id !== null && $request->isMethod('get')) {
             return $this->getRowUnit($id);
         }
-
+// asd
         switch ($request->method()) {
             case 'GET':
                 return $this->index();

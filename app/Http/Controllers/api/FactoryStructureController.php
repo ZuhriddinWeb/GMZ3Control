@@ -30,6 +30,7 @@ class FactoryStructureController extends Controller
 
     private function index()
     {
+        
         $fstructure = FactoryStructure::all();
         return response()->json($fstructure);
     }

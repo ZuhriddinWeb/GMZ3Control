@@ -13,7 +13,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-material.css";
 // import "ag-grid-community/styles/ag-theme-material-dark.css";
-
+import { Bar } from 'vue-chartjs'
 import { AgGridVue } from "ag-grid-vue3"; // Vue Data Grid Component
 
 axios.defaults.baseURL = "/api/";
@@ -27,6 +27,7 @@ window.router = router
 const app = createApp(App)
 .use(createVuestic())
 .component('AgGridVue', AgGridVue)
+.component('Bar', Bar)
 .use(router)
 .mount('#app');
 

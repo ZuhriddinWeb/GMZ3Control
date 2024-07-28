@@ -38,9 +38,14 @@ class ParamsGraphController extends Controller
     }
     private function getRowUnit($id)
     {
-        $unit = GraphicsParamenters::find($id);
+        $unit = GraphicsParamenters::join('parameters','graphics_paramenters.ParametersID','=','parameters.id')->where('BlogsID',$id)->get();
         return response()->json($unit);
     }
+    // private function getRowUnit($id)
+    // {
+    //     $unit = GraphicsParamenters::find($id);
+    //     return response()->json($unit);
+    // }
     private function create(Request $request)
     {
         $GParams = GraphicsParamenters::create([

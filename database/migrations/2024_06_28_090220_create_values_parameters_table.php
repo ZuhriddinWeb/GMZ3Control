@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('values_parameters', function (Blueprint $table) {
             $table->uuid('id');
-            $table->integer('ParametersID')->nullable();
+            $table->string('ParametersID')->nullable();
             $table->integer('SourcesID')->nullable();
             // $table->dateTime('Time')->nullable();
             $table->double('Value')->nullable();

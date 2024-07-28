@@ -1,5 +1,5 @@
 <template>
-    <section class="bg-gray-400 h-full w-full flex">
+    <section class="bg-white h-full w-full flex">
         <!-- <transition name="fade"> -->
             <Sidebar class="no-print !flex-grow-0 !flex-shrink-0"/>
         <!-- </transition>         -->

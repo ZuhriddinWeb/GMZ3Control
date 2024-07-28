@@ -18,4 +18,10 @@ class Blogs extends Model
         'Changed',
         'Changer',
     ];
+    protected $table = 'blogs'; 
+
+    public function factoryStructure()
+    {
+        return $this->belongsTo(FactoryStructure::class, 'StructureID');
+    }
 }

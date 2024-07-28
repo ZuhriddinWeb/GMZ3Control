@@ -9,9 +9,9 @@ class ValuesParameters extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'id',
         'ParametersID',
         'SourcesID',
-        'Time',
         'Value',
         'Comment',
         'GraphicsTimesID',
@@ -19,5 +19,7 @@ class ValuesParameters extends Model
         'Creator',
         'Changed',
         'Changer',
+        'updated_at',
+        'created_at'
     ];
 }

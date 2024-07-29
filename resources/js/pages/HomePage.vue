@@ -2,7 +2,7 @@
   <div class="grid grid-rows-[55px,1fr]">
     <main></main>
     <main class="flex justify-between mt-[20px]">
-      <VaTreeView :nodes="nodes" class="w-1/6 cursor-pointer"  @update:selected="handleNodeClick" />
+      <VaTreeView :nodes="nodes" class="w-1/6 cursor-pointer border-b-4"  @update:selected="handleNodeClick" />
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
         class="ag-theme-material h-full w-4/6" @gridReady="(params) => gridApi = params.api"></ag-grid-vue>
     </main>

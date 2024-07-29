@@ -22,6 +22,7 @@
         "ag-grid-vue3": "^31.3.2",
         "chart.js": "^4.4.3",
         "sweetalert2": "^11.12.2",
+        "uuid": "^10.0.0",
         "vue-chartjs": "^5.3.1",
         "vue-router": "^4.4.0",
         "vuestic-ui": "^1.9.12",

@@ -41,66 +41,52 @@ class ParametrValueController extends Controller
             ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
             ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->where('BlogsID', '=', $id)
-            ->whereTime('graphic_times.StartTime', '>=', '08:00')
-            ->whereTime('graphic_times.EndTime', '<=', '20:00')
-            ->select('graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName','parameters.Min as Min','parameters.Max as Max', 'graphics_paramenters.*')
+            ->whereTime('graphic_times.StartTime', '>=', '6:00')
+            ->whereTime('graphic_times.EndTime', '<=', '8:00')
+            ->select('graphic_times.id as GTid','graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*')
             ->get();
         return response()->json($unit);
     }
     private function create(Request $request)
     {
-//         // Validate request data
-// $request->validate([
-//     'ParametersID' => 'required|string|max:255',
-//     'SourceID' => 'required|integer',
-//     'Value' => 'required|string|max:255',
-//     'Comment' => 'nullable|string|max:255',
-//     'GrapicsID' => 'required|integer',
-// ]);
+        dd($request->GTid);
+        $uuid = Str::uuid();
+        $uuidString = $uuid->toString();
 
-// Generate UUID
-$uuid = Str::uuid();
-$uuidString = $uuid->toString();
+        try {
+            ValuesParameters::updateOrInsert(
+                [
+                    'ParametersID' => $request->ParametersID,
+                    'SourcesID' => $request->SourceID,
+                ],
+                [
+                    'id' => $uuidString,
+                    'Value' => $request->Value,
+                    'Comment' => $request->Comment,
+                    'GraphicsTimesID' => $request->GrapicsID,
+                    'updated_at' => now()
+                ]
+            );
+            
+            $unit = ValuesParameters::where('id', $uuidString)->first();
 
-try {
-    // Perform updateOrInsert
-    $result = ValuesParameters::updateOrInsert(
-        [
-            'ParametersID' => $request->ParametersID,
-            'SourcesID' => $request->SourceID,
-        ],
-        [
-            'id' => $uuidString,
-            'Value' => $request->Value,
-            'Comment' => $request->Comment,
-            'GraphicsTimesID' => $request->GrapicsID,
-            'updated_at' => now()
-        ]
-    );
 
-    // Fetch the updated/created unit
-    $unit = ValuesParameters::where('id', $uuidString)->first();
+            return response()->json([
+                'status' => 200,
+                'message' => "Javob muvafaqiyatli qo'shildi",
+                'unit' => $unit
+            ]);
 
-    // Debugging statements
+        } catch (\Exception $e) {
+            \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
 
-    // Return success response
-    return response()->json([
-        'status' => 200,
-        'message' => "Javob muvafaqiyatli qo'shildi",
-        'unit' => $unit
-    ]);
-
-} catch (\Exception $e) {
-    // Log the error
-    \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
-
-    // Return error response
-    return response()->json([
-        'status' => 500,
-        'message' => 'There was an error processing the request.',
-        'error' => $e->getMessage()
-    ]);
-}}
+            return response()->json([
+                'status' => 500,
+                'message' => 'There was an error processing the request.',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 
     private function update(Request $request)
     {

@@ -1,10 +1,10 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="query_stats" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
-    <VaModal size="large" class="custom-modal" v-model="selectedDataEdit" ok-text="Saqlash" cancel-text="Bekor qilish"
+    <VaModal size="large" class="custom-modal" v-model="selectedDataEdit" ok-text="" cancel-text=""
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3">
-        Analiz
+        Parametrning o'zgarish grafigi
       </h3>
       <div>
         <VaDateInput v-model="value" :readonly="false" :format-date="formatDate" :parse-date="parseDate" />

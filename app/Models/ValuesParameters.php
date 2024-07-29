@@ -22,4 +22,7 @@ class ValuesParameters extends Model
         'updated_at',
         'created_at'
     ];
+    protected $casts = [
+        'id' => 'string',
+    ];
 }

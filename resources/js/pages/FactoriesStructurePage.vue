@@ -15,9 +15,15 @@
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Nomlanishi" />
+              <VaInput class="w-full" v-model="result.NameRus"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Nomlanishi Rus" />
             <VaInput class="w-full" v-model="result.ShortName"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Qisqa nomi" />
+              <VaInput class="w-full" v-model="result.ShortNameRus"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qisqa nomi Rus" />
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
@@ -45,8 +51,11 @@ const factoryOptions = ref([]);
 
 const result = reactive({
   Name: "",
+  NameRus: "",
+  ShortNameRus: "",
   ShortName: "",
   Comment: ""
+
 });
 
 function ondeleted(selectedData){

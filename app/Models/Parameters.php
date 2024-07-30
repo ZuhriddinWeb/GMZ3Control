@@ -11,7 +11,9 @@ class Parameters extends Model
     protected $fillable = [
         'id',
         'Name',
+        'NameRus',
         'ShortName',
+        'ShortNameRus',
         'ParametrTypeID',
         'UnitsID',
         'Created',

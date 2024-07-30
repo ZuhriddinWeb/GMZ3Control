@@ -50,7 +50,9 @@ class BlogsController extends Controller
         $unit = Blogs::create([
             'StructureID'=>$request->StructureID['value'],
             'Name' => $request->Name,
+            'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
+            'ShortNameRus' => $request->ShortNameRus,
             'Comment' => $request->Comment,
         ]);
 

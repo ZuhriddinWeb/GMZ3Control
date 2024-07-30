@@ -10,7 +10,9 @@ class Units extends Model
     use HasFactory;
     protected $fillable = [
         'Name',
+        'NameRus',
         'ShortName',
+        'ShortNameRus',
         'Comment'
     ];
 }

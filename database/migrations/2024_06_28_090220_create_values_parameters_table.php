@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id');
             $table->string('ParametersID')->nullable();
             $table->integer('SourcesID')->nullable();
-            // $table->dateTime('Time')->nullable();
+            $table->integer('TimeID')->nullable();
             $table->double('Value')->nullable();
             $table->text('Comment')->nullable();
             $table->integer('GraphicsTimesID')->nullable();

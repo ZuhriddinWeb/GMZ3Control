@@ -42,11 +42,13 @@ class GraphicsController extends Controller
     {
         $request->validate([
             'Name' => 'required|string|max:255',
+            'NameRus' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
         $unit = Graphics::create([
             'Name' => $request->Name,
+            'NameRus' => $request->NameRus,
             'Comment' => $request->Comment,
         ]);
 
@@ -61,12 +63,14 @@ class GraphicsController extends Controller
     {
         $request->validate([
             'Name' => 'required|string|max:255',
+            'NameRus' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
         $unit = Graphics::find($request->id);
         $unit->update([
             'Name' => $request->Name,
+            'NameRus' => $request->NameRus,
             'Comment' => $request->Comment,
         ]);
 

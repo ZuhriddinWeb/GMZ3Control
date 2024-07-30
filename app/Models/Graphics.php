@@ -10,6 +10,7 @@ class Graphics extends Model
     use HasFactory;
     protected $fillable = [
         'Name',
+        'NameRus',
         'Comment',
         'Created',
         'Creator',

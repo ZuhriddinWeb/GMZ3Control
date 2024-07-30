@@ -15,9 +15,9 @@
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Nomlanishi" />
-            <VaInput class="w-full" v-model="result.ShortName"
+            <VaInput class="w-full" v-model="result.NameRus"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Qisqa nomi" />
+              label="Nomlanishi Rus" />
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
@@ -44,7 +44,7 @@ const showModal = ref(false);
 
 const result = reactive({
   Name: "",
-  ShortName: "",
+  NameRus: "",
   Comment: ""
 });
 
@@ -62,7 +62,7 @@ provide('onupdated',onupdated)
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
   { headerName: "Nomlanishi", field: "Name", flex: 1 },
-  { headerName: "Qisqa nomi", field: "ShortName" },
+  { headerName: "Nomlanishi Rus", field: "NameRus" },
   { headerName: "Izoh", field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],

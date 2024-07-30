@@ -74,6 +74,7 @@ const saveDataToServer = async (data) => {
   return response;
 };
 const updateRowData = (updatedUnit) => {
+  console.log(updatedUnit);
   const index = rowData.value.findIndex(row => row.pvuid === updatedUnit.pvuid);
   if (index !== -1) {
     rowData.value[index] = { ...rowData.value[index], id: updatedUnit.id };

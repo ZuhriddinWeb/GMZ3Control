@@ -36,20 +36,23 @@ class ParametrValueController extends Controller
     }
     private function getRowPram($id)
     {
+        // Rizaqulov shuhrat sayfiddinovich ergashv kamoliddin xolboyevich
         $currentTime = date("H:i");
         $unit = DB::table('graphics_paramenters')
             ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
             ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+            ->join('values_parameters', 'graphics_paramenters.ParametersID', '=', 'values_parameters.ParametersID')
             ->where('BlogsID', '=', $id)
-            ->whereTime('graphic_times.StartTime', '>=', '6:00')
-            ->whereTime('graphic_times.EndTime', '<=', '8:00')
-            ->select('graphic_times.id as GTid','graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*')
+            ->whereTime('graphic_times.StartTime', '>=', '8:00')
+            ->whereTime('graphic_times.EndTime', '<=', '10:00')
+            ->select('values_parameters.id as pvuid','graphic_times.id as GTid','graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*')
             ->get();
+            // dd($unit);
         return response()->json($unit);
     }
     private function create(Request $request)
     {
-        dd($request->GTid);
+        // dd($request->GTid);
         $uuid = Str::uuid();
         $uuidString = $uuid->toString();
 
@@ -62,6 +65,7 @@ class ParametrValueController extends Controller
                 [
                     'id' => $uuidString,
                     'Value' => $request->Value,
+                    'TimeID' => $request->GTid,
                     'Comment' => $request->Comment,
                     'GraphicsTimesID' => $request->GrapicsID,
                     'updated_at' => now()

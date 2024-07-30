@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Parameters;
 use Illuminate\Support\Str;
+
 class ParamsController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -20,9 +21,9 @@ class ParamsController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request,$id);
+                return $this->update($request, $id);
             case 'DELETE':
-                return $this->delete($request,$id);
+                return $this->delete($request, $id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
@@ -31,18 +32,18 @@ class ParamsController extends Controller
     private function index()
     {
         $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
-        ->join('units', 'parameters.UnitsID', '=', 'units.id')
-        ->select('parameters.id as Uuid','parameters.Name','parameters.ShortName','parameters.Comment','parameters.Min','parameters.Max','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
-        ->get();
+            ->join('units', 'parameters.UnitsID', '=', 'units.id')
+            ->select('parameters.id as Uuid', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'parameters.Min', 'parameters.Max', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
+            ->get();
         return response()->json($params);
     }
     private function getRowParam($id)
     {
         $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
-        ->join('units', 'parameters.UnitsID', '=', 'units.id')
-        ->where('parameters.id',$id)
-        ->select('parameters.id as Uuid','parameters.Name','parameters.ShortName','parameters.Comment','paramenters_types.Name as PName','paramenters_types.id as Pid','units.Name as UName','units.id as Uid')
-        ->get();
+            ->join('units', 'parameters.UnitsID', '=', 'units.id')
+            ->where('parameters.id', $id)
+            ->select('parameters.id as Uuid', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
+            ->get();
         return response()->json($params);
     }
     private function create(Request $request)
@@ -51,11 +52,13 @@ class ParamsController extends Controller
         $uuidString = $uuid->toString();
 
         $params = Parameters::create([
-            'id'=>$uuidString,
+            'id' => $uuidString,
             'Name' => $request->Name,
+            'NameRus' => $request->Name,
             'ShortName' => $request->ShortName,
-            'ParametrTypeID'=>$request->ParamsTypeID['value'],
-            'UnitsID'=>$request->UnitsID['value'],
+            'ShortNameRus' => $request->ShortNameRus,
+            'ParametrTypeID' => $request->ParamsTypeID['value'],
+            'UnitsID' => $request->UnitsID['value'],
             'Comment' => $request->Comment,
         ]);
 
@@ -78,7 +81,9 @@ class ParamsController extends Controller
         $params = Parameters::find($request->id);
         $params->update([
             'Name' => $request->Name,
+            'NameRus' => $request->Name,
             'ShortName' => $request->ShortName,
+            'ShortNameRus' => $request->ShortNameRus,
             'Comment' => $request->Comment,
         ]);
 

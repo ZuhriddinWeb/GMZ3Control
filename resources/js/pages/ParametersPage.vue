@@ -15,9 +15,15 @@
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Nomlanishi" />
+              <VaInput class="w-full" v-model="result.NameRus"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Nomlanishi Rus" />
             <VaInput class="w-full" v-model="result.ShortName"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Qisqa nomi" />
+              <VaInput class="w-full" v-model="result.ShortNameRus"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qisqa nomi Rus" />
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
               <VaInput class="w-full" v-model="result.Min"
                 :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
@@ -60,6 +66,8 @@ const unitsOptions = ref([]);
 
 const result = reactive({
   Name: "",
+  NameRus: "",
+  ShortNameRus: "",
   ShortName: "",
   ParamsTypeID: "",
   UnitsID: "",

@@ -42,13 +42,17 @@ class UnitsController extends Controller
     {
         $request->validate([
             'Name' => 'required|string|max:255',
+            'NameRus' => 'required|string|max:255',
             'ShortName' => 'required|string|max:255',
+            'ShortNameRus' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
         $unit = Units::create([
             'Name' => $request->Name,
+            'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
+            'ShortNameRus' => $request->ShortNameRus,
             'Comment' => $request->Comment,
         ]);
 
@@ -64,14 +68,18 @@ class UnitsController extends Controller
         $request->validate([
             'id' => 'required|integer|exists:units,id',
             'Name' => 'required|string|max:255',
+            'NameRus' => 'required|string|max:255',
             'ShortName' => 'required|string|max:255',
+            'ShortNameRus' => 'required|string|max:255',
             'Comment' => 'nullable|string|max:255',
         ]);
 
         $unit = Units::find($request->id);
         $unit->update([
             'Name' => $request->Name,
+            'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
+            'ShortNameRus' => $request->ShortNameRus,
             'Comment' => $request->Comment,
         ]);
 

@@ -11,7 +11,9 @@ class Blogs extends Model
     protected $fillable = [
         'StructureID',
         'Name',
+        'NameRus',
         'ShortName',
+        'ShortNameRus',
         'Comment',
         'Created',
         'Creator',

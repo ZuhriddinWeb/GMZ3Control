@@ -10,6 +10,9 @@ class TypeFactory extends Model
     use HasFactory;
     protected $fillable = [
         'Name',
+        'NameRus',
         'ShortName',
+        'ShortNameRus',
+
     ];
 }

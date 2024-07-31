@@ -17,7 +17,7 @@ class TreeController extends Controller
             return [
                 'id' => $structure->id,
                 'label' => $structure->Name,
-                'icon' => 'some_icon', // Replace with your logic for icons
+                'icon' => 'some_icon', 
                 'children' => $structure->blogs->map(function($blog) {
                     return [
                         'id' => $blog->id,

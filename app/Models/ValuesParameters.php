@@ -24,5 +24,7 @@ class ValuesParameters extends Model
     ];
     protected $casts = [
         'id' => 'string',
+        'ParametersID'=>'string',
+        'Value' => 'integer',
     ];
 }

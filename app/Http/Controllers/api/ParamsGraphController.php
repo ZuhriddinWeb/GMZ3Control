@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\GraphicsParamenters;
+use DB;
 class ParamsGraphController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -41,11 +42,18 @@ class ParamsGraphController extends Controller
         $unit = GraphicsParamenters::join('parameters','graphics_paramenters.ParametersID','=','parameters.id')->where('BlogsID',$id)->get();
         return response()->json($unit);
     }
-    // private function getRowUnit($id)
-    // {
-    //     $unit = GraphicsParamenters::find($id);
-    //     return response()->json($unit);
-    // }
+    public function getParamsForUser($id)
+    {
+        return DB::table('graphics_paramenters')
+            ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
+            ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+            ->where('BlogsID', '=', $id)
+            ->where('Change', '=', $id)
+            ->whereTime('graphic_times.StartTime', '>=', '8:00')
+            ->whereTime('graphic_times.EndTime', '<=', '9:00')
+            ->select('graphic_times.id as GTid','graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*')
+            ->get();
+    }
     private function create(Request $request)
     {
         $GParams = GraphicsParamenters::create([

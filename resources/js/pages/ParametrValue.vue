@@ -1,6 +1,6 @@
 <template>
   <div class="grid grid-rows-[55px,1fr]">
-    <main>     
+    <main>
     </main>
     <main class="flex-grow">
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
@@ -20,8 +20,7 @@ const gridApi = ref(null);
 
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
-  // { headerName: "Kod", field: store.state.selectedRowId, flex: 1, width: 80 },
-  { headerName: "GTid", field: "GTid",hide: true, flex: 1, width: 80 },
+  { headerName: "GTid", field: "id", hide: true, flex: 1, width: 80 },
   { headerName: "Smena", field: "Change", flex: 1, width: 80 },
   { headerName: "Parametrlar", field: "PName", flex: 1 },
   {
@@ -37,7 +36,7 @@ const columnDefs = reactive([
       { field: 'Max' }
     ]
   },
-  { headerName: "Qiymat", field: "Value", flex: 1, editable: true, cellEditor: "agNumberCellEditor", },
+  { headerName: "Qiymat", field: "Value", flex: 1, editable: true, cellEditor: "agNumberCellEditor" },
   {
     headerName: "Izoh", field: "Comment", flex: 1, editable: true, cellEditor: 'agLargeTextCellEditor', cellEditorPopup: true,
   },
@@ -51,8 +50,21 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get(`/vparams/${1}`);
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
+
+    axios.all([
+      axios.get(`/get-params-for-user/${1}`),
+      axios.get(`/vparams/${1}`)
+    ])
+      .then(axios.spread(({ data: params }, { data: values }) => {
+        params.forEach((parametr, index) => {
+          const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID)
+          if(select){
+            params[index] = {...parametr, ...select}
+          }
+        });
+        rowData.value = params
+      }));
+
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -62,8 +74,6 @@ const onCellValueChanged = async (event) => {
   if (newValue !== oldValue) {
     try {
       await saveDataToServer(data);
-      console.log(data.pvuid);
-      updateRowData(data.pvuid);
     } catch (error) {
       console.error('Error saving data', error);
     }
@@ -73,14 +83,7 @@ const saveDataToServer = async (data) => {
   const response = await axios.post('/vparams', data);
   return response;
 };
-const updateRowData = (updatedUnit) => {
-  console.log(updatedUnit);
-  const index = rowData.value.findIndex(row => row.pvuid === updatedUnit.pvuid);
-  if (index !== -1) {
-    rowData.value[index] = { ...rowData.value[index], id: updatedUnit.id };
-    gridApi.value.applyTransaction({ update: [rowData.value[index]] });
-  }
-};
+
 onMounted(() => {
   fetchData()
 });

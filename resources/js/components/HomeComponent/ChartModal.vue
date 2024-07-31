@@ -4,7 +4,7 @@
     <VaModal size="large" class="custom-modal" v-model="selectedDataEdit" ok-text="" cancel-text=""
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3">
-        Parametrning o'zgarish grafigi
+        Parametrning o'zgarish grafigi{{ props.params.data['ParametersID'] }}
       </h3>
       <div>
         <VaDateInput v-model="value" :readonly="false" :format-date="formatDate" :parse-date="parseDate" />
@@ -32,6 +32,7 @@ import {
   PointElement,
   Filler
 } from 'chart.js'
+const params_value=ref([]);
 
 // Register necessary components
 ChartJS.register(
@@ -51,7 +52,7 @@ const chartData = reactive({
     label: 'Data One',
     backgroundColor: 'rgba(75, 192, 192, 0.2)',
     borderColor: 'rgba(75, 192, 192, 1)',
-    data: [40, 30, 12, 30],
+    // data: [40, 30, 12, 30],
     fill: true,
     tension: 0.1
   }]
@@ -104,18 +105,13 @@ const parseDate = (text) => {
 };
 const props = defineProps(["params"]);
 const selectedDataEdit = ref(false);
-const result = reactive({
-  Name: "",
-  ShortName: "",
-  Comment: "",
-  id: props.params.data['ParametersID']
-});
 
-axios.get(`units/${props.params.data['id']}`).then((res) => {
-  result.Name = res.data.Name
-  result.ShortName = res.data.ShortName
-  result.Comment = res.data.Comment
-})
+if(selectedDataEdit){
+  axios.get(`get-params-for-id/${props.params.data['ParametersID']}`).then((res) => {
+    console.log(res.data[0]);
+    chartData.datasets.data= res.data[0].Value
+  })
+}
 
 // Watch the value object for changes
 watch(value, async (newValue) => {

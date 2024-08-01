@@ -28,6 +28,7 @@ const app = createApp(App)
 .use(createVuestic())
 .component('AgGridVue', AgGridVue)
 .component('Bar', Bar)
+.use(store)
 .use(router)
 .mount('#app');
 

@@ -56,3 +56,5 @@ Route::post('/treeChart', [TreeController::class, 'treeChart']);
 
 Route::get('get-params-for-user/{user_id}' , [ParamsGraphController::class, 'getParamsForUser']);
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
+Route::post('/login' , [UserController::class, 'login']);
+

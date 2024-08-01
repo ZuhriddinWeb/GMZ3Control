@@ -52,7 +52,7 @@ const chartData = reactive({
     label: 'Data One',
     backgroundColor: 'rgba(75, 192, 192, 0.2)',
     borderColor: 'rgba(75, 192, 192, 1)',
-    // data: [40, 30, 12, 30],
+    data: [40, 30, 12, 30],
     fill: true,
     tension: 0.1
   }]

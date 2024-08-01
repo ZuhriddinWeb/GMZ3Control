@@ -52,7 +52,6 @@ const handleNodeClick = async (selectedNodes) => {
   try {
     const response = await axios.get(`/paramsgraph/${selectedNodes.id }`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items; 
-    // console.log("Node clicked response:", response.data);
   } catch (error) {
     console.error("There was an error processing the node click!", error);
   }

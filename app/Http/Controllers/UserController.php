@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Carbon\Carbon;
+use Validator;
+use Auth;
 use Hash;
 
 class UserController extends Controller
@@ -32,6 +35,46 @@ class UserController extends Controller
     {
         $user = User::all();
         return response()->json($user);
+    }
+    public function login(Request $request)
+    {
+        // dd($request);
+        $credentials = $request->validate(['login' => 'required',   'password' => 'required']);
+
+        if (!$this->guard()->attempt($credentials)) {
+            return response()->json(['message' => 'Parol yoki login xato!'], 299);
+        }
+
+        $user = $this->guard()->user();
+
+        $token = $user->createToken('token-name', ['server:update'])->plainTextToken;
+        return response()->json(['token' => $token,'type' => 'Bearer'], 200);
+    }
+    public function guard($guard = 'web')
+    {
+        return Auth::guard($guard);
+    }
+    public function getUser(Request $req){
+        $user = $req->user();
+
+        $seanses = $user->tokens()->where('tokenable_id', $user->id)->get();
+
+        $user->tokens()->where('tokenable_id', $user->id)->get();
+        foreach ($seanses as $key => $value) {
+            $value->updated = Carbon::parse($value->updated_at)->translatedFormat('d.m.Y');
+        }
+
+
+        $active = $user->tokens()->where('id', $user->currentAccessToken()->id)->first(); //activniy seans
+        $active->abilities = [$user->isActive];
+        $active->save();
+
+
+        $active->updated = Carbon::parse($active->updated_at)->translatedFormat('d.m.Y'); //
+        $user->active = $active;
+        $user->seanses = $seanses;
+
+        return $user;
     }
     private function getRowUnit($id)
     {

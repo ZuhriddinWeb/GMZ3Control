@@ -24,11 +24,19 @@ window.Swal = Swal
 window.store = store
 window.router = router
 
-const app = createApp(App)
-.use(createVuestic())
-.component('AgGridVue', AgGridVue)
-.component('Bar', Bar)
-.use(store)
-.use(router)
-.mount('#app');
 
+
+
+async function initApp(){
+    await store.dispatch('getUser')
+    const app = createApp(App)
+    .use(createVuestic())
+    .component('AgGridVue', AgGridVue)
+    .component('Bar', Bar)
+    .use(store)
+    .use(router)
+    .mount('#app');
+
+}
+
+initApp()

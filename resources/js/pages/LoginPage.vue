@@ -57,7 +57,6 @@ const onSubmit = async () => {
     try {
     const { data } = await store.dispatch('login', result);
     if (data.status === 200) {
-        init({ message: "123", color: 'success' })
         push({ name: 'home' })
     } else {
       console.error('Error saving data:', data.message);

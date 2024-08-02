@@ -21,7 +21,7 @@ export default createStore({
                 localStorage.setItem('token', `${result.data.type} ${result.data.token}`) // local
                 state.logined = null
                 await dispatch('getUser')
-                router.push('profile')
+                router.push({ name: 'vparams' })
             }
         },
         async register({ dispatch }, props) {

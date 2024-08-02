@@ -32,6 +32,10 @@ use App\Http\Controllers\TreeController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+Route::post('/login' , [UserController::class, 'login']);
+Route::post('/logout' , [UserController::class, 'login']);
+
+Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'authenticatedUser']);
 
 Route::match(['get', 'post', 'put', 'delete'], '/units/{id?}', [UnitsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/graphictimes/{id?}', [GraphicTimesController::class, 'handle']);
@@ -56,5 +60,4 @@ Route::post('/treeChart', [TreeController::class, 'treeChart']);
 
 Route::get('get-params-for-user/{user_id}' , [ParamsGraphController::class, 'getParamsForUser']);
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
-Route::post('/login' , [UserController::class, 'login']);
 

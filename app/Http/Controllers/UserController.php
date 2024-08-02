@@ -23,9 +23,9 @@ class UserController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request,$id);
+                return $this->update($request, $id);
             case 'DELETE':
-                return $this->delete($request,$id);
+                return $this->delete($request, $id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
@@ -33,13 +33,13 @@ class UserController extends Controller
 
     private function index()
     {
-        $user = User::all();
-        return response()->json($user);
+        $users = User::all();
+        return response()->json($users);
     }
+
     public function login(Request $request)
     {
-        // dd($request);
-        $credentials = $request->validate(['login' => 'required',   'password' => 'required']);
+        $credentials = $request->validate(['login' => 'required', 'password' => 'required']);
 
         if (!$this->guard()->attempt($credentials)) {
             return response()->json(['message' => 'Parol yoki login xato!'], 299);
@@ -48,59 +48,71 @@ class UserController extends Controller
         $user = $this->guard()->user();
 
         $token = $user->createToken('token-name', ['server:update'])->plainTextToken;
-        return response()->json(['token' => $token,'type' => 'Bearer'], 200);
+        return response()->json(['token' => $token, 'type' => 'Bearer'], 200);
     }
+
+    public function logoutUser(Request $request)
+    {
+        $user = $request->user();
+
+        return $user->tokens()->where([
+            ['tokenable_id', $user->id],
+            ['id', $request->id],
+        ])->delete();
+    }
+
     public function guard($guard = 'web')
     {
         return Auth::guard($guard);
     }
-    public function getUser(Request $req){
-        $user = $req->user();
 
+    public function authenticatedUser(Request $request)
+    {
+        $user = $request->user()->load('roles');
+    
         $seanses = $user->tokens()->where('tokenable_id', $user->id)->get();
-
-        $user->tokens()->where('tokenable_id', $user->id)->get();
+    
         foreach ($seanses as $key => $value) {
             $value->updated = Carbon::parse($value->updated_at)->translatedFormat('d.m.Y');
         }
-
-
-        $active = $user->tokens()->where('id', $user->currentAccessToken()->id)->first(); //activniy seans
+    
+        $active = $user->tokens()->where('id', $user->currentAccessToken()->id)->first();
         $active->abilities = [$user->isActive];
         $active->save();
-
-
-        $active->updated = Carbon::parse($active->updated_at)->translatedFormat('d.m.Y'); //
+    
+        $active->updated = Carbon::parse($active->updated_at)->translatedFormat('d.m.Y');
         $user->active = $active;
         $user->seanses = $seanses;
-
-        return $user;
+    
+        return response()->json($user);
     }
+    
+
     private function getRowUnit($id)
     {
         $user = User::find($id);
         return response()->json($user);
     }
+
     private function create(Request $request)
     {
-        // dd($request);
         $request->validate([
-            'Name'=> 'required|string|max:255',
+            'Name' => 'required|string|max:255',
             'Login' => 'required|string|max:255',
             'Password' => 'required|min:6|max:255',
         ]);
-        
+
         $unit = User::create([
-            'name'=>$request->Name,
-            'phone'=>$request->Phone,
+            'name' => $request->Name,
+            'phone' => $request->Phone,
             'login' => $request->Login,
-            'password' =>  Hash::make($request->Password),
+            'password' => Hash::make($request->Password),
         ]);
 
         return response()->json([
             'status' => 200,
             'message' => "Foydalanuvchi muvafaqiyatli qo'shildi",
-            'unit' => $unit
+            'unit' => $unit,
         ]);
     }
 
@@ -123,7 +135,7 @@ class UserController extends Controller
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $unit
+            'unit' => $unit,
         ]);
     }
 

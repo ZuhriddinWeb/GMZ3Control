@@ -26,7 +26,11 @@ class UserRole extends Model
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_roles')->withPivot('view', 'create', 'update', 'delete');
+    }
+    
     protected $casts = [
         'view' => 'boolean',
         'update' => 'boolean',

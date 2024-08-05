@@ -6,7 +6,7 @@
       absolute: breakpoints.smDown, 
       order: 2, 
       overlay: breakpoints.smDown && isSidebarVisible,
-      class: 'custom-sidebar'  // Add a custom class for styling
+      class: 'custom-sidebar'  
     }"
     @left-overlay-click="isSidebarVisible = false"
   >
@@ -25,7 +25,7 @@
 
     <template #left>
       <VaSidebar v-model="isSidebarVisible" class="custom-sidebar">
-        <template v-for="menuItem in menu" :key="menuItem.icon">
+        <template v-for="menuItem in userMenu" :key="menuItem.icon">
           <a v-if="menuItem.path === '/logout'" @click.prevent="handleLogout">
             <VaSidebarItem>
               <VaSidebarItemContent>
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue'
+import { ref, computed, watchEffect, onMounted } from 'vue'
 import { useBreakpoint } from 'vuestic-ui'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
@@ -90,17 +90,43 @@ const menu = [
   { title: 'Manbalar', icon: 'content_copy', path: '/sources' },
   { title: 'Smenalar', icon: 'content_copy', path: '/changes' },
   { title: 'Parametr qiymatlari', icon: 'content_copy', path: '/vparams' },
-  { title: 'Chiqish', icon: 'logout', path: '/logout' },
   { title: 'Foydalanuvchilar', icon: 'person', path: '/users' },
+  { title: 'Chiqish', icon: 'logout', path: '/logout' },
 ]
 
 const handleLogout = async () => {
   await store.dispatch('logout')
-  router.push('/login') // Redirect to the login page after logout
+  router.push('/login') 
 }
+
+const generateUserMenu = (user, menu) => {
+  const userPermissions = {};
+
+  user.roles.forEach(role => {
+    const { name, pivot } = role;
+    const correctedName = name === "Foydlanauvchilar" ? "Foydalanuvchilar" : name;
+    userPermissions[correctedName] = pivot.view === "1";
+  });
+
+  return menu.filter(item => userPermissions[item.title] === true);
+};
+
+const userMenu = computed(() => {
+  const user = store.state.user;
+  if (!user) return [];
+  return generateUserMenu(user, menu);
+});
+
+// Redirect to /vparams if the user is logged in
+onMounted(() => {
+  const user = store.state.user;
+  if (user) {
+    router.push('/vparams');
+  }
+});
 </script>
 
-<style >
+<style>
 .custom-sidebar {
   background-color: #57534e; /* Example background color */
 }

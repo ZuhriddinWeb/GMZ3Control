@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('login');
             $table->string('password');
+            $table->json('structure_id');
             $table->rememberToken();
             $table->timestamps();
         });

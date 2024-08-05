@@ -12,6 +12,11 @@
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+              <VaSelect v-model="result.StructureID" label="Tuzilma nomi" :options="factoryOptions" multiple />
+              <!-- <VaSelect v-model="result.StructureID" class="mb-1" label="Tuzilma nomi" :options="factoryOptions"
+                clearable @change="onSelectChange" /> -->
+            </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Foydalanuvchi F.I.Sh" />
@@ -46,12 +51,14 @@ import RolesComponent from '../components/UserComponent/RolesComponent.vue';
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
+const factoryOptions = ref([]);
 
 const result = reactive({
   Name: "",
-  Phone:"",
+  Phone: "",
   Login: "",
   Password: "",
+  StructureID: "",
 });
 
 function ondeleted(selectedData) {
@@ -107,7 +114,17 @@ const fetchData = async () => {
     console.error('Error fetching data:', error);
   }
 };
-
+const fetchGraphics = async () => {
+  try {
+    const responseGraphics = await axios.get('/structure');
+    factoryOptions.value = responseGraphics.data.map(factory => ({
+      value: factory.id,
+      text: factory.Name
+    }));
+  } catch (error) {
+    console.error('Error fetching graphics data:', error);
+  }
+};
 const onSubmit = async () => {
   try {
     const { data } = await axios.post("/users", result);
@@ -125,6 +142,7 @@ const onSubmit = async () => {
 };
 onMounted(() => {
   fetchData()
+  fetchGraphics()
 });
 </script>
 

@@ -96,10 +96,12 @@ class UserController extends Controller
 
     private function create(Request $request)
     {
+        dd($request);
         $request->validate([
             'Name' => 'required|string|max:255',
             'Login' => 'required|string|max:255',
             'Password' => 'required|min:6|max:255',
+            // 'structure_id'=>'required|string'
         ]);
 
         $unit = User::create([
@@ -107,6 +109,8 @@ class UserController extends Controller
             'phone' => $request->Phone,
             'login' => $request->Login,
             'password' => Hash::make($request->Password),
+            'structure_id' => $request->structure_id,
+
         ]);
 
         return response()->json([

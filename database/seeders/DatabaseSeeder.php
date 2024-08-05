@@ -6,6 +6,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use DB;
 use App\Models\Graphics;
+use Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,17 +19,46 @@ class DatabaseSeeder extends Seeder
             'Name' => 'Har 1 soatda',
             'Comment' => 'Sutka davomida har soatda kiritiladi',
         ]);
+        DB::table('users')->insert([
+            'name' => 'Zuhriddin',
+            'phone' => '5972323',
+            'login' => '123123',
+            'password' => Hash::make('123123'),
+            'structure_id'=>1,
+        ]);
+        DB::table('user_roles')->insert([
+            ['user_id' => 1,'role_id'=>1,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>2,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>3,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>4,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>5,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>6,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>7,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>8,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>9,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>10,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>11,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>12,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>13,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>14,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>15,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+
+        ]);
         DB::table('roles')->insert([
+            ['Name' => 'Dashboard'],
             ['Name' => 'GMZ'],
             ['Name' => 'GMZ Tuzilmasi'],
+            ['Name' => 'Uchastkalar'],
             ['Name' => 'Birliklar'],
             ['Name' => 'Grafiklar'],
             ['Name' => 'Grafik vaqtlari'],
+            ['Name' => 'Parametr grafiklari'],
             ['Name' => 'Parametr turlari'],
             ['Name' => 'Parametrlar'],
             ['Name' => 'Manbalar'],
             ['Name' => 'Smenalar'],
             ['Name' => 'Parametr qiymatlari'],
+            ['Name' => 'Chiqish'],
             ['Name' => 'Foydlanauvchilar'],
         ]);
         DB::table('factory_structures')->insert([

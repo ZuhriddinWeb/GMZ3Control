@@ -22,6 +22,7 @@ class User extends Authenticatable
         'phone',
         'login',
         'password',
+        'structure_id'
     ];
 
     /**

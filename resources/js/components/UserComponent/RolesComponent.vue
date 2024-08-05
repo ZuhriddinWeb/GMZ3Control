@@ -31,8 +31,8 @@
                     :color="getColor(role.create)" />
                 </td>
                 <td v-if="role.view">
-                  <VaSwitch :model-value="role.edit" @change="() => onChange(role, 'edit')"
-                    :color="getColor(role.edit)" />
+                  <VaSwitch :model-value="role.update" @change="() => onChange(role, 'update')"
+                    :color="getColor(role.update)" />
                 </td>
                 <td v-if="role.view">
                   <VaSwitch :model-value="role.delete" @change="() => onChange(role, 'delete')"
@@ -93,7 +93,7 @@ async function fetchData() {
       role.id = role.id
       role.view = role.view || false;
       role.create = role.create || false;
-      role.edit = role.edit || false;
+      role.update = role.update || false;
       role.delete = role.delete || false;
     });
 
@@ -109,7 +109,7 @@ const onSubmit = async () => {
       name: role.name,
       view: role.view,
       create: role.create,
-      edit: role.edit,
+      edit: role.update,
       delete: role.delete
     }));
 

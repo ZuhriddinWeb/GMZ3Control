@@ -24,6 +24,7 @@
         "sweetalert2": "^11.12.2",
         "uuid": "^10.0.0",
         "vue-chartjs": "^5.3.1",
+        "vue-i18n": "^9.13.1",
         "vue-router": "^4.4.0",
         "vuestic-ui": "^1.9.12",
         "vuex": "^4.0.2"

@@ -1,0 +1,19 @@
+{
+  "menu": {
+    "dashboard": "Boshqaruv paneli",
+    "factory": "Fabrika",
+    "structure": "Tuzilma",
+    "blogs": "Hududlar",
+    "units": "Birliklar",
+    "graphics": "Grafiklar",
+    "graphictimes": "Grafik vaqtlar",
+    "paramgraphics": "Grafik parametrlar",
+    "paramtypes": "Parametr turlari",
+    "params": "Parametrlar",
+    "sources": "Manbalar",
+    "changes": "O'zgarishlar",
+    "vparams": "Parametr qiymatlari",
+    "users": "Foydalanuvchilar",
+    "logout": "Chiqish"
+  }
+}

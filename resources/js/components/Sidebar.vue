@@ -20,16 +20,17 @@
       <VaSidebar v-model="isSidebarVisible" class="custom-sidebar">
         <!-- Language Change Button -->
         <VaButton @click="changeLanguage" style="margin-bottom: 1rem; border-radius: 0;">
-          {{ currentLanguage }}
+          <VaIcon name="language" style="margin-right: 0.5rem;" />
+          {{ currentLanguageLabel }}
         </VaButton>
         <!-- User Menu Items -->
-        <template v-for="menuItem in userMenu" :key="menuItem.icon">
+        <template v-for="menuItem in menu" :key="menuItem.icon">
           <a v-if="menuItem.path === '/logout'" @click.prevent="handleLogout">
             <VaSidebarItem>
               <VaSidebarItemContent>
                 <VaIcon :name="menuItem.icon" />
                 <VaSidebarItemTitle>
-                  {{ $t(menuItem.title) }} <!-- Ensure this is correct -->
+                  {{ t(menuItem.title) }}
                 </VaSidebarItemTitle>
               </VaSidebarItemContent>
             </VaSidebarItem>
@@ -39,13 +40,12 @@
               <VaSidebarItemContent>
                 <VaIcon :name="menuItem.icon" />
                 <VaSidebarItemTitle>
-                  {{ $t(menuItem.title) }} <!-- Ensure this is correct -->
+                  {{ t(menuItem.title) }}
                 </VaSidebarItemTitle>
               </VaSidebarItemContent>
             </VaSidebarItem>
           </router-link>
         </template>
-
       </VaSidebar>
     </template>
 
@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useBreakpoint } from 'vuestic-ui';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
@@ -69,22 +69,15 @@ import { useI18n } from 'vue-i18n';
 const breakpoints = useBreakpoint();
 const store = useStore();
 const router = useRouter();
+const { t, locale, availableLocales } = useI18n();
 
 const isSidebarVisible = ref(breakpoints.smUp);
 
-watchEffect(() => {
-  isSidebarVisible.value = breakpoints.smUp;
+watch(() => breakpoints.smUp, (newValue) => {
+  isSidebarVisible.value = newValue;
 });
 
-const { t, locale } = useI18n();
-const currentLanguage = computed(() => locale.value);
-
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  console.log('Language changed to:', locale.value);
-};
-
-const menu = [
+const menu = ref([
   { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
   { title: 'menu.factory', icon: 'factory', path: '/factory' },
   { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
@@ -100,42 +93,31 @@ const menu = [
   { title: 'menu.vparams', icon: 'content_copy', path: '/vparams' },
   { title: 'menu.users', icon: 'person', path: '/users' },
   { title: 'menu.logout', icon: 'logout', path: '/logout' },
-];
+]);
 
 const handleLogout = async () => {
   await store.dispatch('logout');
   router.push('/login');
 };
-
-const generateUserMenu = (user, menu) => {
-  const userPermissions = {};
-
-  user.roles.forEach(role => {
-    const { name, pivot } = role;
-    const correctedName = name === "Foydlanauvchilar" ? "Foydalanuvchilar" : name;
-    userPermissions[correctedName] = pivot.view === "1";
-  });
-
-  return menu.filter(item => userPermissions[t(item.title)] === true);
+const changeLanguage = () => {
+  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
+  localStorage.setItem('locale', locale.value);
 };
-
-const userMenu = computed(() => {
-  const user = store.state.user;
-  console.log('User:', user);
-  if (!user) return [];
-  const menuItems = generateUserMenu(user, menu);
-  console.log('User Menu Items:', menuItems);
-  return menuItems;
+const currentLanguageLabel = computed(() => {
+  return locale.value === 'uz' ? 'O‘zbek' : 'Русский';
 });
-
-
 onMounted(() => {
   const user = store.state.user;
   if (user) {
     router.push('/vparams');
   }
+  const savedLocale = localStorage.getItem('locale');
+  if (savedLocale) {
+    locale.value = savedLocale;
+  }
 });
 </script>
+
 
 <style>
 .custom-sidebar {

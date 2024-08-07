@@ -15,5 +15,22 @@
     "vparams": "Parametr qiymatlari",
     "users": "Foydalanuvchilar",
     "logout": "Chiqish"
+  },
+  "buttons": {
+    "save": "Saqlash",
+    "cancel": "Bekor qilish"
+  },
+  "modals": {
+    "addUnitTitle": "O'lchov birliklarini kiritish"
+  },
+  "form": {
+    "name": "Nomlanishi",
+    "nameRus": "Nomlanishi Rus",
+    "shortName": "Qisqa nomi",
+    "shortNameRus": "Qisqa nomi Rus",
+    "comment": "Izoh"
+  },
+  "validation": {
+    "requiredField": "To'ldirish majburiy bo'lgan maydon"
   }
 }

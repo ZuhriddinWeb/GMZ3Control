@@ -6,25 +6,26 @@
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
+      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit"
+        close-button>
         <h3 class="va-h3">
-          O'lchov birliklarini kiritish
+          {{ t('modals.addUnitTitle') }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <VaInput class="w-full" v-model="result.Name"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Nomlanishi" />
-              <VaInput class="w-full" v-model="result.NameRus"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Nomlanishi Rus" />
+              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
+              :label="t('form.name')" />
+            <VaInput class="w-full" v-model="result.NameRus"
+              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
+              :label="t('form.nameRus')" />
             <VaInput class="w-full" v-model="result.ShortName"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Qisqa nomi" />
-              <VaInput class="w-full" v-model="result.ShortNameRus"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Qisqa nomi Rus" />
-            <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
+              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
+              :label="t('form.shortName')" />
+            <VaInput class="w-full" v-model="result.ShortNameRus"
+              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
+              :label="t('form.shortNameRus')" />
+            <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
           </VaForm>
         </div>
       </VaModal>
@@ -37,13 +38,16 @@
   </div>
 </template>
 
+
 <script setup>
-import { ref, reactive, onMounted, provide } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteFactory from '../components/FactoryComponent/DeleteFactory.vue'
-import EditFactory from '../components/FactoryComponent/EditFactory.vue'
+import DeleteFactory from '../components/FactoryComponent/DeleteFactory.vue';
+import EditFactory from '../components/FactoryComponent/EditFactory.vue';
+import { useI18n } from 'vue-i18n';
 
+const { locale, t } = useI18n();
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -57,21 +61,10 @@ const result = reactive({
   Comment: ""
 });
 
-function ondeleted(selectedData){
-  gridApi.value.applyTransaction({ remove: [selectedData] })
-}
-
-function onupdated(rowNode,data){
-  rowNode.setData(data)
-}
-
-provide('ondeleted',ondeleted)
-provide('onupdated',onupdated)
-
-const columnDefs = reactive([
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
-  { headerName: "Nomlanishi", field: "Name", flex: 1 },
-  { headerName: "Qisqa nomi", field: "ShortName" },
+const columnDefs = computed(() => [
+  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
+  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
+  { headerName: t('table.shortName'), field: getFieldShortName() },
   {
     cellClass: ['px-0'],
     headerName: "",
@@ -88,16 +81,23 @@ const columnDefs = reactive([
   },
 ]);
 
-
 const defaultColDef = {
   sortable: true,
   filter: true
 };
 
+const getFieldName = () => {
+  return locale.value === 'uz' ? 'Name' : 'NameRus';
+};
+
+const getFieldShortName = () => {
+  return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
+};
+
 const fetchData = async () => {
   try {
     const response = await axios.get('/factory');
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items; 
+    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -119,10 +119,22 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
+
 onMounted(() => {
-  fetchData()
+  fetchData();
+});
+
+const changeLanguage = () => {
+  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
+};
+
+const currentLanguageLabel = computed(() => {
+  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 </script>
+
+
+
 
 <style>
 .material-icons {
@@ -130,7 +142,7 @@ onMounted(() => {
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
-  
+
   display: inline-block;
   line-height: 1;
   text-transform: none;

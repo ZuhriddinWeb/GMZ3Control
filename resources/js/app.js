@@ -13,8 +13,8 @@ import "ag-grid-community/styles/ag-theme-material.css";
 import { Bar } from 'vue-chartjs';
 import { AgGridVue } from "ag-grid-vue3";
 import { createI18n } from 'vue-i18n';
-import ru from './ru.json'; 
-import uz from './uz.json'; 
+import locale from './locale.js';  
+import 'material-icons/iconfont/material-icons.css';
 
 axios.defaults.baseURL = "/api/";
 window.axios = axios;
@@ -28,12 +28,8 @@ const i18n = createI18n({
     legacy: false,
     locale: 'uz', 
     fallbackLocale: 'ru', 
-    messages: {
-      ru,
-      uz
-    },
-  });
-  
+    messages: locale  
+});
 
 window.i18n = i18n;
 

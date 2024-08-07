@@ -4,7 +4,13 @@ export default {
       headerRow: "№",
       name: "Название",
       shortName: "Краткое название",
-      structure:"Цех"
+      structure:"Цех",
+      comment:"Kомментарий",
+      change: "Смена",
+      graphicName: "Название графика",
+      startTime: "Время начала",
+      endTime: "Время окончания",
+      comment: "Комментарий",
     },
     menu: {
       dashboard: "Панель управления",
@@ -30,8 +36,10 @@ export default {
     modals: {
       addUnitTitle: "Добавить единицу измерения",
       addStructureTitle:"Создать новый цех",
-      addBlogTitle:"Создать новый участок"
-
+      addBlogTitle:"Создать новый участок",
+      addGraphicTitle:"Создать время графика",
+      addGraphicTimesTitle: "Добавить времена графика",
+      addParamTypesTitle:"Создание типов параметров",
     },
     form: {
       name: "Название",
@@ -39,7 +47,12 @@ export default {
       shortName: "Краткое название",
       shortNameRus: "Краткое название на русском",
       comment: "Комментарий",
-      structureName:"Название цеха"
+      structureName:"Название цеха",
+      selectGraphic: "Выберите график",
+      selectChange: "Выберите смену",
+      startTime: "Время начала",
+      endTime: "Время окончания",
+      requiredField: "Обязательное поле",
     },
     validation: {
       requiredField: "Поле, обязательное для заполнения",
@@ -52,9 +65,13 @@ export default {
   uz: {
     table: {
         headerRow: "№",
-        name: "Nomi",
+        name: "Nomlanishi",
         shortName: "Qisqa nomi",
-        structure:"Sex"
+        structure:"Sex",
+        comment:"Izoh",
+        graphicName: "Grafik Nomi",
+        startTime: "Boshlanish vaqti",
+        endTime: "Tugash vaqti",
       },
     menu: {
       dashboard: "Boshqaruv paneli",
@@ -80,8 +97,9 @@ export default {
     modals: {
       addUnitTitle: "O'lchov birliklarini kiritish",
       addStructureTitle:"Yangi sex yaratish",
-      addBlogTitle:"Yangi bo'linma yaratish"
-
+      addBlogTitle:"Yangi bo'linma yaratish",
+      addGraphicTitle:"Grafik vaqtini yaratish",
+      addGraphicTimesTitle: "Grafik vaqtlarini kiritish",
     },
     form: {
       name: "Nomlanishi",
@@ -89,7 +107,12 @@ export default {
       shortName: "Qisqa nomi",
       shortNameRus: "Qisqa nomi Rus",
       comment: "Izoh",
-      structureName:"Sexni tanlang"
+      structureName:"Sexni tanlang",
+      selectGraphic: "Grafikni tanlang",
+      selectChange: "Smenani tanlang",
+      startTime: "Boshlanish vaqti",
+      endTime: "Tugash vaqti",
+      requiredField: "To'ldirish majburiy bo'lgan maydon",
     },
     validation: {
       requiredField: "To'ldirish majburiy bo'lgan maydon",

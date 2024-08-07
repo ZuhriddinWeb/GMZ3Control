@@ -113,7 +113,7 @@ const getFieldShortName = () => {
   return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
 };
 const getFielBlog = () => {
-  return locale.value === 'uz' ? 'SName' : 'NameRus';
+  return locale.value === 'uz' ? 'Name' : 'NameRus';
 };
 const fetchData = async () => {
   try {

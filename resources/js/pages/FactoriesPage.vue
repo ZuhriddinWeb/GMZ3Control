@@ -40,7 +40,7 @@
 
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed,provide } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteFactory from '../components/FactoryComponent/DeleteFactory.vue';
@@ -80,6 +80,17 @@ const columnDefs = computed(() => [
     cellRenderer: DeleteFactory,
   },
 ]);
+
+function ondeleted(selectedData){
+  gridApi.value.applyTransaction({ remove: [selectedData] })
+}
+
+function onupdated(rowNode,data){
+  rowNode.setData(data)
+}
+
+provide('ondeleted',ondeleted)
+provide('onupdated',onupdated)
 
 const defaultColDef = {
   sortable: true,
@@ -122,14 +133,6 @@ const onSubmit = async () => {
 
 onMounted(() => {
   fetchData();
-});
-
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-};
-
-const currentLanguageLabel = computed(() => {
-  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 </script>
 

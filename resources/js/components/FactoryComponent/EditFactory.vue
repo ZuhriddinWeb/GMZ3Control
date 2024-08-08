@@ -10,9 +10,15 @@
           <VaInput class="w-full" v-model="result.Name"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             label="Nomlanishi" />
+            <VaInput class="w-full" v-model="result.NameRus"
+            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+            label="NomlanishiRus" />
           <VaInput class="w-full" v-model="result.ShortName"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             label="Qisqa nomi" />
+            <VaInput class="w-full" v-model="result.ShortNameRus"
+            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+            label="Qisqa nomi Rus" />
           <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
         </VaForm>
       </div>
@@ -20,7 +26,7 @@
   </main>
 </template>
 <script setup>
-import { ref, reactive,inject } from 'vue';
+import { ref, reactive,inject,defineProps } from 'vue';
 import axios from 'axios';
 
 const props = defineProps(["params"]);
@@ -28,14 +34,18 @@ const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
 const result = reactive({
   Name: "",
+  NameRus: "",
   ShortName: "",
+  ShortNameRus: "",
   Comment: "",
   id:props.params.data['id']
 });
 
 axios.get(`factory/${props.params.data['id']}`).then((res) => {
   result.Name = res.data.Name
+  result.NameRus = res.data.NameRus
   result.ShortName = res.data.ShortName
+  result.ShortNameRus = res.data.ShortNameRus
   result.Comment = res.data.Comment
 })
 

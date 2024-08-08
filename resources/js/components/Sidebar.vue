@@ -1,16 +1,23 @@
 <template>
-  <VaLayout :top="{ fixed: true, order: 1 }" :left="{
-    fixed: true,
-    absolute: breakpoints.smDown,
-    order: 2,
-    overlay: breakpoints.smDown && isSidebarVisible,
-    class: 'custom-sidebar'
-  }" @left-overlay-click="isSidebarVisible = false">
+  <VaLayout
+    :top="{ fixed: true, order: 1 }"
+    :left="{
+      fixed: true,
+      absolute: breakpoints.smDown,
+      order: 2,
+      overlay: breakpoints.smDown && isSidebarVisible,
+      class: 'custom-sidebar'
+    }"
+    @left-overlay-click="isSidebarVisible = false"
+  >
     <template #top>
       <VaNavbar>
         <template #left>
-          <VaButton preset="secondary" :icon="isSidebarVisible ? 'menu_open' : 'menu'"
-            @click="isSidebarVisible = !isSidebarVisible" />
+          <VaButton
+            preset="secondary"
+            :icon="isSidebarVisible ? 'menu_open' : 'menu'"
+            @click="isSidebarVisible = !isSidebarVisible"
+          />
         </template>
       </VaNavbar>
       <VaDivider style="margin: 0" />
@@ -69,7 +76,7 @@ import { useI18n } from 'vue-i18n';
 const breakpoints = useBreakpoint();
 const store = useStore();
 const router = useRouter();
-const { t, locale, availableLocales } = useI18n();
+const { t, locale } = useI18n();
 
 const isSidebarVisible = ref(breakpoints.smUp);
 
@@ -99,25 +106,50 @@ const handleLogout = async () => {
   await store.dispatch('logout');
   router.push('/login');
 };
+
 const changeLanguage = () => {
   locale.value = locale.value === 'uz' ? 'ru' : 'uz';
   localStorage.setItem('locale', locale.value);
 };
+
 const currentLanguageLabel = computed(() => {
   return locale.value === 'uz' ? 'O‘zbek' : 'Русский';
 });
+
+const generateUserMenu = (user, menu) => {
+  const userRoles = {};
+
+  user.roles.forEach(role => {
+    const { name, pivot } = role;
+    userRoles[name] = {
+      view: pivot.view === "1",
+      create: pivot.create === "1",
+      update: pivot.update === "1",
+      delete: pivot.delete === "1",
+    };
+  });
+
+  return menu.filter(item => userRoles[item.title]?.view === true);
+};
+
+const userMenu = computed(() => {
+  const user = store.state.user;
+  if (!user) return [];
+  return generateUserMenu(user, menu.value);
+});
+
 onMounted(() => {
   const user = store.state.user;
   if (user) {
     router.push('/vparams');
   }
+
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
   }
 });
 </script>
-
 
 <style>
 .custom-sidebar {

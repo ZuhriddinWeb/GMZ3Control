@@ -6,28 +6,26 @@
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
+      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-          Foydalanuvchi yaratish
+          {{ t('modals.addUserTitle') }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-              <VaSelect v-model="result.StructureID" label="Tuzilma nomi" :options="factoryOptions" multiple />
-              <!-- <VaSelect v-model="result.StructureID" class="mb-1" label="Tuzilma nomi" :options="factoryOptions"
-                clearable @change="onSelectChange" /> -->
+              <VaSelect v-model="result.StructureID" :label="t('form.structureName')" :options="factoryOptions" multiple />
             </div>
             <VaInput class="w-full" v-model="result.Name"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Foydalanuvchi F.I.Sh" />
-            <VaInput v-model="result.Phone" class="w-full" label="Foydalanuvchi telefon raqami" type="input"
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
+              :label="t('form.userName')" />
+            <VaInput v-model="result.Phone" class="w-full" :label="t('form.userPhone')" type="input"
               mask="creditCard" placeholder="###-##-##" />
             <VaInput class="w-full" v-model="result.Login"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Login" />
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
+              :label="t('form.login')" />
             <VaInput class="w-full" v-model="result.Password"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Parol" />
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
+              :label="t('form.password')" />
           </VaForm>
         </div>
       </VaModal>
@@ -40,13 +38,17 @@
   </div>
 </template>
 
+
 <script setup>
-import { ref, reactive, onMounted, provide } from 'vue';
+import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUserModal from '../components/UserComponent/DeleteUserModal.vue'
+import DeleteUserModal from '../components/UserComponent/DeleteUserModal.vue';
 import EditUserModal from '../components/UserComponent/EditUserModal.vue';
 import RolesComponent from '../components/UserComponent/RolesComponent.vue';
+import { useI18n } from 'vue-i18n';
+
+const { locale, t } = useI18n();
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -58,25 +60,25 @@ const result = reactive({
   Phone: "",
   Login: "",
   Password: "",
-  StructureID: "",
+  StructureID: [],
 });
 
 function ondeleted(selectedData) {
-  gridApi.value.applyTransaction({ remove: [selectedData] })
+  gridApi.value.applyTransaction({ remove: [selectedData] });
 }
 
 function onupdated(rowNode, data) {
-  rowNode.setData(data)
+  rowNode.setData(data);
 }
 
-provide('ondeleted', ondeleted)
-provide('onupdated', onupdated)
+provide('ondeleted', ondeleted);
+provide('onupdated', onupdated);
 
-const columnDefs = reactive([
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
-  { headerName: "Name", field: "name", flex: 1 },
-  { headerName: "Login", field: "login", flex: 1 },
-  { headerName: "Telefon raqami", field: "phone" },
+const columnDefs = computed(() => [
+  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
+  { headerName: t('table.userName'), field: "name", flex: 1 },
+  { headerName: t('table.login'), field: "login", flex: 1 },
+  { headerName: t('table.phone'), field: "phone" },
   {
     cellClass: ['px-0'],
     headerName: "",
@@ -84,13 +86,6 @@ const columnDefs = reactive([
     width: 70,
     cellRenderer: RolesComponent,
   },
-  // {
-  //   cellClass: ['px-0'],
-  //   headerName: "",
-  //   field: "",
-  //   width: 70,
-  //   cellRenderer: EditUserModal,
-  // },
   {
     cellClass: ['px-0'],
     headerName: "",
@@ -100,10 +95,9 @@ const columnDefs = reactive([
   },
 ]);
 
-
 const defaultColDef = {
   sortable: true,
-  filter: true
+  filter: true,
 };
 
 const fetchData = async () => {
@@ -114,24 +108,29 @@ const fetchData = async () => {
     console.error('Error fetching data:', error);
   }
 };
+
 const fetchGraphics = async () => {
   try {
     const responseGraphics = await axios.get('/structure');
     factoryOptions.value = responseGraphics.data.map(factory => ({
       value: factory.id,
-      text: factory.Name
+      text: factory.Name,
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
   }
 };
+
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/users", result);
+    const { data } = await axios.post('/users', result);
     if (data.status === 200) {
       showModal.value = false;
+      result.Name = '';
+      result.Phone = '';
       result.Login = '';
       result.Password = '';
+      result.StructureID = [];
       await fetchData();
     } else {
       console.error('Error saving data:', data.message);
@@ -140,11 +139,28 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
+
 onMounted(() => {
-  fetchData()
-  fetchGraphics()
+  // Load language preference from localStorage
+  const savedLocale = localStorage.getItem('locale');
+  if (savedLocale) {
+    locale.value = savedLocale;
+  }
+  fetchData();
+  fetchGraphics();
+});
+
+const changeLanguage = () => {
+  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
+  // Save language preference to localStorage
+  localStorage.setItem('locale', locale.value);
+};
+
+const currentLanguageLabel = computed(() => {
+  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 </script>
+
 
 <style>
 .material-icons {

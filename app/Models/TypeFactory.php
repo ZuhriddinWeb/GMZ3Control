@@ -13,6 +13,5 @@ class TypeFactory extends Model
         'NameRus',
         'ShortName',
         'ShortNameRus',
-
     ];
 }

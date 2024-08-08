@@ -96,30 +96,30 @@ class UserController extends Controller
 
     private function create(Request $request)
     {
-        dd($request);
         $request->validate([
             'Name' => 'required|string|max:255',
+            'Phone' => 'required|string|max:255',
             'Login' => 'required|string|max:255',
             'Password' => 'required|min:6|max:255',
-            // 'structure_id'=>'required|string'
+            'StructureID' => 'required|array|min:1', 
+            'StructureID.*.value' => 'required|integer', 
         ]);
+        $structureIds = array_column($request->StructureID, 'value');
 
         $unit = User::create([
             'name' => $request->Name,
             'phone' => $request->Phone,
             'login' => $request->Login,
             'password' => Hash::make($request->Password),
-            'structure_id' => $request->structure_id,
-
+            'structure_id' => $structureIds, 
         ]);
-
+        
         return response()->json([
             'status' => 200,
             'message' => "Foydalanuvchi muvafaqiyatli qo'shildi",
             'unit' => $unit,
         ]);
     }
-
     private function update(Request $request)
     {
         $request->validate([

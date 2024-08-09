@@ -56,9 +56,9 @@ export default {
       cancel:"Отмена"  
     },
     form: {
-      name: "Название",
+      name: "Название на узбекском",
       nameRus: "Название на русском",
-      shortName: "Краткое название",
+      shortName: "Краткое название на узбекском",
       shortNameRus: "Краткое название на русском",
       comment: "Комментарий",
       structureName: "Название цеха",
@@ -76,7 +76,7 @@ export default {
       requiredField: "Поле, обязательное для заполнения",
     },
     login: {
-      titlePage: '"НГМК" АО',
+      titlePage: 'АО "НГМК"',
       plantName: "3-й гидрометаллургический завод",
       title: "Вход",
       submitButton: "Войти",
@@ -90,7 +90,7 @@ export default {
   uz: {
     table: {
       headerRow: "№",
-      name: "Nomlanishi",
+      name: "Nomlanishi Uzb",
       shortName: "Qisqa nomi",
       structure: "Sex",
       comment: "Izoh",
@@ -110,7 +110,7 @@ export default {
       dashboard: "Boshqaruv paneli",
       factory: "Zavod",
       structure: "Sexlar",
-      blogs: "Bo'linmalar",
+      blogs: "Uchastkalar",
       units: "Birliklar",
       graphics: "Grafiklar",
       graphictimes: "Grafik vaqtlar",
@@ -142,10 +142,10 @@ export default {
       cancel:"Bekor qilish"  
     },
     form: {
-      name: "Nomlanishi",
-      nameRus: "Nomlanishi Rus",
-      shortName: "Qisqa nomi",
-      shortNameRus: "Qisqa nomi Rus",
+      name: "Nomlanishi O‘zbek tilida",
+      nameRus: "Nomlanishi Rus tilida",
+      shortName: "Qisqa nomi O‘zbek tilida",
+      shortNameRus: "Qisqa nomi Rus tilida",
       comment: "Izoh",
       structureName: "Sexni tanlang",
       selectGraphic: "Grafikni tanlang",

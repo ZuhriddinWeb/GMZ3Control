@@ -21,7 +21,7 @@ const gridApi = ref(null);
 const columnDefs = reactive([
   { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
   { headerName: "GTid", field: "id", hide: true, flex: 1, width: 80 },
-  { headerName: "Smena", field: "Change", flex: 1, width: 80 },
+  { headerName: "Smena", field: "Change",  width: 60 },
   { headerName: "Parametrlar", field: "PName", flex: 1 },
   {
     headerName: "Grafik vaqti", children: [

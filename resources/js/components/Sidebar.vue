@@ -113,7 +113,7 @@ const changeLanguage = () => {
 };
 
 const currentLanguageLabel = computed(() => {
-  return locale.value === 'uz' ? 'O‘zbek' : 'Русский';
+  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 
 const generateUserMenu = (user, menu) => {

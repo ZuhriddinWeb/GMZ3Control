@@ -6,6 +6,7 @@ export default createStore({
         return {
             user: null,
             selectedRowId:null,
+            countInputedParams:null,
         }
     },
     mutations: {

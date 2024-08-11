@@ -1,48 +1,80 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
-    <VaModal v-model="selectedDataEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" @close="selectedDataEdit = false" close-button>
+    <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+      @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3">
-        Uchastka ma'lumotlarini tahrirlash 
+        {{ t('modals.editFactory') }}
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
-            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-              <VaSelect v-model="result.StructureID" class="mb-1" label="Tuzilma nomi":options="factoryOptions"
-                clearable @change="onSelectChange" />               
+          <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+              <VaSelect v-model="result.StructureID" class="mb-1" :label="t('form.structureName')" :options="factoryOptions"
+                clearable @change="onSelectChange" />
             </div>
-            <VaInput class="w-full" v-model="result.Name"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Nomlanishi" />
-            <VaInput class="w-full" v-model="result.ShortName"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Qisqa nomi" />
-            <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
-          </VaForm>
+          <VaInput class="w-full" v-model="result.Name" :rules="[(value) => !!value || t('validation.required')]"
+            :label="t('form.name')" />
+          <VaInput class="w-full" v-model="result.NameRus" :rules="[(value) => !!value || t('validation.required')]"
+            :label="t('form.nameRus')" />
+          <VaInput class="w-full" v-model="result.ShortName" :rules="[(value) => !!value || t('validation.required')]"
+            :label="t('form.shortName')" />
+          <VaInput class="w-full" v-model="result.ShortNameRus" :rules="[(value) => !!value || t('validation.required')]"
+            :label="t('form.shortNameRus')" />
+          <VaTextarea class="w-full" v-model="result.Comment" :max-length="125" :label="t('form.comment')" />
+        </VaForm>
       </div>
     </VaModal>
   </main>
 </template>
+
 <script setup>
-import { ref, reactive,inject } from 'vue';
+import { ref, reactive, inject, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
 const props = defineProps(["params"]);
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
+const factoryOptions = ref([]);
+
+const { t, locale } = useI18n();
+
 const result = reactive({
-  StructureID:"",
+  StructureID: "",
   Name: "",
+  NameRus: "",
+  ShortNameRus: "",
   ShortName: "",
   Comment: "",
-  id:props.params.data['id']
+  id: props.params.data['id'],
 });
 
-axios.get(`blogs/${props.params.data['id']}`).then((res) => {
-  result.Name = res.data.Name
-  result.ShortName = res.data.ShortName
-  result.Comment = res.data.Comment
-})
+const fetchGraphics = async () => {
+  try {
+    const responseGraphics = await axios.get('/structure');
+    factoryOptions.value = responseGraphics.data.map(factory => ({
+      value: factory.id,
+      text: locale.value === 'uz' ? factory.Name : factory.NameRus
+    }));
+  } catch (error) {
+    console.error('Error fetching graphics data:', error);
+  }
+};
+
+onMounted(() => {
+  fetchGraphics();
+
+  axios.get(`blogs/${props.params.data['id']}`)
+    .then((res) => {
+      result.StructureID = res.data.StructureID; 
+      result.Name = res.data.Name;
+      result.ShortName = res.data.ShortName;
+      result.Comment = res.data.Comment;
+    })
+    .catch((error) => {
+      console.error('Error fetching data:', error);
+    });
+});
 
 const onSubmit = async () => {
   try {
@@ -58,5 +90,7 @@ const onSubmit = async () => {
   }
 };
 
-
+watch(() => result.StructureID, (newVal) => {
+  console.log('Selected StructureID:', newVal);
+});
 </script>

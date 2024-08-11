@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ValuesParameters;
 use DB;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Auth;
 class ParametrValueController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -35,33 +35,30 @@ class ParametrValueController extends Controller
         return response()->json($units);
     }
     public function getParamsForId($id){
+        dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
-        // return 
-        dd($result);
-
     }
     private function getByBlog($id)
     {
-        return ValuesParameters::where('BlogID', $id)->get();
+        $idArray = explode(',', $id);
+        return ValuesParameters::where('BlogID', $idArray)->get();
     }
     private function create(Request $request)
     {
-        $uuid = Str::uuid();
-        $uuidString = $uuid->toString();
-
+        $uuidString = (string) Str::uuid();
         try {
             ValuesParameters::updateOrInsert(
                 [
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
+                    'TimeID' => $request->GTid,
+                    'GraphicsTimesID' => $request->GrapicsID,
                 ],
                 [
                     'id' => $uuidString,
                     'Value' => $request->Value,
                     'BlogID' => $request->BlogsID,
-                    'TimeID' => $request->GTid,
                     'Comment' => $request->Comment,
-                    'GraphicsTimesID' => $request->GrapicsID,
                     'updated_at' => now()
                 ]
             );
@@ -71,7 +68,7 @@ class ParametrValueController extends Controller
 
             return response()->json([
                 'status' => 200,
-                'message' => "Javob muvafaqiyatli qo'shildi",
+                'message' => "Ma`lumot muvafaqiyatli qo'shildi",
                 'unit' => $unit
             ]);
 

@@ -1,30 +1,37 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="delete" preset="primary" class="mt-1" @click="selectedDataDelete = true" />
-    <VaModal v-model="selectedDataDelete" ok-text="Apply" @close="selectedDataDelete = false"  @ok="onSubmit" close-button>
-      <h3 class="va-h3">Ma'lumotni o'chirish</h3>
+    <VaModal 
+      v-model="selectedDataDelete" 
+      :ok-text="t('modals.apply')" 
+      :cancel-text="t('modals.cancel')" 
+      @close="selectedDataDelete = false"  
+      @ok="onSubmit" 
+      close-button
+    >
+      <h3 class="va-h3">{{ t("modals.title") }}</h3>
       <p>
-        Classic modal overlay which represents a dialog box or other interactive
-        component, such as a dismissible alert, sub-window, etc.
+        {{ t('modals.message') }}
       </p>
     </VaModal>
   </main>
 </template>
 
 <script setup>
-import { ref, onMounted , inject} from 'vue'
+import { ref, inject } from 'vue';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 
-const selectedDataDelete = ref(false)
-const  props = defineProps(["params"]);
-
-const ondeleted = inject('ondeleted')
+const props = defineProps(['params']);
+const selectedDataDelete = ref(false);
+const ondeleted = inject('ondeleted');
+const { t } = useI18n();
 
 const onSubmit = async () => {
   try {
     const { data } = await axios.delete(`/paramtypes/${props.params.data['id']}`);
     if (data.status === 200) {
-      ondeleted(props.params.data)
+      ondeleted(props.params.data);
       selectedDataDelete.value = false;
     } else {
       console.error('Error deleting data:', data.message);

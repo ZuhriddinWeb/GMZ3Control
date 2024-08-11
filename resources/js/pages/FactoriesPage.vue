@@ -60,6 +60,17 @@ const result = reactive({
   ShortNameRus: "",
   Comment: ""
 });
+function ondeleted(selectedData){
+  gridApi.value.applyTransaction({ remove: [selectedData] })
+}
+
+function onupdated(rowNode,data){
+  rowNode.setData(data)
+}
+console.log(onupdated);
+
+provide('ondeleted',ondeleted)
+provide('onupdated',onupdated)
 
 const columnDefs = computed(() => [
   { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
@@ -81,16 +92,7 @@ const columnDefs = computed(() => [
   },
 ]);
 
-function ondeleted(selectedData){
-  gridApi.value.applyTransaction({ remove: [selectedData] })
-}
 
-function onupdated(rowNode,data){
-  rowNode.setData(data)
-}
-
-provide('ondeleted',ondeleted)
-provide('onupdated',onupdated)
 
 const defaultColDef = {
   sortable: true,
@@ -120,7 +122,9 @@ const onSubmit = async () => {
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';
+      result.NameRus = '';
       result.ShortName = '';
+      result.ShortNameRus = '';
       result.Comment = '';
       await fetchData();
     } else {

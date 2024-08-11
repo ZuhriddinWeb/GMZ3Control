@@ -7,10 +7,10 @@
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-          <div class="grid grid-cols-2 md:grid-cols-2  gap-2 items-end w-full">
-            <VaSelect v-model="value" class="mb-6" label="Grafikni tanlang" :options="options" clearable />
-            <VaSelect v-model="value" class="mb-6" label="Smenani tanlang" :options="options" clearable />
-          </div>
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
+              <VaSelect v-model="result.GraphicId" class="mb-6" :label="t('form.selectGraphic')" :options="graphicsOptions" clearable />
+              <VaSelect v-model="result.ChangeId" class="mb-6" :label="t('form.selectChange')" :options="changesOptions" clearable />
+            </div>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
             <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" label="Nomlanishi" v-model="result.Name" />
             <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" label="Boshlanish vaqti"
@@ -25,12 +25,15 @@
   </main>
 </template>
 <script setup>
-import { ref, reactive,inject } from 'vue';
+import { ref, reactive,inject,onMounted } from 'vue';
 import axios from 'axios';
 
 const props = defineProps(["params"]);
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
+const graphicsOptions = ref([]);
+const changesOptions = ref([]);
+
 const result = reactive({
   Name: "",
   ShortName: "",
@@ -38,12 +41,27 @@ const result = reactive({
   id:props.params.data['id']
 });
 
-// axios.get(`units/${props.params.data['id']}`).then((res) => {
-//   result.Name = res.data.Name
-//   result.ShortName = res.data.ShortName
-//   result.Comment = res.data.Comment
-// })
-
+axios.get(`units/${props.params.data['id']}`).then((res) => {
+  result.Name = res.data.Name
+  result.ShortName = res.data.ShortName
+  result.Comment = res.data.Comment
+})
+const fetchGraphics = async () => {
+  try {
+    const responseGraphics = await axios.get('/graphics');
+    const responseChanges = await axios.get('/changes');
+    graphicsOptions.value = responseGraphics.data.map(graphic => ({
+      value: graphic.id,
+      text: graphic.Name,
+    }));
+    changesOptions.value = responseChanges.data.map(change => ({
+      value: change.id,
+      text: change.Change,
+    }));
+  } catch (error) {
+    console.error('Error fetching graphics data:', error);
+  }
+};
 const onSubmit = async () => {
   try {
     const { data } = await axios.put("/units", result);
@@ -57,6 +75,8 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-
+onMounted(() => {
+  fetchGraphics();
+});
 
 </script>

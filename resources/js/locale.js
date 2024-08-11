@@ -18,6 +18,15 @@ export default {
       login: "Логин",
       phone: "Телефон",
       userName: "Ф.И.О пользователя",
+      parameters:"Параметры",
+      graphictimes:"Время графика",
+      interval:"Интервал",
+      min:"Мин",
+      max:"Мах",
+      value:"Значение",
+      input:"Включено",
+      output:"Остаток",
+      user:"Пользователь"
     },
     menu: {
       dashboard: "Панель управления",
@@ -35,6 +44,7 @@ export default {
       vparams: "Значения параметров",
       users: "Пользователи",
       logout: "Выход",
+      timer:"Время"
     },
     buttons: {
       save: "Сохранить",
@@ -50,10 +60,12 @@ export default {
       addSourceTitle: "Создать источник",
       addChangeTitle: "Создать смену",
       addUserTitle: "Создать нового пользователя",
+      editFactory: "Редактировать информацию",
+      editSectionInfo: "",
       apply: "Применить",
       title: "Удалить информацию",
-      message:"Вы уверены, что хотите удалить эти данные? Это действие не может быть отменено.",
-      cancel:"Отмена"  
+      message: "Вы уверены, что хотите удалить эти данные? Это действие не может быть отменено.",
+      cancel: "Отмена"
     },
     form: {
       name: "Название на узбекском",
@@ -105,6 +117,18 @@ export default {
       login: "Login",
       phone: "Telefon raqami",
       userName: "Foydalanuvchi F.I.Sh",
+      serialNumber: "T/r",
+      gtId: "GTid",
+      shift: "Smena",
+      parameters:"Parametrlar",
+      graphictimes:"Grafik vaqti",
+      interval:"Oraliq",
+      min:"Min",
+      max:"Max",
+      value:"Qiymat",
+      input:"Kiritlgan",
+      output:"Qolgan",
+      user:"Foydalanuvchi"
     },
     menu: {
       dashboard: "Boshqaruv paneli",
@@ -122,6 +146,7 @@ export default {
       vparams: "Parametr qiymatlari",
       users: "Foydalanuvchilar",
       logout: "Chiqish",
+      timer:"Vaqt"
     },
     buttons: {
       save: "Saqlash",
@@ -136,10 +161,11 @@ export default {
       addSourceTitle: "Manba yaratish",
       addChangeTitle: "Smena yaratish",
       addUserTitle: "Yangi foydalanuvchi yaratish",
+      editFactory: "Ma`lumotni tahrirlash",
       apply: "Tasdiqlash",
       title: "Ma'lumotni o'chirish",
-      message:"Bu ma'lumotni o'chirishni xohlaysizmi? Ushbu ma`lumotlarni tiklab bo'lmaydi.",
-      cancel:"Bekor qilish"  
+      message: "Bu ma'lumotni o'chirishni xohlaysizmi? Ushbu ma`lumotlarni tiklab bo'lmaydi.",
+      cancel: "Bekor qilish"
     },
     form: {
       name: "Nomlanishi O‘zbek tilida",

@@ -39,6 +39,7 @@ class ParamsController extends Controller
     }
     private function getRowParam($id)
     {
+        dd($id);
         $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
             ->join('units', 'parameters.UnitsID', '=', 'units.id')
             ->where('parameters.id', $id)

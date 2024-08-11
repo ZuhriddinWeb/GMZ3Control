@@ -63,6 +63,8 @@ class DatabaseSeeder extends Seeder
         ]);
         DB::table('factory_structures')->insert([
             ['Name' => 'Maydalash sexi'],
+            ['Name' => '1-sex'],
+
         ]);
         DB::table('parameters')->insert([
             ['id'=>'62f0a8e1-b7cd-47f3-a25b-6f6f837e6079','Name' => 'Chiziqli o\'lchov','ShortName'=>'Chiziqli o\'lchov','ParametrTypeID'=>1,'UnitsID'=>9,'Min'=>'5','Max'=>'5'],

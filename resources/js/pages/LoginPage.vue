@@ -72,16 +72,13 @@ const result = reactive({
 });
 
 const onSubmit = async () => {
-    try {
         const { data } = await store.dispatch('login', result);
-        if (data.status === 200) {
+        if (data.status == 200) {
             push({ name: 'home' });
         } else {
             console.error('Error saving data:', data.message);
+            init({ message: t('login.errorMessage'), color: 'danger' });
         }
-    } catch (error) {
-        init({ message: t('login.errorMessage'), color: 'danger' });
-    }
 };
 
 const changeLanguage = () => {

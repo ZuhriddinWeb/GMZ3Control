@@ -53,7 +53,7 @@
           {{ currentLanguageLabel }}
         </VaButton>
         <!-- User Menu Items -->
-        <template v-for="menuItem in menu" :key="menuItem.icon">
+        <template v-for="menuItem in generateUserMenu" :key="menuItem.icon">
           <a v-if="menuItem.path === '/logout'" @click.prevent="handleLogout">
             <VaSidebarItem>
               <VaSidebarItemContent>
@@ -89,12 +89,28 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, reactive } from 'vue';
 import { useBreakpoint } from 'vuestic-ui';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
+
+
+
+
+
+const params = reactive([
+  10,29,39,34
+])
+
+const result = computed(() => {
+  return params.reduce((total, current) => total + current, 0)
+})
+
+
+
+
 
 const breakpoints = useBreakpoint();
 const store = useStore();
@@ -124,7 +140,9 @@ const fetchParameterCount = async () => {
     const response = await axios.get(`/get-params-for-user-count/${store.state.user.structure_id}/${change}`);
     paramCount.value = response.data;
   } catch (error) {
+
     console.error('Error fetching parameters count:', error);
+
   }
 };
 const menu = ref([
@@ -159,30 +177,25 @@ const currentLanguageLabel = computed(() => {
   return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 
-const generateUserMenu = (user, menu) => {
-  const userPermissions = {};
-  user.roles.forEach(role => {
-    const { name, pivot } = role;
-    const correctedName = name === "Foydlanauvchilar" ? "Foydalanuvchilar" : name;
-    userPermissions[correctedName] = pivot.view === "1";
+const generateUserMenu = computed(() => {
+  const user = store.state.user
+  if(user == null) return
+  const roles = user?.roles?.filter(role => role.pivot.view === "1");
+  
+  return menu.value?.filter(item => {
+    const role = roles.filter(role => item.title == role.name)
+    return role.length
   });
-
-  return menu.filter(item => userPermissions[item.title] === true);
-};
-
-
-const userMenu = computed(() => {
-  const user = store.state.user;
-  return user ? generateUserMenu(user, menu.value) : menu.value;
-});
+  
+})
 
 let timer;
 
 onMounted(() => {
   const user = store.state.user;
-  if (user) {
-    router.push('/vparams');
-  }
+  // if (user) {
+  //   router.push('/vparams');
+  // }
   fetchParameterCount();
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {

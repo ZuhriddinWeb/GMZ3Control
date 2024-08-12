@@ -33,7 +33,7 @@
     <!-- Add new Elements end -->
     <main class="flex-grow">
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
-        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api"></ag-grid-vue>
+        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api" :frameworkComponents="{ EditFactory, DeleteFactory }"></ag-grid-vue>
     </main>
   </div>
 </template>
@@ -60,17 +60,8 @@ const result = reactive({
   ShortNameRus: "",
   Comment: ""
 });
-function ondeleted(selectedData){
-  gridApi.value.applyTransaction({ remove: [selectedData] })
-}
 
-function onupdated(rowNode,data){
-  rowNode.setData(data)
-}
-console.log(onupdated);
 
-provide('ondeleted',ondeleted)
-provide('onupdated',onupdated)
 
 const columnDefs = computed(() => [
   { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
@@ -82,6 +73,9 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: EditFactory,
+    cellRendererParams: {
+      onUpdate: onupdated, 
+    },
   },
   {
     cellClass: ['px-0'],
@@ -89,9 +83,20 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: DeleteFactory,
+    cellRendererParams: {
+      onDelete: ondeleted, 
+    },
   },
 ]);
+function onupdated(updatedData, rowNode) {
+  console.log(rowNode);
+  
+  rowNode.setData(updatedData);
+}
 
+function ondeleted(selectedData) {
+  gridApi.value.applyTransaction({ remove: [selectedData] });
+}
 
 
 const defaultColDef = {
@@ -139,10 +144,6 @@ onMounted(() => {
   fetchData();
 });
 </script>
-
-
-
-
 <style>
 .material-icons {
   font-family: 'Material Icons';

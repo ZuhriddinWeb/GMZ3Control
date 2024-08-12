@@ -1,10 +1,10 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="settings" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
-    <VaModal max-width="45%" v-model="selectedDataEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit"
+    <VaModal max-width="45%" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3>
-       <span class="va-h3">Foydalanuvchi: {{ result.userName }}</span>  
+       <span class="va-h3">{{ t('table.user') }} : {{ result.userName }}</span>  
       </h3>
       <div>
         <div class="va-table-responsive">
@@ -20,7 +20,7 @@
             </thead>
             <tbody>
               <tr v-for="role in roles" :key="role.id">
-                <td>{{ role.name }}</td>
+                <td>{{ t(`${role.name}`) }}</td>
                 <td>
 
                   <VaSwitch :model-value="role.view" @change="() => onChange(role, 'view')"
@@ -55,6 +55,9 @@ const props = defineProps(['params']);
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
 const roles = ref([]);
+import { useI18n } from 'vue-i18n';
+
+const { locale, t } = useI18n();
 
 const result = reactive({
   id: props.params.data['id'],

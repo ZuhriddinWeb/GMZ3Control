@@ -93,6 +93,8 @@ export default {
       title: "Вход",
       submitButton: "Войти",
       errorMessage: "Неверный логин или пароль",
+      successMessage: "Добро пожаловать!",
+
     },
     language: {
       uz: "O'zbek",
@@ -193,6 +195,7 @@ export default {
       title: "Kirish",
       submitButton: "Kirish",
       errorMessage: "Login yoki parol xato",
+      successMessage:"Xush kelibsiz"
     },
     language: {
       uz: "O'zbek",

@@ -48,7 +48,7 @@ class UserController extends Controller
         $user = $this->guard()->user();
 
         $token = $user->createToken('token-name', ['server:update'])->plainTextToken;
-        return response()->json(['token' => $token, 'type' => 'Bearer'], 200);
+        return response()->json(['token' => $token, 'type' => 'Bearer','status' => 200]);
     }
 
     public function logoutUser(Request $request)

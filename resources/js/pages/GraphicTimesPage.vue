@@ -6,20 +6,26 @@
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
+      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit"
+        close-button>
         <h3 class="va-h3">
           {{ t('modals.addGraphicTimesTitle') }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.GraphicId" class="mb-6" :label="t('form.selectGraphic')" :options="graphicsOptions" clearable />
-              <VaSelect v-model="result.ChangeId" class="mb-6" :label="t('form.selectChange')" :options="changesOptions" clearable />
+              <VaSelect v-model="result.GraphicId" class="mb-6" :label="t('form.selectGraphic')"
+                :options="graphicsOptions" clearable />
+              <VaSelect v-model="result.ChangeId" class="mb-6" :label="t('form.selectChange')" :options="changesOptions"
+                clearable />
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
-              <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.name')" v-model="result.Name" />
-              <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.startTime')" v-model="result.StartTime" />
-              <VaTimeInput v-model="result.EndTime" clearable clearable-icon="cancel" color="textPrimary" :label="t('form.endTime')" />
+              <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.name')"
+                v-model="result.Name" />
+              <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.startTime')"
+                v-model="result.StartTime" />
+              <VaTimeInput v-model="result.EndTime" clearable clearable-icon="cancel" color="textPrimary"
+                :label="t('form.endTime')" />
             </div>
           </VaForm>
         </div>
@@ -42,8 +48,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import EditGraphicTimesModal from '../components/GraphicTimesComponent/EditGraphicTimesModal.vue';
 import DeleteGraphicTimesModal from '../components/GraphicTimesComponent/DeleteGraphicTimesModal.vue';
 import { useI18n } from 'vue-i18n';
-
 const { locale, t } = useI18n();
+import { format } from 'date-fns';
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -71,13 +77,29 @@ provide('ondeleted', ondeleted);
 provide('onupdated', onupdated);
 
 const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1", width: 120 },
-  { headerName: "ID", field: "id", width: 120 },
+  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1", width: 80 },
+  { headerName: "ID", field: "id", width: 80 },
   { headerName: t('table.change'), field: "Change", width: 120 },
   { headerName: t('table.graphicName'), field: "GName", flex: 1 },
-  { headerName: t('table.name'), field: "Name", flex: 1 },
-  { headerName: t('table.startTime'), field: "StartTime" },
-  { headerName: t('table.endTime'), field: "EndTime" },
+  {
+    headerName: t('table.name'), field: "Name", flex: 1, valueFormatter: (params) => {
+      return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+    },
+  },
+  {
+    headerName: t('table.startTime'),
+    field: "StartTime",
+    valueFormatter: (params) => {
+      return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+    },
+  },
+  {
+    headerName: t('table.endTime'),
+    field: "EndTime",
+    valueFormatter: (params) => {
+      return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+    },
+  },
   { headerName: t('table.comment'), field: "Comment", flex: 1 },
   {
     cellClass: ['px-0'],
@@ -146,7 +168,6 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
@@ -155,17 +176,6 @@ onMounted(() => {
   fetchGraphics();
 });
 
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  // Save language preference to localStorage
-  localStorage.setItem('locale', locale.value);
-  // Refresh grid data with the new language
-  fetchData();
-};
-
-const currentLanguageLabel = computed(() => {
-  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
-});
 </script>
 
 

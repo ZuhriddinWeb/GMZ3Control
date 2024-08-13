@@ -3,8 +3,8 @@
     <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
     <VaModal 
       v-model="selectedDataEdit" 
-      :ok-text="t('modal.save')" 
-      :cancel-text="t('modal.cancel')" 
+      :ok-text="t('modals.apply')" 
+      :cancel-text="t('modals.cancel')" 
       @ok="onSubmit" 
       @close="selectedDataEdit = false" 
       close-button

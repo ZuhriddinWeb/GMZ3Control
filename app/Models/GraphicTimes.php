@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class GraphicTimes extends Model
 {
@@ -15,4 +16,13 @@ class GraphicTimes extends Model
         'StartTime',
         'EndTime'
     ];
+     public function getStartTimeAttribute($value)
+     {
+         return Carbon::parse($value)->format('H:i');
+     }
+ 
+     public function getEndTimeAttribute($value)
+     {
+         return Carbon::parse($value)->format('H:i');
+     }
 }

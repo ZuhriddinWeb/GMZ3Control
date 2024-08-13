@@ -41,11 +41,11 @@ const result = reactive({
   id:props.params.data['id']
 });
 
-axios.get(`units/${props.params.data['id']}`).then((res) => {
-  result.Name = res.data.Name
-  result.ShortName = res.data.ShortName
-  result.Comment = res.data.Comment
-})
+// axios.get(`units/${props.params.data['id']}`).then((res) => {
+//   result.Name = res.data.Name
+//   result.ShortName = res.data.ShortName
+//   result.Comment = res.data.Comment
+// })
 const fetchGraphics = async () => {
   try {
     const responseGraphics = await axios.get('/graphics');

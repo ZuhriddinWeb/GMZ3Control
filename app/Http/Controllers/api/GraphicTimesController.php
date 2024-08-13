@@ -46,9 +46,9 @@ class GraphicTimesController extends Controller
         $unit = GraphicTimes::create([
             'GraphicsID' => $request->GraphicId['value'],
             'Change' => $request->ChangeId['value'],
-            'Name' => Carbon::parse($request->Name)->addHours(5),
-            'StartTime' => Carbon::parse($request->Name)->addHours(5),
-            'EndTime' =>Carbon::parse($request->EndTime)->addHours(5),
+            'Name' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
+            'StartTime' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
+            'EndTime' =>Carbon::parse($request->EndTime)->addHours(5)->format('H:i:s'),
 
         ]);
         return response()->json([

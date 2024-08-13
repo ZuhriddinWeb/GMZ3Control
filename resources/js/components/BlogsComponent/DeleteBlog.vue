@@ -30,7 +30,6 @@ const  props = defineProps(["params"]);
 const ondeleted = inject('ondeleted')
 
 const onSubmit = async () => {
-  console.log(props.params.data['id']);
   try {
     const { data } = await axios.delete(`/blogs/${props.params.data['id']}`);
     if (data.status === 200) {

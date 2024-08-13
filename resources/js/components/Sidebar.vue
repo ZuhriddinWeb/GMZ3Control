@@ -146,17 +146,21 @@ const fetchParameterCount = async () => {
   }
 };
 const menu = ref([
-  { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
+  // { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
+  { title: 'menu.dashboard', icon: 'dashboard', path: '/',children: [
+      { title: 'menu.subFactory1', icon: 'sub_icon1', path: '/factory/sub1' },
+      { title: 'menu.subFactory2', icon: 'sub_icon2', path: '/factory/sub2' }
+    ] },
   { title: 'menu.factory', icon: 'factory', path: '/factory' },
   { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
   { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
   { title: 'menu.units', icon: 'ad_units', path: '/units' },
   { title: 'menu.graphics', icon: 'schedule', path: '/graphics' },
   { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },
-  { title: 'menu.paramtypes', icon: 'format_list_numbered', path: '/paramtypes' },
+  // { title: 'menu.paramtypes', icon: 'format_list_numbered', path: '/paramtypes' },
   { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
-  { title: 'menu.sources', icon: 'content_copy', path: '/sources' },
-  { title: 'menu.changes', icon: 'manage_history', path: '/changes' },
+  // { title: 'menu.sources', icon: 'content_copy', path: '/sources' },
+  // { title: 'menu.changes', icon: 'manage_history', path: '/changes' },
   { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
   { title: 'menu.vparams', icon: 'diamond', path: '/vparams' },
   { title: 'menu.users', icon: 'person', path: '/users' },

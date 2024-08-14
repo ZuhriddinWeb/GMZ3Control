@@ -4,7 +4,7 @@
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton @click="showModal = true,fetchGraphics" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
         <h3 class="va-h3">
@@ -13,7 +13,7 @@
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
             <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-              <VaSelect v-model="result.StructureID" class="mb-1" :label="t('form.structureName')" :options="factoryOptions"
+              <VaSelect v-model="result.StructureID" value-by="value" class="mb-1" :label="t('form.structureName')" :options="factoryOptions"
                 clearable @change="onSelectChange" />
             </div>
             <VaInput class="w-full" v-model="result.Name"
@@ -49,6 +49,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteBlog from '../components/BlogsComponent/DeleteBlog.vue';
 import EditBlog from '../components/BlogsComponent/EditBlog.vue';
 import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const { locale, t } = useI18n();
 
@@ -103,18 +105,17 @@ const defaultColDef = {
   filter: true
 };
 
-// Function to get the correct field name based on the current locale
 const getFieldName = () => {
   return locale.value === 'uz' ? 'Name' : 'NameRus';
 };
 
-// Function to get the correct field short name based on the current locale
 const getFieldShortName = () => {
   return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
 };
 const getFielBlog = () => {
   return locale.value === 'uz' ? 'Name' : 'NameRus';
 };
+
 const fetchData = async () => {
   try {
     const response = await axios.get('/blogs');
@@ -148,6 +149,8 @@ const onSubmit = async () => {
       result.ShortNameRus = '';
       result.Comment = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }
@@ -157,7 +160,6 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
@@ -171,7 +173,7 @@ const changeLanguage = () => {
   // Save language preference to localStorage
   localStorage.setItem('locale', locale.value);
   // Refresh factory options with the new language
-  fetchGraphics();
+  // fetchGraphics();
 };
 
 const currentLanguageLabel = computed(() => {

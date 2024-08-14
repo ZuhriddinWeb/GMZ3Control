@@ -39,13 +39,11 @@ class ParamsController extends Controller
     }
     private function getRowParam($id)
     {
-        dd($id);
-        $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
+        return Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
             ->join('units', 'parameters.UnitsID', '=', 'units.id')
             ->where('parameters.id', $id)
             ->select('parameters.id as Uuid', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
-            ->get();
-        return response()->json($params);
+            ->first();
     }
     private function create(Request $request)
     {
@@ -58,8 +56,8 @@ class ParamsController extends Controller
             'NameRus' => $request->Name,
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
-            'ParametrTypeID' => $request->ParamsTypeID['value'],
-            'UnitsID' => $request->UnitsID['value'],
+            'ParametrTypeID' => $request->ParamsTypeID,
+            'UnitsID' => $request->UnitsID,
             'Comment' => $request->Comment,
         ]);
 
@@ -72,19 +70,15 @@ class ParamsController extends Controller
 
     private function update(Request $request)
     {
-        // $request->validate([
-        //     'id' => 'required|integer|exists:units,id',
-        //     'Name' => 'required|string|max:255',
-        //     'ShortName' => 'required|string|max:255',
-        //     'Comment' => 'nullable|string|max:255',
-        // ]);
-
+        
         $params = Parameters::find($request->id);
         $params->update([
             'Name' => $request->Name,
-            'NameRus' => $request->Name,
+            'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
+            'ParametrTypeID' => $request->ParamsTypeID,
+            'UnitsID' => $request->UnitsID,
             'Comment' => $request->Comment,
         ]);
 

@@ -15,6 +15,7 @@ import { AgGridVue } from "ag-grid-vue3";
 import { createI18n } from 'vue-i18n';
 import locale from './locale.js';  
 import 'material-icons/iconfont/material-icons.css';
+import { useToast} from 'vuestic-ui';
 
 axios.defaults.baseURL = "/api/";
 window.axios = axios;
@@ -23,6 +24,7 @@ axios.defaults.withCredentials = true;
 window.Swal = Swal;
 window.store = store;
 window.router = router;
+window.router = useToast;
 
 const i18n = createI18n({
     legacy: false,
@@ -42,6 +44,7 @@ async function initApp() {
     .use(store)
     .use(router)
     .use(i18n)
+    .use(useToast)
     .mount('#app');
 }
 

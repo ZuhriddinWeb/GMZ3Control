@@ -46,7 +46,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteFactory from '../components/FactoryComponent/DeleteFactory.vue';
 import EditFactory from '../components/FactoryComponent/EditFactory.vue';
 import { useI18n } from 'vue-i18n';
-
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 const { locale, t } = useI18n();
 
 const rowData = ref([]);
@@ -61,6 +62,16 @@ const result = reactive({
   Comment: ""
 });
 
+function ondeleted(selectedData){
+  gridApi.value.applyTransaction({ remove: [selectedData] })
+}
+
+function onupdated(rowNode,data){
+  rowNode.setData(data)
+}
+
+provide('ondeleted', ondeleted)
+provide('onupdated', onupdated)
 
 
 const columnDefs = computed(() => [
@@ -73,9 +84,6 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: EditFactory,
-    cellRendererParams: {
-      onUpdate: onupdated, 
-    },
   },
   {
     cellClass: ['px-0'],
@@ -83,20 +91,17 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: DeleteFactory,
-    cellRendererParams: {
-      onDelete: ondeleted, 
-    },
   },
 ]);
-function onupdated(updatedData, rowNode) {
-  console.log(rowNode);
+// function onupdated(updatedData, rowNode) {
+//   console.log(rowNode);
   
-  rowNode.setData(updatedData);
-}
+//   rowNode.setData(updatedData);
+// }
 
-function ondeleted(selectedData) {
-  gridApi.value.applyTransaction({ remove: [selectedData] });
-}
+// function ondeleted(selectedData) {
+//   gridApi.value.applyTransaction({ remove: [selectedData] });
+// }
 
 
 const defaultColDef = {
@@ -132,6 +137,8 @@ const onSubmit = async () => {
       result.ShortNameRus = '';
       result.Comment = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }

@@ -3,31 +3,31 @@
     <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
-      <h3 class="va-h3">
+      <h3 class="va-h3" @vue:mounted="fetchParams">
         {{ t('modals.editFactory') }}
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
           <VaInput class="w-full" v-model="result.Name"
-            :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('form.name')" />
+            :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('form.name')" />
           <VaInput class="w-full" v-model="result.NameRus"
-            :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('form.nameRus')" />
+            :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('form.nameRus')" />
           <VaInput class="w-full" v-model="result.ShortName"
-            :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
+            :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
             :label="t('form.shortName')" />
           <VaInput class="w-full" v-model="result.ShortNameRus"
-            :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
+            :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
             :label="t('form.shortNameRus')" />
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaInput class="w-full" v-model="result.Min"
-              :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.min')" />
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('table.min')" />
             <VaInput class="w-full" v-model="result.Max"
-              :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.max')" />
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('table.max')" />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-            <VaSelect v-model="result.ParamsTypeID" class="mb-6" :label="t('menu.paramtypes')"
+            <VaSelect v-model="result.ParamsTypeID" value-by="value" class="mb-6" :label="t('menu.paramtypes')"
               :options="paramsOptions" clearable />
-            <VaSelect v-model="result.UnitsID" class="mb-6" :label="t('menu.units')" :options="unitsOptions"
+            <VaSelect v-model="result.UnitsID" value-by="value" class="mb-6" :label="t('menu.units')" :options="unitsOptions"
               clearable />
           </div>
           <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
@@ -79,7 +79,13 @@ const fetchParams = async () => {
     }));
     
     result.Name = paramResponse.data.Name;
+    result.NameRus = paramResponse.data.NameRus;
+    result.ShortNameRus = paramResponse.data.ShortNameRus;
+    result.ShortName = paramResponse.data.ShortName;
+    result.ParamsTypeID = +paramResponse.data.Pid;
+    result.UnitsID = +paramResponse.data.Uid;
     result.Comment = paramResponse.data.Comment;
+    
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -100,6 +106,5 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
-  fetchParams();
 });
 </script>

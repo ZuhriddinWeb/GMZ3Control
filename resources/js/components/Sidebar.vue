@@ -48,7 +48,7 @@
     <template #left>
       <VaSidebar v-model="isSidebarVisible" class="custom-sidebar">
         <!-- Language Change Button -->
-        <VaButton @click="changeLanguage" style="margin-bottom: 1rem; border-radius: 0;">
+        <VaButton @click="changeLanguage" style="margin-bottom: 1rem; border-radius: 0;padding: 0.6rem;">
           <VaIcon name="language" style="margin-right: 0.5rem;" />
           {{ currentLanguageLabel }}
         </VaButton>
@@ -147,10 +147,6 @@ const fetchParameterCount = async () => {
 };
 const menu = ref([
   // { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
-  { title: 'menu.dashboard', icon: 'dashboard', path: '/',children: [
-      { title: 'menu.subFactory1', icon: 'sub_icon1', path: '/factory/sub1' },
-      { title: 'menu.subFactory2', icon: 'sub_icon2', path: '/factory/sub2' }
-    ] },
   { title: 'menu.factory', icon: 'factory', path: '/factory' },
   { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
   { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },

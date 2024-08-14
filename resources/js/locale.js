@@ -2,6 +2,7 @@ export default {
   ru: {
     table: {
       headerRow: "№",
+      id:"id",
       name: "Название",
       shortName: "Краткое название",
       structure: "Цех",
@@ -95,8 +96,11 @@ export default {
       title: "Вход",
       submitButton: "Войти",
       errorMessage: "Неверный логин или пароль",
-      successMessage: "Добро пожаловать!",
+      successMessage: "Выполнено успешно!",
 
+    },
+    vuestic:{
+      reset:"",
     },
     language: {
       uz: "O'zbek",
@@ -105,6 +109,7 @@ export default {
   },
   uz: {
     table: {
+      id:"id",
       headerRow: "№",
       name: "Nomlanishi",
       shortName: "Qisqa nomi",
@@ -199,7 +204,10 @@ export default {
       title: "Kirish",
       submitButton: "Kirish",
       errorMessage: "Login yoki parol xato",
-      successMessage:"Xush kelibsiz"
+      successMessage:"Muvafaqiyatli bajarildi!"
+    },
+    vuestic:{
+      reset:"",
     },
     language: {
       uz: "O'zbek",

@@ -44,6 +44,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteStructure from '../components/StructureComponent/DeleteStructure.vue'
 import EditStructure from '../components/StructureComponent/EditStructure.vue';
 import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const { locale, t } = useI18n();
 
@@ -124,6 +126,8 @@ const onSubmit = async () => {
       result.ShortName = '';
       result.Comment = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }
@@ -133,7 +137,6 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
@@ -141,11 +144,7 @@ onMounted(() => {
   fetchData();
 });
 
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  // Save language preference to localStorage
-  localStorage.setItem('locale', locale.value);
-};
+
 
 
 </script>

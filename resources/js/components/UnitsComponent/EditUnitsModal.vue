@@ -27,6 +27,8 @@
 import { ref, reactive, inject, onMounted } from 'vue';
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const props = defineProps(["params"]);
 const selectedDataEdit = ref(false);
@@ -64,6 +66,8 @@ const onSubmit = async () => {
     if (data.status === 200) {
       onupdated(props.params.node, data.unit);
       selectedDataEdit.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
       // Optionally, you can show an error notification here.

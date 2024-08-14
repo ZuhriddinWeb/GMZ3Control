@@ -6,7 +6,7 @@
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" :ok-text="t('modal.save')" :cancel-text="t('modal.cancel')" @ok="onSubmit"
+      <VaModal v-model="showModal" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
         close-button>
         <h3 class="va-h3">
           {{ t('modals.addParamsTitle') }}
@@ -31,10 +31,10 @@
                 :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.max')" />
             </div>
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.ParamsTypeID" class="mb-6" :label="t('menu.paramtypes')"
+              <VaSelect v-model="result.ParamsTypeID" value-by="value" class="mb-6" :label="t('menu.paramtypes')"
                 :options="paramsOptions" clearable />
-              <VaSelect v-model="result.UnitsID" class="mb-6" :label="t('menu.units')" :options="unitsOptions"
-                clearable />
+              <VaSelect v-model="result.UnitsID" value-by="value" class="mb-6" :label="t('menu.units')"
+                :options="unitsOptions" clearable />
             </div>
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
           </VaForm>
@@ -52,14 +52,14 @@
 
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { useI18n } from 'vue-i18n'; // Import useI18n from vue-i18n
+import { ref, reactive, onMounted, provide } from 'vue';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteParam from '../components/ParamsPageComponent/DeleteParam.vue';
 import EditParam from '../components/ParamsPageComponent/EditParam.vue'
 
-const { t } = useI18n(); // Use i18n
+const { t } = useI18n();
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -84,14 +84,15 @@ function ondeleted(selectedData) {
 function onupdated(rowNode, data) {
   rowNode.setData(data)
 }
-
+provide('ondeleted', ondeleted);
+provide('onupdated', onupdated);
 const columnDefs = reactive([
-  { headerName: t("table.index"), valueGetter: "node.rowIndex + 1", width: 80 },
+  { headerName: t("table.headerRow"), valueGetter: "node.rowIndex + 1", width: 80 },
   { headerName: t("table.id"), field: "Uuid", hide: true, flex: 1 },
   { headerName: t("table.name"), field: "Name", flex: 1 },
   { headerName: t("table.shortName"), field: "ShortName" },
-  { headerName: t("table.paramType"), hide: true, field: "PName" },
-  { headerName: t("table.unit"), field: "UName" },
+  { headerName: t("menu.paramtypes"), hide: true, field: "PName" },
+  { headerName: t("menu.units"), field: "UName" },
   { headerName: t("table.min"), field: "Min" },
   { headerName: t("table.max"), field: "Max" },
   { headerName: t("table.comment"), field: "Comment", flex: 1 },
@@ -120,7 +121,6 @@ const fetchData = async () => {
   try {
     const response = await axios.get('/param');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
-    console.log(rowData.value);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -152,7 +152,7 @@ const onSubmit = async () => {
       result.ShortName = '';
       result.ParamsTypeID = '';
       result.UnitsID = '',
-        result.Comment = '';
+      result.Comment = '';
       await fetchData();
     } else {
       console.error('Error saving data:', data.message);

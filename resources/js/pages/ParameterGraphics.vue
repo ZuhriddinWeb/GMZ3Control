@@ -7,7 +7,7 @@
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
-        <h3 class="va-h3">
+        <h3 class="va-h3" @vue:mounted="fetchParams">
           Parametr grafigini yaratish
         </h3>
         <div>
@@ -177,7 +177,6 @@ const onSubmit = async () => {
 };
 onMounted(() => {
   fetchData()
-  fetchParams()
 });
 </script>
 

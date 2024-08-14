@@ -141,7 +141,6 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
@@ -150,15 +149,7 @@ onMounted(() => {
   fetchGraphics();
 });
 
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  // Save language preference to localStorage
-  localStorage.setItem('locale', locale.value);
-};
 
-const currentLanguageLabel = computed(() => {
-  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
-});
 </script>
 
 

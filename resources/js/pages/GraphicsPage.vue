@@ -38,6 +38,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteGraphicsModal from '../components/GraphicsComponent/DeleteGraphicsModal.vue';
 import EditGraphicsModal from '../components/GraphicsComponent/EditGraphicsModal.vue';
 import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const { locale, t } = useI18n();
 
@@ -116,6 +118,8 @@ const onSubmit = async () => {
       result.NameRus = '';
       result.Comment = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }

@@ -58,7 +58,8 @@ import axios from 'axios';
 const props = defineProps(["params"]);
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
-
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 const { t } = useI18n();
 
 const result = reactive({
@@ -86,6 +87,8 @@ const onSubmit = async () => {
     if (data.status === 200) {
       onupdated(props.params.node, data.unit);
       selectedDataEdit.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }

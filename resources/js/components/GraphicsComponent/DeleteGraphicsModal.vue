@@ -1,11 +1,11 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="delete" preset="primary" class="mt-1" @click="selectedDataDelete = true" />
-    <VaModal v-model="selectedDataDelete" ok-text="Apply" @close="selectedDataDelete = false"  @ok="onSubmit" close-button>
-      <h3 class="va-h3">Ma'lumotni o'chirish</h3>
+    <VaModal v-model="selectedDataDelete" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')"
+      @close="selectedDataDelete = false" @ok="onSubmit" close-button>
+      <h3 class="va-h3">{{ t("modals.title") }}</h3>
       <p>
-        Classic modal overlay which represents a dialog box or other interactive
-        component, such as a dismissible alert, sub-window, etc.
+        {{ t('modals.message') }}
       </p>
     </VaModal>
   </main>
@@ -14,9 +14,13 @@
 <script setup>
 import { ref, onMounted , inject} from 'vue'
 import axios from 'axios';
+import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const selectedDataDelete = ref(false)
 const  props = defineProps(["params"]);
+const { t } = useI18n();
 
 const ondeleted = inject('ondeleted')
 
@@ -26,6 +30,8 @@ const onSubmit = async () => {
     if (data.status === 200) {
       ondeleted(props.params.data)
       selectedDataDelete.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error deleting data:', data.message);
     }

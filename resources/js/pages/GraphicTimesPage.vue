@@ -14,9 +14,9 @@
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.GraphicId" class="mb-6" :label="t('form.selectGraphic')"
+              <VaSelect v-model="result.GraphicId" value-by="value" class="mb-6" :label="t('form.selectGraphic')"
                 :options="graphicsOptions" clearable />
-              <VaSelect v-model="result.ChangeId" class="mb-6" :label="t('form.selectChange')" :options="changesOptions"
+              <VaSelect v-model="result.ChangeId" value-by="value" class="mb-6" :label="t('form.selectChange')" :options="changesOptions"
                 clearable />
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
@@ -50,6 +50,9 @@ import DeleteGraphicTimesModal from '../components/GraphicTimesComponent/DeleteG
 import { useI18n } from 'vue-i18n';
 const { locale, t } = useI18n();
 import { format } from 'date-fns';
+
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -159,6 +162,7 @@ const onSubmit = async () => {
       result.StartTime = '';
       result.EndTime = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
     } else {
       console.error('Error saving data:', data.message);
     }

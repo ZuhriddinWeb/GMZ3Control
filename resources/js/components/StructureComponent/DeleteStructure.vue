@@ -28,6 +28,8 @@
 import { ref, onMounted , inject} from 'vue'
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 
 const selectedDataDelete = ref(false)
 const  props = defineProps(["params"]);
@@ -36,12 +38,13 @@ const { t } = useI18n();
 const ondeleted = inject('ondeleted')
 
 const onSubmit = async () => {
-  console.log(props.params.data['id']);
   try {
     const { data } = await axios.delete(`/structure/${props.params.data['id']}`);
     if (data.status === 200) {
       ondeleted(props.params.data)
       selectedDataDelete.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error deleting data:', data.message);
     }

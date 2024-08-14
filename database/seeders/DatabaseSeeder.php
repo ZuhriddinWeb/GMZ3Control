@@ -134,7 +134,7 @@ class DatabaseSeeder extends Seeder
         ]);
         DB::table('sources')->insert([
             ['Name' => 'Qo`lda kiritiladi', 'Shortname' => 'Kiritiladi'],
-            ['Name' => 'WINCC tizimidan olinadi', 'Shortname' => 'WINCC'],
+            // ['Name' => 'WINCC tizimidan olinadi', 'Shortname' => 'WINCC'],
         ]);
         DB::table('paramenters_types')->insert([
             ['Name' => 'Son', 'Comment' => 'float'],

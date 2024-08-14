@@ -39,7 +39,7 @@ export default createStore({
                 axios.defaults.headers.common['Authorization'] = null
                 localStorage.removeItem('token')
                 commit('setUser', null)
-                router.push('/')
+                router.push('/login')
             }
         },
 

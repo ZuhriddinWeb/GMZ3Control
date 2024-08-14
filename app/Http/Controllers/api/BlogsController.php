@@ -36,47 +36,53 @@ class BlogsController extends Controller
     }
     private function getRowUnit($id)
     {
-        $unit = Blogs::find($id);
-        return response()->json($unit);
+        return  Blogs::find($id);
     }
     private function create(Request $request)
     {
-        // $request->validate([
-        //     'Name' => 'required|string|max:255',
-        //     'ShortName' => 'required|string|max:255',
-        //     'Comment' => 'nullable|string|max:255',
-        // ]);
-
-        $unit = Blogs::create([
-            'StructureID'=>$request->StructureID['value'],
-            'Name' => $request->Name,
-            'NameRus' => $request->NameRus,
-            'ShortName' => $request->ShortName,
-            'ShortNameRus' => $request->ShortNameRus,
-            'Comment' => $request->Comment,
+        $validatedData = $request->validate([
+            'StructureID' => 'required|integer|exists:structures,id', 
+            'Name' => 'required|string|max:255',
+            'NameRus' => 'nullable|string|max:255',
+            'ShortName' => 'nullable|string|max:255',
+            'ShortNameRus' => 'nullable|string|max:255',
+            'Comment' => 'nullable|string',
+        ]);
+        $blog = Blog::create([
+            'StructureID' => $validatedData['StructureID'],
+            'Name' => $validatedData['Name'],
+            'NameRus' => $validatedData['NameRus'],
+            'ShortName' => $validatedData['ShortName'],
+            'ShortNameRus' => $validatedData['ShortNameRus'],
+            'Comment' => $validatedData['Comment'],
         ]);
 
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",
-            'unit' => $unit
+            'unit' => $blog
         ]);
     }
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
+        $validatedData = $request->validate([
+            'StructureID' => 'required|integer', 
             'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
+            'NameRus' => 'nullable|string|max:255',
+            'ShortName' => 'nullable|string|max:255',
+            'ShortNameRus' => 'nullable|string|max:255',
+            'Comment' => 'nullable|string',
         ]);
 
         $unit = Blogs::find($request->id);
         $unit->update([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
+            'StructureID' => $validatedData['StructureID'],
+            'Name' => $validatedData['Name'],
+            'NameRus' => $validatedData['NameRus'],
+            'ShortName' => $validatedData['ShortName'],
+            'ShortNameRus' => $validatedData['ShortNameRus'],
+            'Comment' => $validatedData['Comment'],
         ]);
 
         return response()->json([

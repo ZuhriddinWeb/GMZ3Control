@@ -32,23 +32,26 @@ class GraphicTimesController extends Controller
     private function index()
     {
         $GraphicTimes = GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
-        ->select('graphics.Name as GName','graphics.Comment','graphic_times.*')
-        ->get('graphics');
+            ->select('graphics.Name as GName', 'graphics.Comment', 'graphic_times.*')
+            ->get('graphics');
         return response()->json($GraphicTimes);
     }
     private function getRowUnit($id)
     {
-        $unit = GraphicTimes::find($id);
-        return response()->json($unit);
+        return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
+            ->join('changes', 'graphic_times.change', '=', 'changes.id')
+            ->where('graphic_times.id', $id)
+            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*')
+            ->first();
     }
     private function create(Request $request)
     {
         $unit = GraphicTimes::create([
-            'GraphicsID' => $request->GraphicId['value'],
-            'Change' => $request->ChangeId['value'],
+            'GraphicsID' => $request->GraphicId,
+            'Change' => $request->ChangeId,
             'Name' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
             'StartTime' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
-            'EndTime' =>Carbon::parse($request->EndTime)->addHours(5)->format('H:i:s'),
+            'EndTime' => Carbon::parse($request->EndTime)->addHours(5)->format('H:i:s'),
 
         ]);
         return response()->json([
@@ -60,23 +63,20 @@ class GraphicTimesController extends Controller
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
+
 
         $unit = GraphicTimes::find($request->id);
         $unit->update([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
+            'GraphicsID' => $request->GraphicId,
+            'Change' => $request->ChangeId,
+            'Name' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
+            'StartTime' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
+            'EndTime' => Carbon::parse($request->EndTime)->addHours(5)->format('H:i:s'),
         ]);
 
         return response()->json([
             'status' => 200,
-            'message' => "Javob muvafaqiyatli yangilandi",
+            'message' => "muvafaqiyatli yangilandi",
             'unit' => $unit
         ]);
     }

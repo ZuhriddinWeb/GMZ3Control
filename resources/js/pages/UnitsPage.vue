@@ -44,7 +44,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
 import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 import { useI18n } from 'vue-i18n';
-
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 const { locale, t } = useI18n();
 
 const rowData = ref([]);
@@ -96,12 +97,10 @@ const defaultColDef = {
   filter: true
 };
 
-// Function to get the correct field name based on the current locale
 const getFieldName = () => {
   return locale.value === 'uz' ? 'Name' : 'NameRus';
 };
 
-// Function to get the correct field short name based on the current locale
 const getFieldShortName = () => {
   return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
 };
@@ -126,6 +125,8 @@ const onSubmit = async () => {
       result.ShortNameRus = '';
       result.Comment = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }

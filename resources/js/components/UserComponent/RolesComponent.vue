@@ -57,6 +57,8 @@ const onupdated = inject('onupdated');
 const roles = ref([]);
 import { useI18n } from 'vue-i18n';
 
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 const { locale, t } = useI18n();
 
 const result = reactive({
@@ -124,12 +126,7 @@ const onSubmit = async () => {
     if (data.status === 200) {
       // onupdated(props.params.node, data.unit);
       selectedDataEdit.value = false;
-      Swal.fire({
-        position: "top-end",
-        title: "Muvafaqiyatli saqlandi!",
-        showConfirmButton: false,
-        timer: 1500
-      });
+      init({ message: t('login.successMessage'), color: 'success' });
     } else {
       console.error('Error saving data:', data.message);
     }

@@ -41,14 +41,14 @@ class BlogsController extends Controller
     private function create(Request $request)
     {
         $validatedData = $request->validate([
-            'StructureID' => 'required|integer|exists:structures,id', 
+            'StructureID' => 'required|integer', 
             'Name' => 'required|string|max:255',
             'NameRus' => 'nullable|string|max:255',
             'ShortName' => 'nullable|string|max:255',
             'ShortNameRus' => 'nullable|string|max:255',
             'Comment' => 'nullable|string',
         ]);
-        $blog = Blog::create([
+        $blog = Blogs::create([
             'StructureID' => $validatedData['StructureID'],
             'Name' => $validatedData['Name'],
             'NameRus' => $validatedData['NameRus'],

@@ -17,8 +17,6 @@ class GraphicsParamenters extends Model
         'SourceID',
         'CurrentTime',
         'EndingTime',
-        'Min',
-        'Max',
         'Created',
         'Creator',
         'Changed',

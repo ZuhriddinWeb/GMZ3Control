@@ -58,6 +58,7 @@ Route::post('/node-clicked', [TreeController::class, 'handleNodeClick']);
 Route::post('/treeChart', [TreeController::class, 'treeChart']);
 
 Route::get('get-params-for-user-count/{user_id}/{change_id}' , [ParamsGraphController::class, 'getParamsForUserCount']);
+Route::get('get-params-for-id-edit/{param_id}' , [ParamsGraphController::class, 'getRowParamEdit']);
 Route::get('get-params-for-user/{user_id}/{change_id}' , [ParamsGraphController::class, 'getParamsForUser']);
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
 

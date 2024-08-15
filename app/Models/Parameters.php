@@ -15,6 +15,8 @@ class Parameters extends Model
         'ShortName',
         'ShortNameRus',
         'ParametrTypeID',
+        'Min',
+        'Max',
         'UnitsID',
         'Created',
         'Creator',

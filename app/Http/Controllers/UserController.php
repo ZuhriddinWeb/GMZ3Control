@@ -48,7 +48,7 @@ class UserController extends Controller
         $user = $this->guard()->user();
 
         $token = $user->createToken('token-name', ['server:update'])->plainTextToken;
-        return response()->json(['token' => $token, 'type' => 'Bearer','status' => 200]);
+        return response()->json(['token' => $token, 'type' => 'Bearer'], 200);
     }
 
     public function logoutUser(Request $request)
@@ -69,24 +69,24 @@ class UserController extends Controller
     public function authenticatedUser(Request $request)
     {
         $user = $request->user()->load('roles');
-    
+
         $seanses = $user->tokens()->where('tokenable_id', $user->id)->get();
-    
+
         foreach ($seanses as $key => $value) {
             $value->updated = Carbon::parse($value->updated_at)->translatedFormat('d.m.Y');
         }
-    
+
         $active = $user->tokens()->where('id', $user->currentAccessToken()->id)->first();
         $active->abilities = [$user->isActive];
         $active->save();
-    
+
         $active->updated = Carbon::parse($active->updated_at)->translatedFormat('d.m.Y');
         $user->active = $active;
         $user->seanses = $seanses;
-    
+
         return response()->json($user);
     }
-    
+
 
     private function getRowUnit($id)
     {
@@ -101,8 +101,8 @@ class UserController extends Controller
             'Phone' => 'required|string|max:255',
             'Login' => 'required|string|max:255',
             'Password' => 'required|min:6|max:255',
-            'StructureID' => 'required|array|min:1', 
-            'StructureID.*.value' => 'required|integer', 
+            'StructureID' => 'required|array|min:1',
+            'StructureID.*.value' => 'required|integer',
         ]);
         $structureIds = array_column($request->StructureID, 'value');
 
@@ -111,9 +111,9 @@ class UserController extends Controller
             'phone' => $request->Phone,
             'login' => $request->Login,
             'password' => Hash::make($request->Password),
-            'structure_id' => $structureIds, 
+            'structure_id' => $structureIds,
         ]);
-        
+
         return response()->json([
             'status' => 200,
             'message' => "Foydalanuvchi muvafaqiyatli qo'shildi",

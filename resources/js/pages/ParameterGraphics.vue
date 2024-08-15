@@ -6,55 +6,66 @@
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
+      <VaModal v-model="showModal" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+        close-button>
         <h3 class="va-h3" @vue:mounted="fetchParams">
-          Parametr grafigini yaratish
+          {{ t('modals.addParamsGrafTitle') }}
         </h3>
-        <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.ParametersID" class="mb-1" label="Parametrni tanlang" :options="paramsOptions"
-                clearable />
-              <VaSelect v-model="result.GrapicsID" class="mb-1" label="Vaqt grafigini tanlang"
-                :options="GraphicTimeOptions" clearable />
+        <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
+            <VaSelect v-model="result.ParametersID" value-by="value" class="mb-1" :label="t('menu.params')"
+              :options="paramsOptions" clearable />
+            <VaSelect v-model="result.GrapicsID" value-by="value" class="mb-1" :label="t('menu.graphictimes')"
+              :options="GraphicTimeOptions" clearable />
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
+            <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1" :label="t('menu.structure')"
+              :options="structureOptions" clearable />
+            <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
+              :options="BlogsOptions" clearable />
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+            <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
+              :options="SourceOptions" clearable />
+          </div>
+          <div class="flex gap-5 flex-wrap w-full mt-4">
+            <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
+            <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend :weekends="getWeekends" />
+          </div>
+          <!-- <div class="flex justify-between mt-4">
+            <div class="w-1/2 mr-48">
+              <va-date-picker v-model="result.CurrentTime" :label="t('modals.startTime')" class="w-1/2" />
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.FactoryStructureID" class="mb-1" label="Tuzilmani tanlang"
-                :options="structureOptions" clearable />
-              <VaSelect v-model="result.BlogID" class="mb-1" label="Uchastkani tanlang"
-                :options="BlogsOptions" clearable />
+            <div class="w-1/2">
+              <va-date-picker v-model="result.EndingTime" :label="t('modals.startTime')" class="w-1/2" />
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
-              <VaSelect v-model="result.SourceID" class="mb-1" label="Ma`lumot manbasini tanlang"
-                :options="SourceOptions" clearable />
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" label="Joriy etish vaqti"
-                v-model="result.CurrentTime" />
-              <VaTimeInput v-model="result.EndingTime" clearable clearable-icon="cancel" color="textPrimary"
-                label="Tugash vaqti" />
-            </div>
-            <VaInput type="number" class="w-full" v-model="result.OrderNumber"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Tartib raqami" />
-          </VaForm>
-        </div>
+          </div> -->
+          <VaInput type="number" class="w-full" v-model="result.OrderNumber"
+            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+            :label="t('modals.ordernumber')" />
+        </VaForm>
       </VaModal>
     </main>
     <!-- Add new Elements end -->
     <main class="flex-grow">
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
-        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api"></ag-grid-vue>
+        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api">
+      </ag-grid-vue>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide } from 'vue';
+import { ref, reactive, onMounted, provide,computed } from 'vue';
 import axios from 'axios';
+import { useI18n } from 'vue-i18n';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
 import EditModal from '../components/ParamsGraphComponent/EditModal.vue';
+import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
+const { t } = useI18n();
+import { format  } from 'date-fns';
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -72,10 +83,8 @@ const result = reactive({
   SourceID: "",
   CurrentTime: "",
   EndingTime: "",
-  Min: "",
-  Max: "",
   OrderNumber: "",
-  BlogID:""
+  BlogID: ""
 });
 
 function ondeleted(selectedData) {
@@ -89,14 +98,34 @@ function onupdated(rowNode, data) {
 provide('ondeleted', ondeleted)
 provide('onupdated', onupdated)
 
-const columnDefs = reactive([
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1" },
+const columnDefs = computed(() => [
+  { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
   { headerName: "Parametr nomi", field: "PName", flex: 1 },
   { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
   { headerName: "Grafik", field: "GName" },
-  
-  { headerName: "Joriy etish vaqti", field: "CurrentTime" },
-  { headerName: "Tugatish vaqti", field: "EndingTime" },
+
+  {
+    headerName: "Joriy etish vaqti",
+    field: "CurrentTime",
+    valueFormatter: (params) => {
+      const [datePart, timePart] = params.value.split(' ');
+      const [year, month, day] = datePart.split('-');
+      const [hour, minute] = timePart.split(':');
+      const date = new Date(year, month - 1, day); 
+      return format(date, 'dd/MM/yyyy');
+    },
+  },
+  {
+    headerName: "Tugatish vaqti",
+    field: "EndingTime",
+    valueFormatter: (params) => {
+      const [datePart, timePart] = params.value.split(' ');
+      const [year, month, day] = datePart.split('-');
+      const [hour, minute] = timePart.split(':');
+      const date = new Date(year, month - 1, day); 
+      return format(date, 'dd/MM/yyyy');
+    },
+  },
 
   {
     cellClass: ['px-0'],
@@ -164,10 +193,16 @@ const onSubmit = async () => {
   try {
     const { data } = await axios.post("/paramsgraph", result);
     if (data.status === 200) {
-      showModal.value = false;
-      result.Login = '';
-      result.Password = '';
-      await fetchData();
+      result.ParametersID = "",
+        result.FactoryStructureID = "",
+        result.GrapicsID = "",
+        result.SourceID = "",
+        result.CurrentTime = "",
+        result.EndingTime = "",
+        result.OrderNumber = "",
+        result.BlogID = "",
+        await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
     } else {
       console.error('Error saving data:', data.message);
     }

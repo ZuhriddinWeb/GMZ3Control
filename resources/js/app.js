@@ -1,21 +1,22 @@
 import { createApp } from "vue";
-import App from './App.vue';
-import axios from 'axios';
-import router from './router';
-import store from './store';
+import App from "./App.vue";
+import axios from "axios";
+import router from "./router";
+import store from "./store";
 import { createVuestic } from "vuestic-ui";
 import "vuestic-ui/css";
-import Swal from 'sweetalert2';
-import 'sweetalert2/src/sweetalert2.scss';
+import Swal from "sweetalert2";
+import "sweetalert2/src/sweetalert2.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-material.css";
-import { Bar } from 'vue-chartjs';
+import { Bar } from "vue-chartjs";
 import { AgGridVue } from "ag-grid-vue3";
-import { createI18n } from 'vue-i18n';
-import locale from './locale.js';  
-import 'material-icons/iconfont/material-icons.css';
-import { useToast} from 'vuestic-ui';
+import { createI18n } from "vue-i18n";
+import locale from "./locale.js";
+import "material-icons/iconfont/material-icons.css";
+import { useToast } from "vuestic-ui";
+import InputMask from 'vue-input-mask';
 
 axios.defaults.baseURL = "/api/";
 window.axios = axios;
@@ -27,25 +28,26 @@ window.router = router;
 window.router = useToast;
 
 const i18n = createI18n({
-    legacy: false,
-    locale: 'uz', 
-    fallbackLocale: 'ru', 
-    messages: locale  
+  legacy: false,
+  locale: "uz",
+  fallbackLocale: "ru",
+  messages: locale,
 });
 
 window.i18n = i18n;
 
 async function initApp() {
-  await store.dispatch('getUser');
+  await store.dispatch("getUser");
   const app = createApp(App)
     .use(createVuestic())
-    .component('AgGridVue', AgGridVue)
-    .component('Bar', Bar)
+    .component("AgGridVue", AgGridVue)
+    .component("Bar", Bar)
+    .component('input-mask', InputMask)
     .use(store)
     .use(router)
     .use(i18n)
     .use(useToast)
-    .mount('#app');
+    .mount("#app");
 }
 
 initApp();

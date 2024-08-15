@@ -41,7 +41,8 @@
 import { ref, reactive, inject, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n'; // Import useI18n from vue-i18n
 import axios from 'axios';
-
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 const { t } = useI18n(); // Use i18n
 
 const props = defineProps(["params"]);
@@ -57,6 +58,8 @@ const result = reactive({
   ShortName: "",
   ParamsTypeID: "",
   UnitsID: "",
+  Min: "",
+  Max: "",
   Comment: "",
   id: props.params.data['Uuid']
 });
@@ -77,6 +80,7 @@ const fetchParams = async () => {
       value: change.id,
       text: change.Name
     }));
+    console.log(paramResponse);
     
     result.Name = paramResponse.data.Name;
     result.NameRus = paramResponse.data.NameRus;
@@ -84,6 +88,8 @@ const fetchParams = async () => {
     result.ShortName = paramResponse.data.ShortName;
     result.ParamsTypeID = +paramResponse.data.Pid;
     result.UnitsID = +paramResponse.data.Uid;
+    result.Min = +paramResponse.data.Min;
+    result.Max = +paramResponse.data.Max;
     result.Comment = paramResponse.data.Comment;
     
   } catch (error) {
@@ -97,6 +103,8 @@ const onSubmit = async () => {
     if (data.status === 200) {
       onupdated(props.params.node, data.unit);
       selectedDataEdit.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }

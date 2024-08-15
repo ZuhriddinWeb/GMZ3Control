@@ -6,23 +6,25 @@
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
+      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit"
+        close-button>
         <h3 class="va-h3">
           {{ t('modals.addUserTitle') }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-              <VaSelect v-model="result.StructureID" :label="t('form.structureName')" :options="factoryOptions" multiple />
+              <VaSelect v-model="result.StructureID" :label="t('form.structureName')" :options="factoryOptions"
+                multiple />
             </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
               :label="t('form.userName')" />
-            <VaInput v-model="result.Phone" class="w-full" :label="t('form.userPhone')" type="input"
-              mask="creditCard" placeholder="###-##-##" />
+            <VaInput class="w-full" v-model="result.Phone"
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" type="tel"
+              :label="t('form.userPhone')" placeholder="597****" />
             <VaInput class="w-full" v-model="result.Login"
-              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
-              :label="t('form.login')" />
+              :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('form.login')" />
             <VaInput class="w-full" v-model="result.Password"
               :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
               :label="t('form.password')" />

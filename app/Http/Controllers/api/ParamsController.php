@@ -42,7 +42,7 @@ class ParamsController extends Controller
         return Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
             ->join('units', 'parameters.UnitsID', '=', 'units.id')
             ->where('parameters.id', $id)
-            ->select('parameters.id as Uuid', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
+            ->select('parameters.id as Uuid','parameters.Min','parameters.Max','parameters.NameRus', 'parameters.ShortNameRus', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
             ->first();
     }
     private function create(Request $request)
@@ -57,6 +57,8 @@ class ParamsController extends Controller
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
             'ParametrTypeID' => $request->ParamsTypeID,
+            'Min' => $request->Min,
+            'Max' => $request->Min,
             'UnitsID' => $request->UnitsID,
             'Comment' => $request->Comment,
         ]);
@@ -78,6 +80,8 @@ class ParamsController extends Controller
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
             'ParametrTypeID' => $request->ParamsTypeID,
+            'Min' => $request->Min,
+            'Max' => $request->Min,
             'UnitsID' => $request->UnitsID,
             'Comment' => $request->Comment,
         ]);

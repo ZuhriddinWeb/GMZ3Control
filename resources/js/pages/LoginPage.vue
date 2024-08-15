@@ -62,7 +62,8 @@ import store from '../store';
 import { useI18n } from 'vue-i18n';
 
 const { validate } = useForm('form');
-const { push } = useRouter();
+const router = useRouter();
+
 const { init } = useToast();
 const { locale, t } = useI18n();
 
@@ -72,13 +73,13 @@ const result = reactive({
 });
 
 const onSubmit = async () => {
-        const { data } = await store.dispatch('login', result);
-        if (data.status == 200) {
-            push({ name: 'home' });
-        } else {
-            console.error('Error saving data:', data.message);
-            init({ message: t('login.errorMessage'), color: 'danger' });
-        }
+    const { data } = await store.dispatch('login', result);
+    if (data.status == 200) {
+        router.push({ name: 'vparams' });
+    } else {
+        console.error('Error:', data.message);
+        init({ message: t('login.errorMessage'), color: 'danger' });
+    }
 };
 
 const changeLanguage = () => {

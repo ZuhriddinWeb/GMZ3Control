@@ -58,7 +58,8 @@ import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteParam from '../components/ParamsPageComponent/DeleteParam.vue';
 import EditParam from '../components/ParamsPageComponent/EditParam.vue'
-
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+const { init } = useToast();
 const { t } = useI18n();
 
 const rowData = ref([]);
@@ -74,6 +75,8 @@ const result = reactive({
   ShortName: "",
   ParamsTypeID: "",
   UnitsID: "",
+  Min: "",
+  Max: "",
   Comment: ""
 });
 
@@ -86,6 +89,7 @@ function onupdated(rowNode, data) {
 }
 provide('ondeleted', ondeleted);
 provide('onupdated', onupdated);
+
 const columnDefs = reactive([
   { headerName: t("table.headerRow"), valueGetter: "node.rowIndex + 1", width: 80 },
   { headerName: t("table.id"), field: "Uuid", hide: true, flex: 1 },
@@ -152,8 +156,12 @@ const onSubmit = async () => {
       result.ShortName = '';
       result.ParamsTypeID = '';
       result.UnitsID = '',
+      result.Min = '',
+      result.Max = '',
       result.Comment = '';
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
+
     } else {
       console.error('Error saving data:', data.message);
     }

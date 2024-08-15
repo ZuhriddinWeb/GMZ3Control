@@ -60,6 +60,7 @@ export default {
       addGraphicTimesTitle: "Добавить времена графика",
       addParamTypesTitle: "Создание типов параметров",
       addParamsTitle:"Создание параметров",
+      addParamsGrafTitle:"Создание график параметров",
       addSourceTitle: "Создать источник",
       addChangeTitle: "Создать смену",
       addUserTitle: "Создать нового пользователя",
@@ -67,8 +68,11 @@ export default {
       editSectionInfo: "",
       apply: "Применить",
       title: "Удалить информацию",
+      startTime: "Время добавить",
+      endTime:"Время выключения",
       message: "Вы уверены, что хотите удалить эти данные? Это действие не может быть отменено.",
-      cancel: "Отмена"
+      cancel: "Отмена",
+      ordernumber:"Серийный номер"
     },
     form: {
       name: "Название на узбекском",
@@ -169,6 +173,7 @@ export default {
       addGraphicTitle: "Grafik vaqtini yaratish",
       addGraphicTimesTitle: "Grafik vaqtlarini kiritish",
       addParamsTitle: "Parametr yaratish",
+      addParamsGrafTitle: "Parametr grafikini yaratish",
       addSourceTitle: "Manba yaratish",
       addChangeTitle: "Smena yaratish",
       addUserTitle: "Yangi foydalanuvchi yaratish",
@@ -176,7 +181,11 @@ export default {
       apply: "Tasdiqlash",
       title: "Ma'lumotni o'chirish",
       message: "Bu ma'lumotni o'chirishni xohlaysizmi? Ushbu ma`lumotlarni tiklab bo'lmaydi.",
-      cancel: "Bekor qilish"
+      cancel: "Bekor qilish",
+      startTime: "Joriy etish vaqti",
+      endTime:"Bekor qilish vaqti",
+      ordernumber:"Tartib raqami",
+
     },
     form: {
       name: "Nomlanishi O‘zbek tilida",

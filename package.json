@@ -25,9 +25,12 @@
         "material-icons": "^1.13.12",
         "sweetalert2": "^11.12.2",
         "uuid": "^10.0.0",
+        "v-mask": "^2.3.0",
         "vue-chartjs": "^5.3.1",
         "vue-i18n": "^9.13.1",
+        "vue-input-mask": "^0.0.11",
         "vue-router": "^4.4.0",
+        "vue-the-mask": "^0.11.1",
         "vuestic-ui": "^1.9.12",
         "vuex": "^4.0.2"
     }

@@ -43,6 +43,17 @@ class ParamsGraphController extends Controller
         $unit = GraphicsParamenters::join('parameters','graphics_paramenters.ParametersID','=','parameters.id')->where('BlogsID',$id)->get();
         return response()->json($unit);
     }
+    public function getRowParamEdit($id)
+    {
+        return GraphicsParamenters::join('graphics','graphics_paramenters.GrapicsID','=','graphics.id')
+        ->join('factory_structures','graphics_paramenters.FactoryStructureID','=','factory_structures.id')
+        ->join('blogs','graphics_paramenters.BlogsID','=','blogs.id')
+        ->join('sources','graphics_paramenters.SourceID','=','sources.id')
+        ->join('parameters','graphics_paramenters.ParametersID','=','parameters.id')
+        ->where('graphics_paramenters.id',$id)
+        ->select('graphics_paramenters.*','graphics.id as Gid','graphics.Name as GName','parameters.id as Pid','parameters.name as Pname','factory_structures.id as Sid','factory_structures.Name as SName','blogs.id as Bid','blogs.Name as BName','sources.id as Cid','sources.Name as Cname')
+        ->first();
+    }
     public function getParamsForUser($id,$change_id)
     {
         $idArray = explode(',', $id);
@@ -89,11 +100,11 @@ class ParamsGraphController extends Controller
     {
         $GParams = GraphicsParamenters::create([
             'OrderNumber'=>$request->OrderNumber,
-            'ParametersID' => $request->ParametersID['value'],
-            'FactoryStructureID' => $request->FactoryStructureID['value'],
-            'BlogsID'=>$request->BlogID['value'],
-            'GrapicsID' => $request->GrapicsID['value'],
-            'SourceID' => $request->SourceID['value'],
+            'ParametersID' => $request->ParametersID,
+            'FactoryStructureID' => $request->FactoryStructureID,
+            'BlogsID'=>$request->BlogID,
+            'GrapicsID' => $request->GrapicsID,
+            'SourceID' => $request->SourceID,
             'CurrentTime' => date('Y-m-d H:i:s', strtotime($request->CurrentTime)),
             'EndingTime' => date('Y-m-d H:i:s', strtotime($request->EndingTime)),
         ]);
@@ -107,18 +118,16 @@ class ParamsGraphController extends Controller
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
-
         $unit = GraphicsParamenters::find($request->id);
         $unit->update([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
+            'OrderNumber'=>$request->OrderNumber,
+            'ParametersID' => $request->ParametersID,
+            'FactoryStructureID' => $request->FactoryStructureID,
+            'BlogsID'=>$request->BlogID,
+            'GrapicsID' => $request->GrapicsID,
+            'SourceID' => $request->SourceID,
+            'CurrentTime' => date('Y-m-d H:i:s', strtotime($request->CurrentTime)),
+            'EndingTime' => date('Y-m-d H:i:s', strtotime($request->EndingTime)),
         ]);
 
         return response()->json([
@@ -134,7 +143,7 @@ class ParamsGraphController extends Controller
             $unit = GraphicsParamenters::findOrFail($id);
             $unit->delete();
 
-            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
+            return response()->json(['status' => 200, 'message' => 'deleted successfully']);
         } catch (\Exception $e) {
             return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
         }

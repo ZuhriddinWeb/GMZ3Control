@@ -147,6 +147,7 @@ const fetchParameterCount = async () => {
 };
 const menu = ref([
   // { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
+  { title: 'menu.home', icon: 'home', path: '/' },
   { title: 'menu.factory', icon: 'factory', path: '/factory' },
   { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
   { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
@@ -164,9 +165,14 @@ const menu = ref([
 ]);
 
 const handleLogout = async () => {
-  await store.dispatch('logout');
-  router.push('/login');
+    try {
+        await store.dispatch('logout');
+        router.push({ name: 'login' });
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
 };
+
 
 const changeLanguage = () => {
   locale.value = locale.value === 'uz' ? 'ru' : 'uz';

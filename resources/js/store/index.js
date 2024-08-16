@@ -15,22 +15,20 @@ export default createStore({
     },
   },
   actions: {
-    async login({ commit, dispatch }, data) {
+    async login({ state, dispatch }, data) {
       try {
-        const result = await axios.post("login", data);
-        if (result.status === 200) {
-          localStorage.setItem(
-            "token",
-            `${result.data.type} ${result.data.token}`
-          );
-          commit("setUser", result.data.user);
-          await dispatch("getUser");
-          router.push({ name: "vparams" });
+        const result = await axios.post('login', data);
+        if (result.status == 299) {
+          return result.data; 
         } else {
-          console.error(`Unexpected status code: ${result.status}`);
+          localStorage.setItem('token', `${result.data.type} ${result.data.token}`); 
+          state.logined = null;
+          await dispatch('getUser');
+          return { success: true }; 
         }
       } catch (error) {
-        console.error("Login failed:", error);
+        console.error('Login action error:', error);
+        return { success: false, message: 'Login failed' }; 
       }
     },
 

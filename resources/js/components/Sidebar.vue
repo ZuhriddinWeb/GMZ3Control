@@ -14,7 +14,7 @@
         </template>
         <template #center>
           <div v-if="store.state.user && store.state.user.name" class="flex justify-between font-semibold">
-           
+
             <div class="flex justify-between items-center">
               <span class="material-icons user-icon text-blue-800">account_circle</span>
               <p class="ml-1">{{ t('table.user') }}: {{ store.state.user.name }} /</p>
@@ -33,7 +33,7 @@
             </div>
             <div class="flex justify-between items-center ml-3">
               <span class="material-icons user-icon text-orange-500">diamond</span>
-              <p class="ml-1">{{ t('table.output') }}:{{ paramCount-store.state.countInputedParams }} /</p>
+              <p class="ml-1">{{ t('table.output') }}:{{ paramCount - store.state.countInputedParams }} /</p>
             </div>
             <div class="flex justify-between items-center ml-3">
               <span class="material-icons user-icon text-cyan-800">timelapse</span>
@@ -56,7 +56,7 @@
         <template v-for="menuItem in generateUserMenu" :key="menuItem.icon">
           <a v-if="menuItem.path === '/logout'" @click.prevent="handleLogout">
             <VaSidebarItem>
-              <VaSidebarItemContent>
+              <VaSidebarItemContent class="hover-logout m-0">
                 <VaIcon :name="menuItem.icon" />
                 <VaSidebarItemTitle>
                   {{ t(menuItem.title) }}
@@ -64,11 +64,11 @@
               </VaSidebarItemContent>
             </VaSidebarItem>
           </a>
-          <router-link v-else :to="menuItem.path" class="router-link">
-            <VaSidebarItem>
-              <VaSidebarItemContent>
+          <router-link v-else :to="menuItem.path" class="router-link ">
+            <VaSidebarItem > 
+              <VaSidebarItemContent class="hover-item">
                 <VaIcon :name="menuItem.icon" />
-                <VaSidebarItemTitle>
+                <VaSidebarItemTitle >
                   {{ t(menuItem.title) }}
                 </VaSidebarItemTitle>
               </VaSidebarItemContent>
@@ -101,7 +101,7 @@ import { useI18n } from 'vue-i18n';
 
 
 const params = reactive([
-  10,29,39,34
+  10, 29, 39, 34
 ])
 
 const result = computed(() => {
@@ -148,6 +148,13 @@ const fetchParameterCount = async () => {
 const menu = ref([
   // { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
   { title: 'menu.home', icon: 'home', path: '/' },
+  {
+    title: 'menu.lists', icon: 'home', children: [
+      { title: 'menu.factory', icon: 'factory' },
+      { title: 'menu.factory', icon: 'factory' },
+    ]
+  },
+
   { title: 'menu.factory', icon: 'factory', path: '/factory' },
   { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
   { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
@@ -165,12 +172,12 @@ const menu = ref([
 ]);
 
 const handleLogout = async () => {
-    try {
-        await store.dispatch('logout');
-        router.push({ name: 'login' });
-    } catch (error) {
-        console.error('Error during logout:', error);
-    }
+  try {
+    await store.dispatch('logout');
+    router.push({ name: 'login' });
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
 };
 
 
@@ -185,14 +192,14 @@ const currentLanguageLabel = computed(() => {
 
 const generateUserMenu = computed(() => {
   const user = store.state.user
-  if(user == null) return
+  if (user == null) return
   const roles = user?.roles?.filter(role => role.pivot.view === "1");
-  
+
   return menu.value?.filter(item => {
     const role = roles.filter(role => item.title == role.name)
     return role.length
   });
-  
+
 })
 
 let timer;
@@ -216,5 +223,13 @@ onMounted(() => {
 <style>
 .custom-sidebar {
   background-color: #57534e;
+}
+.hover-item:hover{
+  background-color: #154EC1;
+  color: white;
+}
+.hover-logout:hover{
+  background-color: rgb(220 38 38);
+  color: white;
 }
 </style>

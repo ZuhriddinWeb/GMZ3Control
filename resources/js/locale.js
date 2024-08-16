@@ -31,6 +31,7 @@ export default {
       OrderNumber:"Порядковый номер"
     },
     menu: {
+      home:"Главная страница",
       dashboard: "Панель управления",
       factory: "Завод",
       structure: "Цехы",
@@ -46,7 +47,9 @@ export default {
       vparams: "Значения параметров",
       users: "Пользователи",
       logout: "Выход",
-      timer:"Время"
+      timer:"Время",
+      edit:"Редактировать",
+      lists:"Cправочники"
     },
     buttons: {
       save: "Сохранить",
@@ -145,6 +148,7 @@ export default {
       OrderNumber:"Tartib raqami"
     },
     menu: {
+      home:"Bosh sahifa",
       dashboard: "Boshqaruv paneli",
       factory: "Zavod",
       structure: "Sexlar",
@@ -160,7 +164,9 @@ export default {
       vparams: "Parametr qiymatlari",
       users: "Foydalanuvchilar",
       logout: "Chiqish",
-      timer:"Vaqt"
+      timer:"Vaqt",
+      edit:"Tahrirlash",
+      lists:"Ma'lumotnomalar"
     },
     buttons: {
       save: "Saqlash",

@@ -42,9 +42,9 @@ class DatabaseSeeder extends Seeder
             ['user_id' => 1,'role_id'=>13,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
             ['user_id' => 1,'role_id'=>14,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
             ['user_id' => 1,'role_id'=>15,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
-
         ]);
         DB::table('roles')->insert([
+            ['Name' => 'menu.home'],
             ['Name' => 'menu.dashboard'],
             ['Name' => 'menu.factory'],
             ['Name' => 'menu.structure'],

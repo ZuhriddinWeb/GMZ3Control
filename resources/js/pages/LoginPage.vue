@@ -73,14 +73,21 @@ const result = reactive({
 });
 
 const onSubmit = async () => {
-    const { data } = await store.dispatch('login', result);
-    if (data.status == 200) {
-        router.push({ name: 'vparams' });
+  try {
+    const result1 = await store.dispatch('login', result);
+
+    if (result1.success) {
+      router.push({ name: 'home' });
     } else {
-        console.error('Error:', data.message);
-        init({ message: t('login.errorMessage'), color: 'danger' });
+      console.error('Error:', result1.message || 'Login failed');
+      init({ message: t('login.errorMessage'), color: 'danger' });
     }
+  } catch (error) {
+    console.error('Error during login:', error);
+    init({ message: t('login.errorMessage'), color: 'danger' });
+  }
 };
+
 
 const changeLanguage = () => {
     locale.value = locale.value === 'uz' ? 'ru' : 'uz';

@@ -23,7 +23,7 @@ class UserController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request, $id);
+                return $this->update($request,$id);
             case 'DELETE':
                 return $this->delete($request, $id);
             default:
@@ -120,25 +120,26 @@ class UserController extends Controller
             'unit' => $unit,
         ]);
     }
-    private function update(Request $request)
+    private function update(Request $request,$id)
     {
         $request->validate([
-            'id' => 'required|integer|exists:units,id',
             'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
+            'Phone' => 'required|string|max:255',
+            'Login' => 'required|string|max:255',
+            'Password' => 'required|min:6|max:255',
         ]);
-
-        $unit = User::find($request->id);
+        
+        $unit = User::find($id);
         $unit->update([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
-            'Comment' => $request->Comment,
+            'name' => $request->Name,
+            'phone' => $request->Phone,
+            'login' => $request->Login,
+            'password' => Hash::make($request->Password),
         ]);
 
         return response()->json([
             'status' => 200,
-            'message' => "Javob muvafaqiyatli yangilandi",
+            'message' => "muvafaqiyatli yangilandi",
             'unit' => $unit,
         ]);
     }

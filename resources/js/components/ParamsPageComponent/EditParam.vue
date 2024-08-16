@@ -80,7 +80,6 @@ const fetchParams = async () => {
       value: change.id,
       text: change.Name
     }));
-    console.log(paramResponse);
     
     result.Name = paramResponse.data.Name;
     result.NameRus = paramResponse.data.NameRus;

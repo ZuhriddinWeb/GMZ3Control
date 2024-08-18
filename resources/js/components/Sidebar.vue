@@ -139,6 +139,7 @@ const fetchParameterCount = async () => {
     const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
     const response = await axios.get(`/get-params-for-user-count/${store.state.user.structure_id}/${change}`);
     paramCount.value = response.data;
+    
   } catch (error) {
 
     console.error('Error fetching parameters count:', error);
@@ -146,12 +147,11 @@ const fetchParameterCount = async () => {
   }
 };
 const menu = ref([
-  // { title: 'menu.dashboard', icon: 'dashboard', path: '/' },
   { title: 'menu.home', icon: 'home', path: '/' },
   {
     title: 'menu.lists', icon: 'home', children: [
-      { title: 'menu.factory', icon: 'factory' },
-      { title: 'menu.factory', icon: 'factory' },
+      { title: 'menu.factory', icon: 'factory',path: '/' },
+      { title: 'menu.structure', icon: 'factory',path: '/' },
     ]
   },
 
@@ -161,10 +161,7 @@ const menu = ref([
   { title: 'menu.units', icon: 'ad_units', path: '/units' },
   { title: 'menu.graphics', icon: 'schedule', path: '/graphics' },
   { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },
-  // { title: 'menu.paramtypes', icon: 'format_list_numbered', path: '/paramtypes' },
   { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
-  // { title: 'menu.sources', icon: 'content_copy', path: '/sources' },
-  // { title: 'menu.changes', icon: 'manage_history', path: '/changes' },
   { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
   { title: 'menu.vparams', icon: 'diamond', path: '/vparams' },
   { title: 'menu.users', icon: 'person', path: '/users' },

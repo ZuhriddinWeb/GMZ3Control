@@ -28,8 +28,7 @@ class RoleController extends Controller
 
     private function index()
     {
-        $user = Role::all();
-        return response()->json($user);
+        return  Role::all();
     }
     private function getRowUnit($id)
     {

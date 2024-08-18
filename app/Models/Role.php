@@ -10,5 +10,6 @@ class Role extends Model
     use HasFactory;
     protected $fillable = [
         'Name',
+        'parent_id'
     ];
 }

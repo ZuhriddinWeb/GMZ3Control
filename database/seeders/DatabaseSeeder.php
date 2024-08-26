@@ -22,8 +22,8 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->insert([
             'name' => 'Zuhriddin',
             'phone' => '5972323',
-            'login' => '123123',
-            'password' => Hash::make('123123'),
+            'login' => 'zzzz1111*',
+            'password' => Hash::make('zzzz1111*'),
             'structure_id'=>1,
         ]);
         DB::table('user_roles')->insert([
@@ -147,8 +147,8 @@ class DatabaseSeeder extends Seeder
         ]);
         DB::table('changes')->insert([
             ['FactoryID' => 1, 'Change' => 1, 'StartingDay' => 0, 'StartingTime' => '08:00:00.0000001', 'EndingDay' => 0, 'EndingTime' => '20:00:00.0000000'],
-            ['FactoryID' => 1, 'Change' => 2, 'StartingDay' => 1, 'StartingTime' => '20:00:00.0000001', 'EndingDay' => 0, 'EndingTime' => '08:00:00.0000000'],
-            ['FactoryID' => 1, 'Change' => 2, 'StartingDay' => 0, 'StartingTime' => '20:00:00.0000001', 'EndingDay' => 1, 'EndingTime' => '08:00:00.0000000'],
+            ['FactoryID' => 1, 'Change' => 2, 'StartingDay' => 1, 'StartingTime' => '20:00:00.0000001', 'EndingDay' => 0, 'EndingTime' => '23:59:00.0000000'],
+            ['FactoryID' => 1, 'Change' => 2, 'StartingDay' => 0, 'StartingTime' => '00:00:00.0000001', 'EndingDay' => 1, 'EndingTime' => '08:00:00.0000000'],
         ]);
         DB::table('units')->insert([
             ['Name' => 'килограмм', 'ShortName' => 'кг.'],

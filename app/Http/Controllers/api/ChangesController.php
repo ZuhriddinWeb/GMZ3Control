@@ -30,7 +30,7 @@ class ChangesController extends Controller
 
     private function index()
     {
-        $units = Changes::all();
+        $units = Changes::select('Change')->distinct()->get();
         return response()->json($units);
     }
     private function getRowUnit($id)

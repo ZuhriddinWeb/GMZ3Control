@@ -17,4 +17,8 @@ class Changes extends Model
         'EndingTime',
         'Comment'
     ];
+
+    protected $casts = [
+        'Change' => 'integer'
+    ];
 }

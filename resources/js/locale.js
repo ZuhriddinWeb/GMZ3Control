@@ -71,9 +71,12 @@ export default {
       editSectionInfo: "",
       apply: "Применить",
       title: "Удалить информацию",
+      restart:"Обновить логин и пароль",
       startTime: "Время добавить",
       endTime:"Время выключения",
       message: "Вы уверены, что хотите удалить эти данные? Это действие не может быть отменено.",
+      messageRestart: "Хотите изменить логин и пароль пользователя на zzzz1111*?",
+
       cancel: "Отмена",
       ordernumber:"Серийный номер"
     },
@@ -108,6 +111,15 @@ export default {
     },
     vuestic:{
       reset:"",
+      toggleDropdown:"",
+      select:"",
+      noOptions:"",
+      switchView:"",
+      nextPeriod:"",
+      previousPeriod:"",
+      cancel:"",
+      step:""
+
     },
     language: {
       uz: "O'zbek",
@@ -186,7 +198,9 @@ export default {
       editFactory: "Ma`lumotni tahrirlash",
       apply: "Tasdiqlash",
       title: "Ma'lumotni o'chirish",
+      restart: "Login va parolni yangilash",
       message: "Bu ma'lumotni o'chirishni xohlaysizmi? Ushbu ma`lumotlarni tiklab bo'lmaydi.",
+      messageRestart:"Foydalanuvchi login va parolini zzzz1111* ga o'zgartirishni amalga ochirmoqchimisiz?",
       cancel: "Bekor qilish",
       startTime: "Joriy etish vaqti",
       endTime:"Bekor qilish vaqti",
@@ -223,6 +237,15 @@ export default {
     },
     vuestic:{
       reset:"",
+      toggleDropdown:"",
+      select:"",
+      noOptions:"",
+      switchView:"",
+      nextPeriod:"",
+      previousPeriod:"",
+      cancel:"",
+      step:""
+
     },
     language: {
       uz: "O'zbek",

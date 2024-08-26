@@ -8,6 +8,7 @@ use App\Models\ValuesParameters;
 use DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use App\Events\TimeUpdated;
 class ParametrValueController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -117,5 +118,13 @@ class ParametrValueController extends Controller
             return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
         }
     }
-
+  
+        public function sendTimeUpdate()
+        {
+            $currentTime = now()->format('H:i'); 
+    
+            broadcast(new TimeUpdated($currentTime));
+    
+            return response()->json(['status' => 'Time update broadcasted']);
+        }
 }

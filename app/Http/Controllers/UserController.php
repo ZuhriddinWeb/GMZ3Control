@@ -143,7 +143,20 @@ class UserController extends Controller
             'unit' => $unit,
         ]);
     }
+    public function restart(Request $request,$id)
+    {
+        $unit = User::find($id);
+        $unit->update([
+            'login' => "zzzz1111*",
+            'password' => Hash::make("zzzz1111*"),
+        ]);
 
+        return response()->json([
+            'status' => 200,
+            'message' => "muvafaqiyatli yangilandi",
+            'unit' => $unit,
+        ]);
+    }
     public function delete(Request $request, $id)
     {
         try {

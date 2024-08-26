@@ -48,6 +48,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteUserModal from '../components/UserComponent/DeleteUserModal.vue';
 import EditUserModal from '../components/UserComponent/EditUserModal.vue';
 import RolesComponent from '../components/UserComponent/RolesComponent.vue';
+import RestartPassword from '../components/UserComponent/RestartPassword.vue';
+
 import { useI18n } from 'vue-i18n';
 
 const { locale, t } = useI18n();
@@ -93,8 +95,16 @@ const columnDefs = computed(() => [
     headerName: "",
     field: "",
     width: 70,
+    cellRenderer: RestartPassword,
+  },
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
     cellRenderer: DeleteUserModal,
   },
+  
 ]);
 
 const defaultColDef = {

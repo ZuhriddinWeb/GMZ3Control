@@ -28,9 +28,11 @@
             <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
               :options="SourceOptions" clearable />
           </div>
-          <div class="flex gap-5 flex-wrap w-full mt-4">
+          <div class="flex gap-5 flex-wrap w-full">
             <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
             <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend :weekends="getWeekends" />
+            <!-- <VaInput v-model="result.CurrentTime"  label="Joriy etish vaqti" placeholder="DD/MM/YYYY" mask="date" /> -->
+            <!-- <VaInput v-model="result.EndingTime"  label="Bekor qilish vaqti" placeholder="DD/MM/YYYY" mask="date" /> -->
           </div>
           <!-- <div class="flex justify-between mt-4">
             <div class="w-1/2 mr-48">
@@ -56,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide,computed } from 'vue';
+import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
 import 'vuestic-ui/dist/vuestic-ui.css';
@@ -65,7 +67,7 @@ import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const { t } = useI18n();
-import { format  } from 'date-fns';
+import { format } from 'date-fns';
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -111,7 +113,7 @@ const columnDefs = computed(() => [
       const [datePart, timePart] = params.value.split(' ');
       const [year, month, day] = datePart.split('-');
       const [hour, minute] = timePart.split(':');
-      const date = new Date(year, month - 1, day); 
+      const date = new Date(year, month - 1, day);
       return format(date, 'dd/MM/yyyy');
     },
   },
@@ -122,7 +124,7 @@ const columnDefs = computed(() => [
       const [datePart, timePart] = params.value.split(' ');
       const [year, month, day] = datePart.split('-');
       const [hour, minute] = timePart.split(':');
-      const date = new Date(year, month - 1, day); 
+      const date = new Date(year, month - 1, day);
       return format(date, 'dd/MM/yyyy');
     },
   },

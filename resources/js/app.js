@@ -18,6 +18,9 @@ import "material-icons/iconfont/material-icons.css";
 import { useToast } from "vuestic-ui";
 import InputMask from 'vue-input-mask';
 
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
 axios.defaults.baseURL = "/api/";
 window.axios = axios;
 axios.defaults.withCredentials = true;
@@ -26,6 +29,15 @@ window.Swal = Swal;
 window.store = store;
 window.router = router;
 window.router = useToast;
+
+window.Pusher = Pusher;
+ 
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true
+});
 
 const i18n = createI18n({
   legacy: false,

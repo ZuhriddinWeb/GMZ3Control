@@ -63,7 +63,7 @@ const fetchGraphics = async () => {
     }));
 
     changesOptions.value = responseChanges.data.map(change => ({
-      value: change.id,
+      value: change.Change,
       text: change.Change,
     }));
 

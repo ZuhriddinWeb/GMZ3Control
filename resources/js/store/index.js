@@ -7,6 +7,8 @@ export default createStore({
       user: null,
       selectedRowId: null,
       countInputedParams: null,
+      change:null,
+      currentTime:null,
     };
   },
   mutations: {

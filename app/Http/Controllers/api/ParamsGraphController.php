@@ -8,6 +8,8 @@ use App\Models\GraphicsParamenters;
 use DB;
 use Carbon\Carbon;
 use App\Http\Controllers\api\AppHelper;
+use App\Events\TimeUpdated;
+
 class ParamsGraphController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -55,10 +57,67 @@ class ParamsGraphController extends Controller
             ->select('graphics_paramenters.*', 'graphics.id as Gid', 'graphics.Name as GName', 'parameters.id as Pid', 'parameters.name as Pname', 'factory_structures.id as Sid', 'factory_structures.Name as SName', 'blogs.id as Bid', 'blogs.Name as BName', 'sources.id as Cid', 'sources.Name as Cname')
             ->first();
     }
-    public function getParamsForUser($id, $change,$ChangeDay)
+    public function getParamsForUser($id, $change, $ChangeDay)
     {
+        // Split the ID string into an array of integers
         $idArray = explode(',', $id);
-        //dd($ChangeDay);
+        $blogsIds = array_map('intval', $idArray); // Ensure IDs are integers
+        $blogsIdsString = implode(',', $blogsIds); // Create comma-separated string
+    
+        // Prepare the SQL query with parameter binding
+        $query = DB::select("SELECT * FROM 
+            (
+                SELECT 
+                    graphic_times.id AS GTid,
+                    graphic_times.Name AS GTName,
+                    graphic_times.Change AS Change,
+                    graphic_times.StartTime AS STime,
+                    graphic_times.EndTime AS ETime,
+                    parameters.Name AS PName,
+                    parameters.NameRus AS PNameRus,
+                    parameters.Min AS Min,
+                    parameters.Max AS Max,
+                    graphics_paramenters.*,
+                    (SELECT TOP 1 DATEADD(DAY, CASE WHEN f.StartingDay = 1 THEN 1 ELSE 0 END, ?)
+                     FROM [dbo].[Change2](1, ? + CAST(graphic_times.StartTime AS DATETIME)) f) 
+                     + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
+                    ? AS ChangeDay1 
+                FROM graphics_paramenters 
+                INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
+                INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
+                WHERE BlogsID IN ($blogsIdsString)
+                    AND (Change = ? OR ? = 0) 
+            ) p
+            WHERE p.StartDateTime <= GETDATE()
+            ORDER BY StartDateTime DESC, OrderNumber
+        ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
+    
+        // Optionally, you can dump the query result for debugging
+        // dd($query[0]->ETime);
+        // dd($query);
+    
+        return $query;
+    }
+    
+     //dd($ChangeDay);
+    //  $query = DB::select("select * from 
+    //  (
+    //  select 
+    //      graphic_times.id as GTid,graphic_times.Name as GTName, graphic_times.Change as Change, graphic_times.StartTime as STime, graphic_times.EndTime as ETime, parameters.Name as PName,parameters.NameRus as PNameRus, parameters.Min as Min, parameters.Max as Max, graphics_paramenters.*
+    //      ,(SELECT top 1 dateadd(day, case when f.StartingDay=1 then 1 else 0 end, '$ChangeDay') FROM [dbo].[Change2](1, '$ChangeDay'+ cast(graphic_times.StartTime as datetime)) f) + cast(graphic_times.StartTime as datetime)  StartDateTime
+    //      ,'$ChangeDay' ChangeDay1 
+    //      from graphics_paramenters 
+    //      inner join graphic_times on graphics_paramenters.GrapicsID = graphic_times.GraphicsID
+    //      inner join parameters on graphics_paramenters.ParametersID = parameters.id
+    //  where BlogsID in ($idArray)
+    //      and (Change=$change or $change=0) 
+    //  ) p
+    //  where p.StartDateTime <= getdate()
+    //  order by StartDateTime desc, OrderNumber");
+
+    //  // dd($query[0]->ETime);
+    //  // dd($query);
+    //  return $query;
         // $ChangeDay = '2024-08-22';
         // $change=(int)1;
         // $query =  DB::table('graphics_paramenters')
@@ -78,20 +137,14 @@ class ParamsGraphController extends Controller
         //     }
         //     return $query->get();
         // dd();
-        return DB::select("select * from 
-        (
-        select 
-            graphic_times.id as GTid,graphic_times.Name as GTName, graphic_times.Change as Change, graphic_times.StartTime as STime, graphic_times.EndTime as ETime, parameters.Name as PName,parameters.NameRus as PNameRus, parameters.Min as Min, parameters.Max as Max, graphics_paramenters.*
-            ,(SELECT top 1 dateadd(day, case when f.StartingDay=1 then 1 else 0 end, '$ChangeDay') FROM [dbo].[Change2](1, '$ChangeDay'+ cast(graphic_times.StartTime as datetime)) f) + cast(graphic_times.StartTime as datetime)  StartDateTime
-            ,'$ChangeDay' ChangeDay1 
-            from graphics_paramenters 
-            inner join graphic_times on graphics_paramenters.GrapicsID = graphic_times.GraphicsID
-            inner join parameters on graphics_paramenters.ParametersID = parameters.id
-        where BlogsID in (1)
-            and (Change=$change or $change=0) 
-        ) p
-        where p.StartDateTime <= getdate()
-        order by StartDateTime desc, OrderNumber");
+        // if()
+    public function sendTimeUpdate()
+    {
+        $currentTime = now()->format('H:i');
+
+        broadcast(new TimeUpdated($currentTime));
+        // event();
+        return response()->json(['status' => 'Yangilandi!']);
     }
     public function getParamsForUserCount($id, $change_id)
     {

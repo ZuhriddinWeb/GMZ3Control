@@ -119,7 +119,6 @@ export default {
       previousPeriod:"",
       cancel:"",
       step:""
-
     },
     language: {
       uz: "O'zbek",

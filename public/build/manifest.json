@@ -1,0 +1,351 @@
+{
+  "_EditUnitsModal-5f58bc77.js": {
+    "file": "assets/EditUnitsModal-5f58bc77.js",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_format-45c98358.js": {
+    "file": "assets/format-45c98358.js"
+  },
+  "node_modules/material-icons/iconfont/material-icons-outlined.woff": {
+    "file": "assets/material-icons-outlined-8e94758c.woff",
+    "src": "node_modules/material-icons/iconfont/material-icons-outlined.woff"
+  },
+  "node_modules/material-icons/iconfont/material-icons-outlined.woff2": {
+    "file": "assets/material-icons-outlined-35dca8a7.woff2",
+    "src": "node_modules/material-icons/iconfont/material-icons-outlined.woff2"
+  },
+  "node_modules/material-icons/iconfont/material-icons-round.woff": {
+    "file": "assets/material-icons-round-1c135b15.woff",
+    "src": "node_modules/material-icons/iconfont/material-icons-round.woff"
+  },
+  "node_modules/material-icons/iconfont/material-icons-round.woff2": {
+    "file": "assets/material-icons-round-c948f126.woff2",
+    "src": "node_modules/material-icons/iconfont/material-icons-round.woff2"
+  },
+  "node_modules/material-icons/iconfont/material-icons-sharp.woff": {
+    "file": "assets/material-icons-sharp-fa3888ef.woff",
+    "src": "node_modules/material-icons/iconfont/material-icons-sharp.woff"
+  },
+  "node_modules/material-icons/iconfont/material-icons-sharp.woff2": {
+    "file": "assets/material-icons-sharp-d31bfb81.woff2",
+    "src": "node_modules/material-icons/iconfont/material-icons-sharp.woff2"
+  },
+  "node_modules/material-icons/iconfont/material-icons-two-tone.woff": {
+    "file": "assets/material-icons-two-tone-3d34f30a.woff",
+    "src": "node_modules/material-icons/iconfont/material-icons-two-tone.woff"
+  },
+  "node_modules/material-icons/iconfont/material-icons-two-tone.woff2": {
+    "file": "assets/material-icons-two-tone-1e673ba8.woff2",
+    "src": "node_modules/material-icons/iconfont/material-icons-two-tone.woff2"
+  },
+  "node_modules/material-icons/iconfont/material-icons.woff": {
+    "file": "assets/material-icons-fd84f88b.woff",
+    "src": "node_modules/material-icons/iconfont/material-icons.woff"
+  },
+  "node_modules/material-icons/iconfont/material-icons.woff2": {
+    "file": "assets/material-icons-8265f647.woff2",
+    "src": "node_modules/material-icons/iconfont/material-icons.woff2"
+  },
+  "public/ngmk.png": {
+    "file": "assets/ngmk-6e65eb69.png",
+    "src": "public/ngmk.png"
+  },
+  "public/user.png": {
+    "file": "assets/user-17a5e855.png",
+    "src": "public/user.png"
+  },
+  "resources/js/app.css": {
+    "file": "assets/app-f24ddbce.css",
+    "src": "resources/js/app.css"
+  },
+  "resources/js/app.js": {
+    "assets": [
+      "assets/material-icons-8265f647.woff2",
+      "assets/material-icons-fd84f88b.woff",
+      "assets/material-icons-outlined-35dca8a7.woff2",
+      "assets/material-icons-outlined-8e94758c.woff",
+      "assets/material-icons-round-c948f126.woff2",
+      "assets/material-icons-round-1c135b15.woff",
+      "assets/material-icons-sharp-d31bfb81.woff2",
+      "assets/material-icons-sharp-fa3888ef.woff",
+      "assets/material-icons-two-tone-1e673ba8.woff2",
+      "assets/material-icons-two-tone-3d34f30a.woff"
+    ],
+    "css": [
+      "assets/app-f24ddbce.css"
+    ],
+    "dynamicImports": [
+      "resources/js/pages/HomePage.vue",
+      "resources/js/pages/LoginPage.vue",
+      "resources/js/pages/FactoriesPage.vue",
+      "resources/js/pages/FactoriesStructurePage.vue",
+      "resources/js/pages/BlogsPage.vue",
+      "resources/js/pages/UnitsPage.vue",
+      "resources/js/pages/GraphicsPage.vue",
+      "resources/js/pages/GraphicTimesPage.vue",
+      "resources/js/pages/ParameterGraphics.vue",
+      "resources/js/pages/ParametersTypesPage.vue",
+      "resources/js/pages/ParametersPage.vue",
+      "resources/js/pages/SourcesPage.vue",
+      "resources/js/pages/ChangesPage.vue",
+      "resources/js/pages/ParametrValue.vue",
+      "resources/js/pages/UsersPage.vue"
+    ],
+    "file": "assets/app-4d998b01.js",
+    "isEntry": true,
+    "src": "resources/js/app.js"
+  },
+  "resources/js/pages/BlogsPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/BlogsPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/BlogsPage-9dd3927a.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/BlogsPage.vue"
+  },
+  "resources/js/pages/ChangesPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/ChangesPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/ChangesPage-89eed66a.js",
+    "imports": [
+      "resources/js/app.js",
+      "_EditUnitsModal-5f58bc77.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/ChangesPage.vue"
+  },
+  "resources/js/pages/FactoriesPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/FactoriesPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/FactoriesPage-b09e52d4.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/FactoriesPage.vue"
+  },
+  "resources/js/pages/FactoriesStructurePage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/FactoriesStructurePage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/FactoriesStructurePage-55921628.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/FactoriesStructurePage.vue"
+  },
+  "resources/js/pages/GraphicTimesPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/GraphicTimesPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/GraphicTimesPage-c7fb943b.js",
+    "imports": [
+      "resources/js/app.js",
+      "_format-45c98358.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/GraphicTimesPage.vue"
+  },
+  "resources/js/pages/GraphicsPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/GraphicsPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/GraphicsPage-a5286657.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/GraphicsPage.vue"
+  },
+  "resources/js/pages/HomePage.css": {
+    "file": "assets/HomePage-168d4634.css",
+    "src": "resources/js/pages/HomePage.css"
+  },
+  "resources/js/pages/HomePage.vue": {
+    "assets": [
+      "assets/user-17a5e855.png"
+    ],
+    "css": [
+      "assets/HomePage-168d4634.css"
+    ],
+    "file": "assets/HomePage-6ddfce37.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/HomePage.vue"
+  },
+  "resources/js/pages/LoginPage.vue": {
+    "assets": [
+      "assets/ngmk-6e65eb69.png"
+    ],
+    "file": "assets/LoginPage-3305be26.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/LoginPage.vue"
+  },
+  "resources/js/pages/ParameterGraphics.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/ParameterGraphics.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/ParameterGraphics-9a372de4.js",
+    "imports": [
+      "resources/js/app.js",
+      "_format-45c98358.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/ParameterGraphics.vue"
+  },
+  "resources/js/pages/ParametersPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/ParametersPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/ParametersPage-ec8af62f.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/ParametersPage.vue"
+  },
+  "resources/js/pages/ParametersTypesPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/ParametersTypesPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/ParametersTypesPage-9d34b71e.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/ParametersTypesPage.vue"
+  },
+  "resources/js/pages/ParametrValue.css": {
+    "file": "assets/ParametrValue-6f22618d.css",
+    "src": "resources/js/pages/ParametrValue.css"
+  },
+  "resources/js/pages/ParametrValue.vue": {
+    "css": [
+      "assets/ParametrValue-6f22618d.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/ParametrValue-d98ab208.js",
+    "imports": [
+      "resources/js/app.js",
+      "_format-45c98358.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/ParametrValue.vue"
+  },
+  "resources/js/pages/SourcesPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/SourcesPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/SourcesPage-1c81b0d2.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/SourcesPage.vue"
+  },
+  "resources/js/pages/UnitsPage.css": {
+    "file": "assets/FactoriesPage-f836ef2b.css",
+    "src": "resources/js/pages/ChangesPage.css"
+  },
+  "resources/js/pages/UnitsPage.vue": {
+    "css": [
+      "assets/FactoriesPage-f836ef2b.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/UnitsPage-1688e988.js",
+    "imports": [
+      "resources/js/app.js",
+      "_EditUnitsModal-5f58bc77.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/UnitsPage.vue"
+  },
+  "resources/js/pages/UsersPage.css": {
+    "file": "assets/UsersPage-b3a7e46d.css",
+    "src": "resources/js/pages/UsersPage.css"
+  },
+  "resources/js/pages/UsersPage.vue": {
+    "css": [
+      "assets/UsersPage-b3a7e46d.css",
+      "assets/vuestic-ui-846c3c0a.css"
+    ],
+    "file": "assets/UsersPage-fead338c.js",
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/pages/UsersPage.vue"
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-14204e20.css",
+    "isEntry": true,
+    "src": "resources/sass/app.scss"
+  },
+  "vuestic-ui.css": {
+    "file": "assets/vuestic-ui-846c3c0a.css",
+    "src": "vuestic-ui.css"
+  }
+}

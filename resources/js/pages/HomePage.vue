@@ -64,7 +64,7 @@
 
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive ,onMounted} from 'vue';
 import { useStore } from 'vuex';
 import { Pie } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -168,6 +168,9 @@ const steps = [
   { label: 'Review order', icon: 'done_all' },
   { label: 'Confirm and pay', icon: 'payments' },
 ];
+onMounted(() => {
+  router.push('/vparams');
+});
 </script>
 
 

@@ -40,6 +40,14 @@
             </div>
           </div>
         </template>
+        <template #right>
+          <div class="flex items-center ml-3 mr-14">
+            <VaButton preset="secondary" @click="handleLogout">
+              <VaIcon name="logout" style="margin-right: 0.5rem;" />
+              {{ t('menu.logout') }}
+            </VaButton>
+          </div>
+        </template>
       </VaNavbar>
       <VaDivider style="margin: 0" />
     </template>
@@ -81,10 +89,14 @@ const router = useRouter();
 const { t, locale } = useI18n();
 const paramCount = ref(0);
 const currentTime = ref('');
-const isSidebarVisible = ref(breakpoints.smUp);
+const isSidebarVisible = ref(false); // Initialize as false
 
 watch(() => breakpoints.smUp, (newValue) => {
-  isSidebarVisible.value = newValue;
+  if (newValue) {
+    isSidebarVisible.value = store.state.user ? false : true; // Hide if user is logged in
+  } else {
+    isSidebarVisible.value = newValue;
+  }
 });
 
 const currentHour = new Date().getHours();
@@ -104,14 +116,11 @@ const fetchParameterCount = async () => {
     console.error('Error fetching parameters count:', error);
   }
 };
-// talon zakaschika dispetcheri
+
 const menu = ref([
   { title: 'menu.home', icon: 'home', path: '/' },
   {
     title: 'menu.lists', icon: 'format_list_bulleted', children: [
-      // { title: 'menu.factory', icon: 'factory', path: '/factory' },
-      // { title: 'menu.structure', icon: 'factory', path: '/structure' },
-      // { title: 'menu.factory', icon: 'factory', path: '/factory' },
       { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
       { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
       { title: 'menu.units', icon: 'ad_units', path: '/units' },
@@ -123,13 +132,13 @@ const menu = ref([
   },
   { title: 'menu.vparams', icon: 'diamond', path: '/vparams' },
   { title: 'menu.users', icon: 'person', path: '/users' },
-  // { title: 'menu.logout', icon: 'logout', path: '/logout' },
 ]);
 
 const handleLogout = async () => {
   try {
     await store.dispatch('logout');
     router.push({ name: 'login' });
+    isSidebarVisible.value = false; // Hide sidebar on logout
   } catch (error) {
     console.error('Error during logout:', error);
   }
@@ -162,17 +171,26 @@ onMounted(() => {
   }
   updateCurrentTime();
   setInterval(updateCurrentTime, 1000);
+
+  // Check if user is logged in and set sidebar visibility
+  if (store.state.user) {
+    isSidebarVisible.value = false;
+  }
+  
 });
 </script>
+
 
 <style>
 .custom-sidebar {
   background-color: #57534e;
 }
+
 .hover-item:hover {
   background-color: #154EC1;
   color: white;
 }
+
 .hover-logout:hover {
   background-color: rgb(220 38 38);
   color: white;

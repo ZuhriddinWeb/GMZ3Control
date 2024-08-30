@@ -10,37 +10,7 @@
 <script setup>
 import Sidebar from "./components/Sidebar.vue";
 
-window.Echo.channel('time-channel').listen('TimeUpdated', (event) => {
-        const serverTime = event.currentTime;
-        console.log(serverTime);
 
-        // if (serverTime) {
-        //     columnDefs.value = computed(() => {
-        //         return [
-        //             {
-        //                 headerName: t('table.graphictimes'),
-        //                 headerClass: 'header-center',
-        //                 children: [
-        //                     {
-        //                         headerName: t('table.startingTime'),
-        //                         field: 'STime',
-        //                         width: 120,
-        //                         valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-        //                         headerClass: 'header-center',
-        //                     },
-        //                     {
-        //                         headerName: t('table.endingTime'),
-        //                         field: 'ETime',
-        //                         width: 120,
-        //                         valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-        //                         headerClass: 'header-center',
-        //                     }
-        //                 ]
-        //             },
-        //         ];
-        //     }).value;
-        // }
-    });
 
 
 </script>

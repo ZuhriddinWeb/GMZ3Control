@@ -3,9 +3,9 @@
     <main></main>
     <main class="flex flex-col">
       <div class="m-2">
-        <VaSelect v-model="result.Change" value-by="value" class="mr-2" :label="t('menu.changes')"
+        <VaDateInput v-model="day" class="mr-2" label="Day" />
+        <VaSelect v-model="result.Change" value-by="value"  :label="t('menu.changes')"
           :options="changesOptions" clearable />
-        <VaDateInput v-model="day" label="Day" />
       </div>
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
@@ -43,7 +43,7 @@ const editingTimeout = ref(null);
 const userId = store.state.user.id;
 const oldTableData = ref([])
 const result = reactive({
-  Change: "1",
+  Change: "",
 });
 
 const columnDefs = ref([
@@ -112,7 +112,7 @@ const columnDefs = ref([
   {
     headerName: t('table.value'),
     field: "Value",
-    flex: 1,
+    width:150,
     editable: true,
     cellEditor: "agNumberCellEditor",
     cellClassRules: {
@@ -166,8 +166,23 @@ const gridOptions = {
   getRowClass,
   headerHeight: 43,
 };
+const getCurrentTimeInMinutes = () => {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+};
+const startTime = 8 * 60; // 8:00 in minutes
+const endTime = 19 * 60 + 59; // 19:59 in minutes
 
-
+const determineChange = () => {
+  const currentTimeInMinutes = getCurrentTimeInMinutes();
+  if (currentTimeInMinutes >= startTime && currentTimeInMinutes <= endTime) {
+    return 1;
+  } else {
+    return 2;
+  }
+};
+result.Change = determineChange();
+// const currentChange = computed(() => determineChange());
 const fetchData = async () => {
   try {
     const currentChange = result.Change;
@@ -178,42 +193,43 @@ const fetchData = async () => {
       axios.get(`/vparams/${store.state.user.structure_id}`)
     ]);
 
-    const firstIds = paramsResponse.data.map((item) => `${item.ParametersID}_${item.GTid}`)
-    const secondIds = oldTableData.value.map((item) => `${item.ParametersID}_${item.GTid}`)
+    // Log response to debug
+    // console.log('paramsResponse:', paramsResponse);
+    // console.log('valuesResponse:', valuesResponse);
 
-    const arrayOne = new Set(firstIds)
-    const arrayTwo = new Set(secondIds)
+    // Ensure paramsResponse.data is an array
+    const paramsData = Array.isArray(paramsResponse.data) ? paramsResponse.data : [];
 
-    const first = arrayOne.difference(arrayTwo);
-    const second = arrayTwo.difference(arrayOne);
+    const firstIds = paramsData.map(item => `${item.ParametersID}_${item.GTid}`);
+    const secondIds = oldTableData.value.map(item => `${item.ParametersID}_${item.GTid}`);
 
-    const diffs = [...first].concat([...second])
+    const arrayOne = new Set(firstIds);
+    const arrayTwo = new Set(secondIds);
 
-    const newItemsGrid = diffs.map((difference) => {
-      return paramsResponse.data.find(item => {
-        return difference == `${item.ParametersID}_${item.GTid}`
-      })
-    })
+    const first = [...arrayOne].filter(x => !arrayTwo.has(x));
+    const second = [...arrayTwo].filter(x => !arrayOne.has(x));
+
+    const diffs = [...first, ...second];
+
+    const newItemsGrid = diffs.map(difference => {
+      return paramsData.find(item => difference === `${item.ParametersID}_${item.GTid}`);
+    }).filter(item => item !== undefined); // Filter out undefined items
 
     const values = valuesResponse.data;
 
     newItemsGrid.forEach((parametr, index) => {
-      const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
+      const select = values.find(val => val.TimeID === parametr.GTid && val.ParametersID === parametr.ParametersID);
       if (select) {
         newItemsGrid[index] = { ...parametr, ...select };
       }
     });
-
-
 
     gridApi.value.applyTransaction({
       add: newItemsGrid,
       addIndex: 0,
     });
 
-
-
-    oldTableData.value = paramsResponse.data
+    oldTableData.value = paramsData;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -233,7 +249,6 @@ const onCellValueChanged = async (event) => {
     }
   }
 };
-console.log(store.state.user.id);
 
 const onRowClicked = (event) => {
   selectedRow.value = event.data;

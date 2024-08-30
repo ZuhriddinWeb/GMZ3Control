@@ -14,10 +14,9 @@
         rel="stylesheet"
         />
         <link rel="stylesheet" href="{{ asset('awesome/css/all.min.css') }}">
-        @vite('resources/css/app.css')
+        @vite(['resources/css/app.css','resources/js/app.js'])
 
     </head>
     <body id="app" class="h-screen">
     </body>
-    @vite('resources/js/app.js')
 </html>

@@ -56,6 +56,11 @@
     "file": "assets/user-17a5e855.png",
     "src": "public/user.png"
   },
+  "resources/css/app.css": {
+    "file": "assets/app-1390769a.css",
+    "isEntry": true,
+    "src": "resources/css/app.css"
+  },
   "resources/js/app.css": {
     "file": "assets/app-f24ddbce.css",
     "src": "resources/js/app.css"
@@ -338,11 +343,6 @@
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/UsersPage.vue"
-  },
-  "resources/sass/app.scss": {
-    "file": "assets/app-14204e20.css",
-    "isEntry": true,
-    "src": "resources/sass/app.scss"
   },
   "vuestic-ui.css": {
     "file": "assets/vuestic-ui-846c3c0a.css",

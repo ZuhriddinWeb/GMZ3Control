@@ -120,7 +120,9 @@ export default {
       previousPeriod:"",
       cancel:"",
       step:"",
-      close:""
+      close:"",
+      selectedTime:"",
+      resetTime:""
     },
     language: {
       uz: "O'zbek",
@@ -247,7 +249,9 @@ export default {
       previousPeriod:"",
       cancel:"",
       step:"",
-      close:""
+      close:"",
+      selectedTime:"",
+      resetTime:""
 
     },
     language: {

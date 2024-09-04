@@ -19,7 +19,7 @@
               v-model="result.Name" />
             <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.startTime')"
               v-model="result.Name" />
-            <VaTimeInput v-model="result.EndTime" clearable clearable-icon="cancel" color="textPrimary"
+            <VaTimeInput v-model="result.EndTime" clearable  clearable-icon="cancel" color="textPrimary"
               :label="t('form.endTime')" />
           </div>
         </VaForm>
@@ -46,12 +46,36 @@ const result = reactive({
   ChangeId: "",
   Name: "",
   StartTime: "",
-  EndTime: "",
+  EndTime: null,
   id: props.params.data['id'],
 });
 
 const { t } = useI18n();
 
+function parseTime(timeString) {
+  const [hours, minutes, seconds] = timeString.split(':');
+  const date = new Date();
+  date.setHours(parseInt(hours, 10));
+  date.setMinutes(parseInt(minutes, 10));
+  date.setSeconds(parseInt(seconds, 10));
+  return date;
+}
+
+function formatTime(date) {
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+const response = {
+  StartTime: "08:00:00.0000000",
+  EndTime: "08:05:00.0000000"
+};
+// Convert to Date objects
+const startTimeDate = parseTime(response.StartTime);
+const endTimeDate = parseTime(response.EndTime);
+
+// Format times
+const startTimeFormatted = formatTime(startTimeDate);
+const endTimeFormatted = formatTime(endTimeDate);
 const fetchGraphics = async () => {
   try {
     const responseGraphics = await axios.get('/graphics');
@@ -73,8 +97,8 @@ const fetchGraphics = async () => {
     result.ChangeId = +response.data.Chid;
     
     // result.Name = response.data.Name;
-    // result.StartTime = response.data.StartTime.toString();
-    // result.EndTime = response.data.EndTime.toString();
+    // result.StartTime = +startTimeFormatted,
+    // result.EndTime = endTimeFormatted;
   } catch (error) {
     console.error('Error fetching data:', error);
   }

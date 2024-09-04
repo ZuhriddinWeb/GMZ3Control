@@ -23,7 +23,7 @@
               <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.name')"
                 v-model="result.Name" />
               <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.startTime')"
-                v-model="result.StartTime" />
+                v-model="result.Name" />
               <VaTimeInput v-model="result.EndTime" clearable clearable-icon="cancel" color="textPrimary"
                 :label="t('form.endTime')" />
             </div>

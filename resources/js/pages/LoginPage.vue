@@ -42,6 +42,9 @@
                             </template>
                         </VaInput>
                     </VaValue>
+                    <!-- <VaInput v-model="result.tabel"
+                        :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" class="mb-4 w-1/2"
+                        :label="t('form.tabel')" type="text" /> -->
                     <div class="flex justify-center mt-4 w-1/2">
                         <VaButton class="w-full" @click="onSubmit">{{ t('login.submitButton') }}</VaButton>
                     </div>
@@ -70,6 +73,7 @@ const { locale, t } = useI18n();
 const result = reactive({
     login: '',
     password: '',
+    // tabel:''
 });
 
 const onSubmit = async () => {
@@ -78,6 +82,7 @@ const onSubmit = async () => {
 
     if (result1.success) {
       router.push({ name: 'home' });
+    //   store.state.userTabel = result.tabel
     } else {
       console.error('Error:', result1.message || 'Login failed');
       init({ message: t('login.errorMessage'), color: 'danger' });

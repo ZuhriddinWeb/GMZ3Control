@@ -34,11 +34,11 @@
             </div>
           </div>
         </div>
-        <div class="h-1/3">
+        <!-- <div class="h-1/3">
           <va-stepper v-model="step" :steps="steps" finishButtonHidden="false" controlsHidden="false"
             navigationDisabled="false"></va-stepper>
           <Pie id="my-chart-id" :options="chartOptions" :data="chartData" />
-        </div>
+        </div> -->
       </main>
     </div>
 

@@ -10,16 +10,16 @@
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
           <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
             <VaSelect v-model="result.StructureID" value-by="value" class="mb-1" :label="t('form.structureName')"
-              :options="factoryOptions" clearable @change="onSelectChange" />
+              :options="factoryOptions" clearable  />
           </div>
-          <VaInput class="w-full" v-model="result.Name" :rules="[(value) => !!value || t('validation.required')]"
+          <VaInput class="w-full" v-model="result.Name" :rules="[(value) => !!value || t('validation.requiredField')]"
             :label="t('form.name')" />
-          <VaInput class="w-full" v-model="result.NameRus" :rules="[(value) => !!value || t('validation.required')]"
+          <VaInput class="w-full" v-model="result.NameRus" :rules="[(value) => !!value || t('validation.requiredField')]"
             :label="t('form.nameRus')" />
-          <VaInput class="w-full" v-model="result.ShortName" :rules="[(value) => !!value || t('validation.required')]"
+          <VaInput class="w-full" v-model="result.ShortName" :rules="[(value) => !!value || t('validation.requiredField')]"
             :label="t('form.shortName')" />
           <VaInput class="w-full" v-model="result.ShortNameRus"
-            :rules="[(value) => !!value || t('validation.required')]" :label="t('form.shortNameRus')" />
+            :rules="[(value) => !!value || t('validation.requiredField')]" :label="t('form.shortNameRus')" />
           <VaTextarea class="w-full" v-model="result.Comment" :max-length="125" :label="t('form.comment')" />
         </VaForm>
       </div>
@@ -87,6 +87,6 @@ const onSubmit = async () => {
 };
 
 watch(() => result.StructureID, (newVal) => {
-  console.log('Selected StructureID:', newVal);
+  // console.log('Selected StructureID:', newVal);
 });
 </script>

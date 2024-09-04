@@ -58,7 +58,7 @@ class ParamsController extends Controller
             'ShortNameRus' => $request->ShortNameRus,
             'ParametrTypeID' => $request->ParamsTypeID,
             'Min' => $request->Min,
-            'Max' => $request->Min,
+            'Max' => $request->Max,
             'UnitsID' => $request->UnitsID,
             'Comment' => $request->Comment,
         ]);
@@ -81,7 +81,7 @@ class ParamsController extends Controller
             'ShortNameRus' => $request->ShortNameRus,
             'ParametrTypeID' => $request->ParamsTypeID,
             'Min' => $request->Min,
-            'Max' => $request->Min,
+            'Max' => $request->Max,
             'UnitsID' => $request->UnitsID,
             'Comment' => $request->Comment,
         ]);

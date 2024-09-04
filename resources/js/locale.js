@@ -95,6 +95,7 @@ export default {
       userName: "Ф.И.О пользователя",
       userPhone: "Телефон пользователя",
       login: "Логин",
+      tabel:"Табелный номер",
       password: "Пароль",
     },
     validation: {
@@ -118,7 +119,8 @@ export default {
       nextPeriod:"",
       previousPeriod:"",
       cancel:"",
-      step:""
+      step:"",
+      close:""
     },
     language: {
       uz: "O'zbek",
@@ -221,6 +223,7 @@ export default {
       userName: "Foydalanuvchi F.I.Sh",
       userPhone: "Foydalanuvchi telefon raqami",
       login: "Login",
+      tabel: "Tabel raqami",
       password: "Parol",
     },
     validation: {
@@ -243,7 +246,8 @@ export default {
       nextPeriod:"",
       previousPeriod:"",
       cancel:"",
-      step:""
+      step:"",
+      close:""
 
     },
     language: {

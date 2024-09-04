@@ -9,6 +9,7 @@ export default createStore({
       countInputedParams: null,
       change:null,
       currentTime:null,
+      userTabel:'',
     };
   },
   mutations: {

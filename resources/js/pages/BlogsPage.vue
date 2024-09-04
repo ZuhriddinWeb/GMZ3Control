@@ -14,7 +14,7 @@
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
             <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
               <VaSelect v-model="result.StructureID" value-by="value" class="mb-1" :label="t('form.structureName')" :options="factoryOptions"
-                clearable @change="onSelectChange" />
+                clearable />
             </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"

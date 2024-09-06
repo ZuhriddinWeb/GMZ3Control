@@ -63,3 +63,4 @@ Route::get('get-params-for-user/{user_id}/{change_id}/{date}' , [ParamsGraphCont
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
 Route::get('restart-password/{user_id}' , [UserController::class, 'restart']);
 Route::get('/broadcast-time', [ParametrValueController::class, 'sendTimeUpdate']);
+Route::get('/vparamsuser/{blog_id}/{change_id}/{date}', [ParametrValueController::class, 'getByBlog']);

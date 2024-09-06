@@ -190,7 +190,7 @@ const fetchData = async () => {
 
     const [paramsResponse, valuesResponse] = await axios.all([
       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
-      axios.get(`/vparams/${store.state.user.structure_id}`)
+      axios.get(`/vparamsuser/${store.state.user.structure_id}/${currentChange}/${currentTime}`)
     ]);
 
     // Log response to debug
@@ -334,10 +334,10 @@ const handleCellBlur = (event) => {
 
 const startIntervals = () => {
   if (!dataIntervalId) {
-    dataIntervalId = setInterval(fetchData, 5000);
+    dataIntervalId = setInterval(fetchData, 30000);
   }
   if (!graphicsIntervalId) {
-    graphicsIntervalId = setInterval(fetchGraphics, 5000);
+    graphicsIntervalId = setInterval(fetchGraphics, 30000);
   }
 };
 

@@ -190,7 +190,9 @@ const fetchData = async () => {
 
     const [paramsResponse, valuesResponse] = await axios.all([
       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
-      axios.get(`/vparamsuser/${store.state.user.structure_id}/${currentChange}/${currentTime}`)
+      // axios.get(`/vparamsuser/${store.state.user.structure_id}/${currentChange}/${currentTime}`)
+      axios.get(`/vparams/${store.state.user.structure_id}`)
+
     ]);
 
     // Log response to debug

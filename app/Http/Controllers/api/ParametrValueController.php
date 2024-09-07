@@ -40,10 +40,10 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-    public function getByBlog($id,$change,$date_at)
+    private function getByBlog($id)
     {
         // dd($id,$change,$date);
-        $date = Carbon::parse($date_at)->format('Y-m-d');
+        // $date = Carbon::parse($date_at)->format('Y-m-d');
         $idArray = explode(',', $id);
         return ValuesParameters::whereIn('BlogID', $idArray)
         // ->whereDate('created_at', $date)

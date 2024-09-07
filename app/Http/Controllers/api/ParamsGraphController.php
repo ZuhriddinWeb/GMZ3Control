@@ -99,8 +99,7 @@ class ParamsGraphController extends Controller
 
         return $query;
     }
-
-    //dd($ChangeDay);
+     //dd($ChangeDay);
     //  $query = DB::select("select * from 
     //  (
     //  select 
@@ -119,26 +118,26 @@ class ParamsGraphController extends Controller
     //  // dd($query[0]->ETime);
     //  // dd($query);
     //  return $query;
-    // $ChangeDay = '2024-08-22';
-    // $change=(int)1;
-    // $query =  DB::table('graphics_paramenters')
-    //     ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
-    //     ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
-    //     ->whereIn('BlogsID', $idArray) 
+        // $ChangeDay = '2024-08-22';
+        // $change=(int)1;
+        // $query =  DB::table('graphics_paramenters')
+        //     ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
+        //     ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+        //     ->whereIn('BlogsID', $idArray) 
 
-    //     ->select('graphic_times.id as GTid','graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*');
-    //     if ($change_id == 1) {
-    //         $query->whereTime('graphic_times.StartTime', '>=', '08:00')
-    //               ->whereTime('graphic_times.StartTime', '<=', '20:00');
-    //     } elseif ($change_id == 2) {
-    //         $query->where(function ($query) {
-    //             $query->whereTime('graphic_times.StartTime', '<', '08:00')
-    //                   ->orWhereTime('graphic_times.StartTime', '>', '20:00');
-    //         });
-    //     }
-    //     return $query->get();
-    // dd();
-    // if()
+        //     ->select('graphic_times.id as GTid','graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*');
+        //     if ($change_id == 1) {
+        //         $query->whereTime('graphic_times.StartTime', '>=', '08:00')
+        //               ->whereTime('graphic_times.StartTime', '<=', '20:00');
+        //     } elseif ($change_id == 2) {
+        //         $query->where(function ($query) {
+        //             $query->whereTime('graphic_times.StartTime', '<', '08:00')
+        //                   ->orWhereTime('graphic_times.StartTime', '>', '20:00');
+        //         });
+        //     }
+        //     return $query->get();
+        // dd();
+        // if()
     public function sendTimeUpdate()
     {
         $currentTime = now()->format('H:i');

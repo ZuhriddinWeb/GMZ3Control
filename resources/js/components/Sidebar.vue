@@ -119,8 +119,8 @@ const fetchParameterCount = async () => {
 
 const menu = ref([
   { title: 'menu.home', icon: 'home', path: '/' },
-  {
-    title: 'menu.lists', icon: 'format_list_bulleted', children: [
+  // {
+    // title: 'menu.lists', icon: 'format_list_bulleted', children: [
       { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
       { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
       { title: 'menu.units', icon: 'ad_units', path: '/units' },
@@ -128,8 +128,8 @@ const menu = ref([
       { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },
       { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
       { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
-    ]
-  },
+    // ]
+  // },
   { title: 'menu.vparams', icon: 'diamond', path: '/vparams' },
   { title: 'menu.users', icon: 'person', path: '/users' },
 ]);

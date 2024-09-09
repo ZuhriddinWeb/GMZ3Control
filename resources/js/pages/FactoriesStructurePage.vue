@@ -123,7 +123,11 @@ const onSubmit = async () => {
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';
+      result.NameRus = '';
+
       result.ShortName = '';
+      result.ShortNameRus = '';
+
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

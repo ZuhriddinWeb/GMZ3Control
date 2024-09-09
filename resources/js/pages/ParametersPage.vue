@@ -153,6 +153,8 @@ const onSubmit = async () => {
     if (data.status === 200) {
       showModal.value = false;
       result.Name = '';
+      result.NameRus = '';
+      result.ShortNameRus = '';
       result.ShortName = '';
       result.ParamsTypeID = '';
       result.UnitsID = '',

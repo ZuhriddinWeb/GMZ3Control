@@ -311,7 +311,7 @@ const handleCellFocus = (event) => {
       if (editingTimeout.value) {
         clearTimeout(editingTimeout.value);
       }
-      editingTimeout.value = setTimeout(closeEditorIfOpen, 30000);
+      editingTimeout.value = setTimeout(closeEditorIfOpen, 60000);
     } else {
       startIntervals();
     }

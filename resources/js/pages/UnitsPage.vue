@@ -108,7 +108,9 @@ const getFieldShortName = () => {
 const fetchData = async () => {
   try {
     const response = await axios.get('/units');
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
+    console.log(response.data);
+    
+    rowData.value = response.data;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -141,7 +143,14 @@ onMounted(() => {
   if (savedLocale) {
     locale.value = savedLocale;
   }
-  fetchData();
+  (async () => {
+    try {
+      const response = await axios.get('/units');
+      rowData.value = response.data;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  })();
 });
 
 const changeLanguage = () => {

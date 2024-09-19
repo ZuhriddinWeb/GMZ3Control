@@ -18,6 +18,7 @@ return new class extends Migration
             $table->time('Name')->nullable();
             $table->time('StartTime')->nullable();
             $table->time('EndTime')->nullable();
+            $table->boolean('Current')->nullable();
             $table->dateTime('Created')->nullable();
             $table->string('Creator')->nullable();
             $table->dateTime('Changed')->nullable();

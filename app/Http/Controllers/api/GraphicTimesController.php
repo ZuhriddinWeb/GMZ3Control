@@ -46,12 +46,14 @@ class GraphicTimesController extends Controller
     }
     private function create(Request $request)
     {
+        
         $unit = GraphicTimes::create([
             'GraphicsID' => $request->GraphicId,
             'Change' => $request->ChangeId,
             'Name' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
             'StartTime' => Carbon::parse($request->Name)->addHours(5)->format('H:i:s'),
             'EndTime' => Carbon::parse($request->EndTime)->addHours(5)->format('H:i:s'),
+            'Current' => $request->Current,
 
         ]);
         return response()->json([

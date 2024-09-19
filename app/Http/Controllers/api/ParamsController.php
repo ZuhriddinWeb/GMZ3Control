@@ -39,12 +39,14 @@ class ParamsController extends Controller
     }
     private function getRowParam($id)
     {
+        // dd($id);
         return Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
             ->join('units', 'parameters.UnitsID', '=', 'units.id')
             ->where('parameters.id', $id)
             ->select('parameters.id as Uuid','parameters.Min','parameters.Max','parameters.NameRus', 'parameters.ShortNameRus', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
             ->first();
     }
+
     private function create(Request $request)
     {
         $uuid = Str::uuid();

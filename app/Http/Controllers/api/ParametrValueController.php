@@ -90,46 +90,45 @@ class ParametrValueController extends Controller
     // }
     private function create(Request $request)
     {
-        $parameters = [
-            'ParametersID' => $request->ParametersID,
-            'SourcesID' => $request->SourceID,
-            'TimeID' => $request->GTid,
-            'GraphicsTimesID' => $request->GrapicsID,
-        ];
-        // dd($parameters);
-        $existingRecord = ValuesParameters::where($parameters)->first();
+        // $parameters = [
+        //     'ParametersID' => $request->ParametersID,
+        //     'SourcesID' => $request->SourceID,
+        //     'TimeID' => $request->GTid,
+        //     'GraphicsTimesID' => $request->GrapicsID,
+        // ];
+        // // dd($parameters);
+        // $existingRecord = ValuesParameters::where($parameters)->first();
     
         try {
-            if ($existingRecord) {
-                $existingRecord->update([
-                    'Value' => $request->Value,
-                    'BlogID' => intval($request->BlogsID), 
-                    'Comment' => $request->Comment,
-                    'updated_at' => now(),
-                    'Changed' => now(),
-                    'Changer' => $request->userId,
-                ]);
+            // if ($existingRecord) {
+            //     $existingRecord->update([
+            //         'Value' => $request->Value,
+            //         'BlogID' => intval($request->BlogsID), 
+            //         'Comment' => $request->Comment,
+            //         'updated_at' => now(),
+            //         'Changed' => now(),
+            //         'Changer' => $request->userId,
+            //     ]);
     
-                $unit = $existingRecord;
-                $message = "Data successfully updated";
+            //     $unit = $existingRecord;
+            //     $message = "Data successfully updated";
+            $uuidString = (string) Str::uuid();
+            $unit = ValuesParameters::create([
+                'id' => $uuidString,
+                'ParametersID' => $request->ParametersID,
+                'SourcesID' => $request->SourceID,
+                'TimeID' => $request->GTid, // Ensure this field is set
+                'GraphicsTimesID' => $request->GrapicsID,
+                'Value' => $request->Value,
+                'BlogID' => intval($request->BlogsID), // Ensure this field is set
+                'Comment' => $request->Comment,
+                'Created' => now(),
+                'Creator' => $request->userId,
+                'updated_at' => now(), // For consistency
+            ]);
+            $message = "Data successfully created";
     
-            } else {
-                $uuidString = (string) Str::uuid();
-                $unit = ValuesParameters::create([
-                    'id' => $uuidString,
-                    'ParametersID' => $request->ParametersID,
-                    'SourcesID' => $request->SourceID,
-                    'TimeID' => $request->GTid, // Ensure this field is set
-                    'GraphicsTimesID' => $request->GrapicsID,
-                    'Value' => $request->Value,
-                    'BlogID' => intval($request->BlogsID), // Ensure this field is set
-                    'Comment' => $request->Comment,
-                    'Created' => now(),
-                    'Creator' => $request->userId,
-                    'updated_at' => now(), // For consistency
-                ]);
-                $message = "Data successfully created";
-            }
+            
     
             return response()->json([
                 'status' => 200,
@@ -138,9 +137,6 @@ class ParametrValueController extends Controller
             ]);
     
         } catch (\Exception $e) {
-            // Log the error and return an error response
-            Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
-    
             return response()->json([
                 'status' => 500,
                 'message' => 'There was an error processing the request.',
@@ -149,25 +145,28 @@ class ParametrValueController extends Controller
         }
     }
 
-    private function update(Request $request)
+    public function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
+        // dd($request);
+        // $request->validate([
+        //     'id' => 'required|integer|exists:units,id',
+        //     'Name' => 'required|string|max:255',
+        //     'ShortName' => 'required|string|max:255',
+        //     'Comment' => 'nullable|string|max:255',
+        // ]);
 
         $unit = ValuesParameters::find($request->id);
         $unit->update([
-            'Name' => $request->Name,
-            'ShortName' => $request->ShortName,
+            'Value' => $request->Value,
             'Comment' => $request->Comment,
+            'Changer' => $request->userId,
+            'Changed' =>now(),
+
         ]);
 
         return response()->json([
             'status' => 200,
-            'message' => "Javob muvafaqiyatli yangilandi",
+            'message' => "muvafaqiyatli yangilandi",
             'unit' => $unit
         ]);
     }

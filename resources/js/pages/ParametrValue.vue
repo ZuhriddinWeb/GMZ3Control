@@ -1,24 +1,63 @@
 <template>
   <div class="grid grid-rows-[55px,1fr]">
-    <main></main>
-    <main class="flex flex-col">
+    <!-- Add new Elements start -->
+
+    <main>
+
+      <div class="flex justify-between">
+        <span class="flex w-full"></span>
+        <VaButton @click="showModal = true" class="w-14 h-12 mt-3 mr-1" icon="add" />
+      </div>
+      <VaModal v-model="showModal" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmit" close-button>
+        <h3 class="va-h3">
+          Qiymatlarni kiritish
+        </h3>
+        <div>
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-1 items-end w-full">
+              <VaSelect v-model="result.ParametersID" value-by="value" class="mb-1" label="Parametr turini tanlang"
+                :options="ParamOptions" clearable />
+              <!-- <VaSelect v-model="result.UnitsID" class="mb-1" label="Manbani tanlang" :options="SourceOptions"
+                clearable /> -->
+              <!-- <VaSelect v-model="result.GTime" class="mb-1" label="Grafik vaqtini tanlang" :options="TimesOptions"
+                clearable /> -->
+            </div>
+            <VaInput class="w-full" v-model="result.Value"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qiymat" />
+            <!-- <VaInput class="w-full" v-model="result.ShortName"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qisqa nomi" /> -->
+            <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
+          </VaForm>
+        </div>
+      </VaModal>
+
+      <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)" close-button>
+        <h3 class="va-h3">
+          Qiymatni tahrirlash
+        </h3>
+        <div>
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <VaInput class="w-full" v-model="resultEdit.Value"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qiymat" />
+
+            <VaTextarea class="w-full" v-model="resultEdit.Comment" max-length="125" label="Izoh" />
+          </VaForm>
+        </div>
+      </VaModal>
+    </main>
+    <!-- Add new Elements end -->
+    <main class="flex flex-col ">
       <div class="m-2">
         <VaDateInput v-model="day" class="mr-2" label="Day" />
-        <VaSelect v-model="result.Change" value-by="value"  :label="t('menu.changes')"
-          :options="changesOptions" clearable />
+        <VaSelect v-model="result.Change" value-by="value" :label="t('menu.changes')" :options="changesOptions"
+          clearable />
       </div>
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-        @cellValueChanged="onCellValueChanged"></ag-grid-vue>
-      <!-- <VaModal v-model="showModal" ok-text="Apply">
-        <h3 class="va-h3"> @rowClicked="onRowClicked"
-          Title
-        </h3>
-        <p>
-          Classic modal overlay which represents a dialog box or other interactive
-          component, such as a dismissible alert, sub-window, etc.
-        </p>
-      </VaModal> -->
+        @cellValueChanged="onCellValueChanged" @cellClicked="onCellClicked"></ag-grid-vue>
     </main>
   </div>
 </template>
@@ -29,6 +68,7 @@ import axios from 'axios';
 import { useI18n } from 'vue-i18n';
 import { format, parse } from 'date-fns';
 import 'vuestic-ui/dist/vuestic-ui.css';
+import { Value } from 'sass';
 
 const { t, locale } = useI18n();
 const rowData = ref([]);
@@ -37,15 +77,38 @@ const lastEnteredValues = ref({});
 const changesOptions = ref([]);
 const day = ref(new Date());
 const showModal = ref(null);
+const showModalEdit = ref(null);
+const currentRowNode = ref(null);
+
 const dateFormat = 'yyyy-MM-dd';
 const selectedRow = ref(null);
 const editingTimeout = ref(null);
 const userId = store.state.user.id;
-const oldTableData = ref([])
-const result = reactive({
-  Change: "",
-});
+const structureID = store.state.user.structure_id;
 
+const oldTableData = ref([])
+const ParamOptions = ref([]);
+const SourceOptions = ref([]);
+const TimesOptions = ref([]);
+
+const result = reactive({
+  ParametersID: "",
+  Change: "",
+  Name: "",
+  ShortName: "",
+  Comment: "",
+  GTime: "",
+  Value: "",
+  BlogsID: store.state.user.structure_id[0],
+  SourceID: "",
+  userId: store.state.user.id
+});
+const resultEdit = reactive({
+  id:"",
+  Comment: "",
+  Value: "",
+  userId: store.state.user.id
+});
 const columnDefs = ref([
   {
     headerName: t('table.headerRow'),
@@ -112,7 +175,7 @@ const columnDefs = ref([
   {
     headerName: t('table.value'),
     field: "Value",
-    width:150,
+    width: 150,
     editable: true,
     cellEditor: "agNumberCellEditor",
     cellClassRules: {
@@ -139,9 +202,24 @@ const columnDefs = ref([
 const fetchGraphics = async () => {
   try {
     const responseChanges = await axios.get('/changes');
+    const responseParams = await axios.get(`/paramWithId/${structureID}`);
     changesOptions.value = responseChanges.data.map(change => ({
       value: change.Change,
       text: change.Change,
+    }));
+    ParamOptions.value = responseParams.data.map(factory => ({
+      value: factory.Pid,
+      text: factory.PName
+    }));
+    const responseSources = await axios.get('/source');
+    SourceOptions.value = responseSources.data.map(factory => ({
+      value: factory.id,
+      text: factory.Name
+    }));
+    const responseTimes = await axios.get('/graphictimes');
+    TimesOptions.value = responseTimes.data.map(factory => ({
+      value: factory.id,
+      text: factory.GName
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
@@ -165,6 +243,27 @@ const gridOptions = {
   columnDefs: columnDefs.value,
   getRowClass,
   headerHeight: 43,
+  onCellClicked: (params) => {
+        const { colDef, data } = params; // Get the entire row data
+        if (colDef.field === 'Value' && data.Value) {
+          openEditModal(params);
+          oldTableData.value = { ...params.data };
+          currentRowNode.value = params.node;
+          
+          resultEdit.id = oldTableData.value.id;
+          resultEdit.Value = oldTableData.value.Value;
+          resultEdit.Comment = oldTableData.value.Comment;
+
+          console.log(oldTableData.value.id); // Log the entire row data
+          
+          showModalEdit.value = true; // Open the modal
+        }
+      },
+};
+const openEditModal = (params) => {
+  oldTableData.value = { ...params.data }; // Store the row data
+  currentRowNode.value = params.node; // Store the row node
+  showModalEdit.value = true; // Open the modal
 };
 const getCurrentTimeInMinutes = () => {
   const now = new Date();
@@ -258,8 +357,9 @@ const onRowClicked = (event) => {
 };
 
 const saveDataToServer = async (data) => {
+  console.log(data);
   try {
-    const response = await axios.post('/vparams', {...data,userId});
+    const response = await axios.post('/vparams', { ...data, userId });
     removeFocusFromGrid();
     // focusOnMinColumn();
     fetchData()
@@ -336,13 +436,52 @@ const handleCellBlur = (event) => {
 
 const startIntervals = () => {
   if (!dataIntervalId) {
-    dataIntervalId = setInterval(fetchData, 30000);
+    dataIntervalId = setInterval(fetchData, 60000);
   }
   if (!graphicsIntervalId) {
-    graphicsIntervalId = setInterval(fetchGraphics, 30000);
+    graphicsIntervalId = setInterval(fetchGraphics, 60000);
   }
 };
 
+const onSubmit = async () => {
+  try {
+    const { data } = await axios.post("/vparams", result);
+    if (data.status === 200) {
+      showModal.value = false;
+      result.ParametersID = "",
+      result.Name = '';
+      result.ShortName = '';
+      result.Comment = '';
+      result.Value = '';
+
+      await fetchData();
+    } else {
+      console.error('Error saving data:', data.message);
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+};
+const onSubmitEdit = async (rowNode) => { 
+  try {
+    const { data } = await axios.post("/vparamsEdit", resultEdit); 
+    if (data.status === 200) {
+      showModal.value = false;
+      
+      resultEdit.id = "";
+      resultEdit.Comment = '';
+      resultEdit.Value = '';
+      resultEdit.userId = '';
+      
+      rowNode.setData(data.updatedRowData);
+      gridOptions.api.refreshCells();
+    } else {
+      console.error('Error saving data:', data.message);
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+};
 const stopIntervals = () => {
   if (dataIntervalId) {
     clearInterval(dataIntervalId);

@@ -10,6 +10,8 @@ export default createStore({
       change:null,
       currentTime:null,
       userTabel:'',
+      structureID:null,
+
     };
   },
   mutations: {

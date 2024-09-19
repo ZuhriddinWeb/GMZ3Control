@@ -14,7 +14,8 @@ class GraphicTimes extends Model
         'Change',
         'Name',
         'StartTime',
-        'EndTime'
+        'EndTime',
+        'Current'
     ];
      public function getStartTimeAttribute($value)
      {

@@ -33,20 +33,7 @@
         </div>
       </VaModal>
 
-      <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)" close-button>
-        <h3 class="va-h3">
-          Qiymatni tahrirlash
-        </h3>
-        <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-            <VaInput class="w-full" v-model="resultEdit.Value"
-              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
-              label="Qiymat" />
 
-            <VaTextarea class="w-full" v-model="resultEdit.Comment" max-length="125" label="Izoh" />
-          </VaForm>
-        </div>
-      </VaModal>
     </main>
     <!-- Add new Elements end -->
     <main class="flex flex-col ">
@@ -58,6 +45,8 @@
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
         @cellValueChanged="onCellValueChanged" @cellClicked="onCellClicked"></ag-grid-vue>
+
+      <EditValue v-if="showModalEdit" :showModalEdit="showModalEdit" :resultEdit="resultEdit" @update="handleUpdate" />
     </main>
   </div>
 </template>
@@ -69,6 +58,7 @@ import { useI18n } from 'vue-i18n';
 import { format, parse } from 'date-fns';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import { Value } from 'sass';
+import EditValue from '../components/ParameterValueComponent/EditValue.vue';
 
 const { t, locale } = useI18n();
 const rowData = ref([]);
@@ -104,7 +94,7 @@ const result = reactive({
   userId: store.state.user.id
 });
 const resultEdit = reactive({
-  id:"",
+  id: "",
   Comment: "",
   Value: "",
   userId: store.state.user.id
@@ -244,26 +234,26 @@ const gridOptions = {
   getRowClass,
   headerHeight: 43,
   onCellClicked: (params) => {
-        const { colDef, data } = params; // Get the entire row data
-        if (colDef.field === 'Value' && data.Value) {
-          openEditModal(params);
-          oldTableData.value = { ...params.data };
-          currentRowNode.value = params.node;
-          
-          resultEdit.id = oldTableData.value.id;
-          resultEdit.Value = oldTableData.value.Value;
-          resultEdit.Comment = oldTableData.value.Comment;
-
-          console.log(oldTableData.value.id); // Log the entire row data
-          
-          showModalEdit.value = true; // Open the modal
-        }
-      },
+    const { colDef, data } = params; // Get the entire row data
+    if (colDef.field === 'Value' && data.Value) {
+      openEditModal(params);
+    }
+  },
 };
 const openEditModal = (params) => {
   oldTableData.value = { ...params.data }; // Store the row data
   currentRowNode.value = params.node; // Store the row node
+
+  // Update resultEdit with current row data
+  resultEdit.id = oldTableData.value.id;
+  resultEdit.Value = oldTableData.value.Value;
+  resultEdit.Comment = oldTableData.value.Comment;
+
   showModalEdit.value = true; // Open the modal
+};
+const handleUpdate = (updatedData) => {
+  // Process the updated data
+  console.log('Updated Data:', updatedData);
 };
 const getCurrentTimeInMinutes = () => {
   const now = new Date();
@@ -449,7 +439,7 @@ const onSubmit = async () => {
     if (data.status === 200) {
       showModal.value = false;
       result.ParametersID = "",
-      result.Name = '';
+        result.Name = '';
       result.ShortName = '';
       result.Comment = '';
       result.Value = '';
@@ -462,26 +452,26 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-const onSubmitEdit = async (rowNode) => { 
-  try {
-    const { data } = await axios.post("/vparamsEdit", resultEdit); 
-    if (data.status === 200) {
-      showModal.value = false;
-      
-      resultEdit.id = "";
-      resultEdit.Comment = '';
-      resultEdit.Value = '';
-      resultEdit.userId = '';
-      
-      rowNode.setData(data.updatedRowData);
-      gridOptions.api.refreshCells();
-    } else {
-      console.error('Error saving data:', data.message);
-    }
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
-};
+// const onSubmitEdit = async (rowNode) => {
+//   try {
+//     const { data } = await axios.post("/vparamsEdit", resultEdit);
+//     if (data.status === 200) {
+//       showModal.value = false;
+
+//       resultEdit.id = "";
+//       resultEdit.Comment = '';
+//       resultEdit.Value = '';
+//       resultEdit.userId = '';
+
+//       rowNode.setData(data.updatedRowData);
+//       gridOptions.api.refreshCells();
+//     } else {
+//       console.error('Error saving data:', data.message);
+//     }
+//   } catch (error) {
+//     console.error('Error saving data:', error);
+//   }
+// };
 const stopIntervals = () => {
   if (dataIntervalId) {
     clearInterval(dataIntervalId);

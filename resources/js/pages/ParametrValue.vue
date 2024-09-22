@@ -33,7 +33,20 @@
         </div>
       </VaModal>
 
+      <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)" close-button>
+        <h3 class="va-h3">
+          Qiymatni tahrirlash
+        </h3>
+        <div>
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <VaInput class="w-full" v-model="resultEdit.Value"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qiymat" />
 
+            <VaTextarea class="w-full" v-model="resultEdit.Comment" max-length="125" label="Izoh" />
+          </VaForm>
+        </div>
+      </VaModal>
     </main>
     <!-- Add new Elements end -->
     <main class="flex flex-col ">
@@ -44,7 +57,7 @@
       </div>
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-        @cellValueChanged="onCellValueChanged" @cellClicked="onCellClicked"></ag-grid-vue>
+        @cellValueChanged="onCellValueChanged"  @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
 
       <EditValue v-if="showModalEdit" :showModalEdit="showModalEdit" :resultEdit="resultEdit" @update="handleUpdate" />
     </main>
@@ -233,21 +246,29 @@ const gridOptions = {
   columnDefs: columnDefs.value,
   getRowClass,
   headerHeight: 43,
-  onCellClicked: (params) => {
-    const { colDef, data } = params; // Get the entire row data
-    if (colDef.field === 'Value' && data.Value) {
-      openEditModal(params);
-    }
-  },
+  // onCellDoubleClicked : (params) => {
+  //   const { colDef, data } = params; // Get the entire row data
+  //   if (colDef.field === 'Value' && data.Value) {
+  //     openEditModal(params);
+  //   }
+  // },
+};
+const onCellDoubleClicked = (params) => {
+  const { colDef, data } = params; // Get the entire row data
+  if (colDef.field === 'Value' && data.Value) {
+    openEditModal(params);
+  }
 };
 const openEditModal = (params) => {
-  oldTableData.value = { ...params.data }; // Store the row data
+  console.log(params);
+  
+  rowData.value = { ...params.data }; // Store the row data
   currentRowNode.value = params.node; // Store the row node
 
   // Update resultEdit with current row data
-  resultEdit.id = oldTableData.value.id;
-  resultEdit.Value = oldTableData.value.Value;
-  resultEdit.Comment = oldTableData.value.Comment;
+  resultEdit.id = rowData.value.id;
+  resultEdit.Value = rowData.value.Value;
+  resultEdit.Comment = rowData.value.Comment;
 
   showModalEdit.value = true; // Open the modal
 };
@@ -271,61 +292,84 @@ const determineChange = () => {
   }
 };
 result.Change = determineChange();
-// const currentChange = computed(() => determineChange());
+const currentChange = computed(() => determineChange());
+// const fetchData = async () => {
+//   try {
+//     const currentChange = result.Change;
+//     const currentTime = format(day.value, dateFormat);
+
+//     const [paramsResponse, valuesResponse] = await axios.all([
+//       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
+//       // axios.get(`/vparamsuser/${store.state.user.structure_id}/${currentChange}/${currentTime}`)
+//       axios.get(`/vparams/${store.state.user.structure_id}`)
+
+//     ]);
+
+//     // Log response to debug
+//     // console.log('paramsResponse:', paramsResponse);
+//     // console.log('valuesResponse:', valuesResponse);
+
+//     // Ensure paramsResponse.data is an array
+//     const paramsData = Array.isArray(paramsResponse.data) ? paramsResponse.data : [];
+
+//     const firstIds = paramsData.map(item => `${item.ParametersID}_${item.GTid}`);
+//     const secondIds = oldTableData.value.map(item => `${item.ParametersID}_${item.GTid}`);
+
+//     const arrayOne = new Set(firstIds);
+//     const arrayTwo = new Set(secondIds);
+
+//     const first = [...arrayOne].filter(x => !arrayTwo.has(x));
+//     const second = [...arrayTwo].filter(x => !arrayOne.has(x));
+
+//     const diffs = [...first, ...second];
+
+//     const newItemsGrid = diffs.map(difference => {
+//       return paramsData.find(item => difference === `${item.ParametersID}_${item.GTid}`);
+//     }).filter(item => item !== undefined); // Filter out undefined items
+
+//     const values = valuesResponse.data;
+
+//     newItemsGrid.forEach((parametr, index) => {
+//       const select = values.find(val => val.TimeID === parametr.GTid && val.ParametersID === parametr.ParametersID);
+//       if (select) {
+//         newItemsGrid[index] = { ...parametr, ...select };
+//       }
+//     });
+
+//     gridApi.value.applyTransaction({
+//       add: newItemsGrid,
+//       addIndex: 0,
+//     });
+
+//     oldTableData.value = paramsData;
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//   }
+// };
 const fetchData = async () => {
+  const currentChange = result.Change;
+  const currentTime = format(day.value, dateFormat);
+  const currentHour = new Date().getHours();
+  const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
   try {
-    const currentChange = result.Change;
-    const currentTime = format(day.value, dateFormat);
-
-    const [paramsResponse, valuesResponse] = await axios.all([
-      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
-      // axios.get(`/vparamsuser/${store.state.user.structure_id}/${currentChange}/${currentTime}`)
+    axios.all([
+    axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
       axios.get(`/vparams/${store.state.user.structure_id}`)
-
-    ]);
-
-    // Log response to debug
-    // console.log('paramsResponse:', paramsResponse);
-    // console.log('valuesResponse:', valuesResponse);
-
-    // Ensure paramsResponse.data is an array
-    const paramsData = Array.isArray(paramsResponse.data) ? paramsResponse.data : [];
-
-    const firstIds = paramsData.map(item => `${item.ParametersID}_${item.GTid}`);
-    const secondIds = oldTableData.value.map(item => `${item.ParametersID}_${item.GTid}`);
-
-    const arrayOne = new Set(firstIds);
-    const arrayTwo = new Set(secondIds);
-
-    const first = [...arrayOne].filter(x => !arrayTwo.has(x));
-    const second = [...arrayTwo].filter(x => !arrayOne.has(x));
-
-    const diffs = [...first, ...second];
-
-    const newItemsGrid = diffs.map(difference => {
-      return paramsData.find(item => difference === `${item.ParametersID}_${item.GTid}`);
-    }).filter(item => item !== undefined); // Filter out undefined items
-
-    const values = valuesResponse.data;
-
-    newItemsGrid.forEach((parametr, index) => {
-      const select = values.find(val => val.TimeID === parametr.GTid && val.ParametersID === parametr.ParametersID);
-      if (select) {
-        newItemsGrid[index] = { ...parametr, ...select };
-      }
-    });
-
-    gridApi.value.applyTransaction({
-      add: newItemsGrid,
-      addIndex: 0,
-    });
-
-    oldTableData.value = paramsData;
+    ])
+      .then(axios.spread(({ data: params }, { data: values }) => {
+        params.forEach((parametr, index) => {
+          const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
+          if (select) {
+            params[index] = { ...parametr, ...select };
+          }
+        });
+        // params.sort((a, b) => (a.Value ? 1 : -1));
+        rowData.value = params;
+      }));
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
-
 const onCellValueChanged = async (event) => {
   const { data, colDef, newValue, oldValue } = event;
   if (newValue !== oldValue) {
@@ -439,7 +483,7 @@ const onSubmit = async () => {
     if (data.status === 200) {
       showModal.value = false;
       result.ParametersID = "",
-        result.Name = '';
+      result.Name = '';
       result.ShortName = '';
       result.Comment = '';
       result.Value = '';
@@ -452,26 +496,26 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-// const onSubmitEdit = async (rowNode) => {
-//   try {
-//     const { data } = await axios.post("/vparamsEdit", resultEdit);
-//     if (data.status === 200) {
-//       showModal.value = false;
+const onSubmitEdit = async (rowNode) => {
+  try {
+    const { data } = await axios.post("/vparamsEdit", resultEdit);
+    if (data.status === 200) {
+      showModal.value = false;
 
-//       resultEdit.id = "";
-//       resultEdit.Comment = '';
-//       resultEdit.Value = '';
-//       resultEdit.userId = '';
+      resultEdit.id = "";
+      resultEdit.Comment = '';
+      resultEdit.Value = '';
+      resultEdit.userId = '';
 
-//       rowNode.setData(data.updatedRowData);
-//       gridOptions.api.refreshCells();
-//     } else {
-//       console.error('Error saving data:', data.message);
-//     }
-//   } catch (error) {
-//     console.error('Error saving data:', error);
-//   }
-// };
+      rowNode.setData(data.updatedRowData);
+      gridOptions.api.refreshCells();
+    } else {
+      console.error('Error saving data:', data.message);
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+};
 const stopIntervals = () => {
   if (dataIntervalId) {
     clearInterval(dataIntervalId);

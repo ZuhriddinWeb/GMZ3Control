@@ -1,71 +1,93 @@
 <template>
-  <VaModal v-model="showModalEdit" ok-text="Save" cancel-text="Cancel" @ok="onSubmitEdit" close-button>
-    <h3>Edit Value</h3>
-    <VaForm ref="formRef" class="flex flex-col">
-      <VaInput v-model="result.Value" label="Value" />
-      <VaInput v-model="result.Comment" label="Comment" />
-      <!-- Add any additional fields you need here -->
-    </VaForm>
-  </VaModal>
+  <main class="h-full w-full text-center content-center">
+    <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)" close-button>
+        <h3 class="va-h3">
+          Qiymatni tahrirlash
+        </h3>
+        <div>
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <VaInput class="w-full" v-model="resultEdit.Value"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qiymat" />
+
+            <VaTextarea class="w-full" v-model="resultEdit.Comment" max-length="125" label="Izoh" />
+          </VaForm>
+        </div>
+      </VaModal>
+  </main>
 </template>
 
 <script setup>
-import { ref, reactive, inject,onMounted } from 'vue';
+import { ref, reactive, inject, onMounted } from 'vue';
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
-import { useToast } from 'vuestic-ui';
-
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
-const props = defineProps(['params']);
-const showModalEdit = ref(false); // Make sure you define this
-// const onupdated = inject('onupdated');
+
+const props = defineProps(["params"]);
+const selectedDataEdit = ref(false);
+const onupdated = inject('onupdated');
 const { t } = useI18n();
 
 const result = reactive({
   id: "",
   Comment: "",
   Value: "",
-  userId: "" // Ensure you get the user ID from the correct source
+  userId: store.state.user.id
 });
+// Fetch unit data on mount
+// onMounted(() => {
+//   axios.get(`/vparams/${props.params.data['id']}`)
+//     .then((res) => {
+//       result.NameRus = res.data.NameRus;
+//       result.Name = res.data.Name;
+//       result.ShortName = res.data.ShortName;
+//       result.ShortNameRus = res.data.ShortNameRus;
+//       result.Comment = res.data.Comment;
+//     })
+//     .catch((error) => {
+//       console.error('Error fetching data:', error);
+//       // Optionally, you can show an error notification here.
+//     });
+// });
 
-// Fetch data when the modal is opened
-const fetchData = async () => {
+const onSubmitEdit = async (rowNode) => {
   try {
-    const res = await axios.get(`/vparams/${props.params.data.id}`);
-    Object.assign(result, res.data); // Use Object.assign to update the reactive object
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    init({ message: 'Error fetching data', color: 'danger' });
-  }
-};
-
-// Call fetchData when the modal is opened
-onMounted(() => {
-  if (props.params) {
-    fetchData();
-  }
-});
-
-const onSubmitEdit = async () => {
-  try {
-    const { data } = await axios.post("/vparamsEdit", result);
+    const { data } = await axios.post("/vparamsEdit", resultEdit);
     if (data.status === 200) {
-      showModalEdit.value = false;
+      showModal.value = false;
 
-      // Clear the result object
-      result.id = "";
-      result.Comment = '';
-      result.Value = '';
-      result.userId = '';
+      resultEdit.id = "";
+      resultEdit.Comment = '';
+      resultEdit.Value = '';
+      resultEdit.userId = '';
 
-      // onupdated(props.params.node, data.unit);
-      // init({ message: t('login.successMessage'), color: 'success' });
+      onupdated(props.params.node, data.unit);
+      selectedDataEdit.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
     } else {
       console.error('Error saving data:', data.message);
     }
   } catch (error) {
     console.error('Error saving data:', error);
-    init({ message: 'Error saving data', color: 'danger' });
+  }
+};
+
+const onSubmit = async () => {
+  try {
+    const { data } = await axios.put("/units", result);
+    if (data.status === 200) {
+      onupdated(props.params.node, data.unit);
+      selectedDataEdit.value = false;
+      init({ message: t('login.successMessage'), color: 'success' });
+
+    } else {
+      console.error('Error saving data:', data.message);
+      // Optionally, you can show an error notification here.
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+    // Optionally, you can show an error notification here.
   }
 };
 </script>

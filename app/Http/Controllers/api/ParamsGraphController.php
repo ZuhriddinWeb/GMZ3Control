@@ -57,9 +57,9 @@ class ParamsGraphController extends Controller
             ->select('graphics_paramenters.*', 'graphics.id as Gid', 'graphics.Name as GName', 'parameters.id as Pid', 'parameters.name as Pname', 'factory_structures.id as Sid', 'factory_structures.Name as SName', 'blogs.id as Bid', 'blogs.Name as BName', 'sources.id as Cid', 'sources.Name as Cname')
             ->first();
     }
-    public function getParamsForUser($id, $change, $ChangeDay)
+    public function getParamsForUser($id, $change, $ChangeDay,$toggle)
     {
-        // dd($id);
+        dd($id);
         // Split the ID string into an array of integers
         $idArray = explode(',', $id);
         $blogsIds = array_map('intval', $idArray); // Ensure IDs are integers

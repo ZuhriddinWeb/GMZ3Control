@@ -33,7 +33,8 @@
         </div>
       </VaModal>
 
-      <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)" close-button>
+      <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)"
+        close-button>
         <h3 class="va-h3">
           Qiymatni tahrirlash
         </h3>
@@ -42,7 +43,6 @@
             <VaInput class="w-full" v-model="resultEdit.Value"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Qiymat" />
-
             <VaTextarea class="w-full" v-model="resultEdit.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
@@ -54,10 +54,14 @@
         <VaDateInput v-model="day" class="mr-2" label="Day" />
         <VaSelect v-model="result.Change" value-by="value" :label="t('menu.changes')" :options="changesOptions"
           clearable />
+
+        <VaButton @click="goToRoute" class="btn btn-primary mt-4 ml-4">
+          Go to Your Route
+        </VaButton>
       </div>
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-        @cellValueChanged="onCellValueChanged"  @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
+        @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
 
       <EditValue v-if="showModalEdit" :showModalEdit="showModalEdit" :resultEdit="resultEdit" @update="handleUpdate" />
     </main>
@@ -93,7 +97,7 @@ const oldTableData = ref([])
 const ParamOptions = ref([]);
 const SourceOptions = ref([]);
 const TimesOptions = ref([]);
-
+const variableValue = ref(0); // Initialize the variable to 0
 const result = reactive({
   ParametersID: "",
   Change: "",
@@ -261,7 +265,7 @@ const onCellDoubleClicked = (params) => {
 };
 const openEditModal = (params) => {
   console.log(params);
-  
+
   rowData.value = { ...params.data }; // Store the row data
   currentRowNode.value = params.node; // Store the row node
 
@@ -291,6 +295,12 @@ const determineChange = () => {
     return 2;
   }
 };
+
+
+const goToRoute = () => {
+  variableValue.value = variableValue.value === 1 ? 0 : 1; 
+};
+
 result.Change = determineChange();
 const currentChange = computed(() => determineChange());
 // const fetchData = async () => {
@@ -353,7 +363,7 @@ const fetchData = async () => {
   const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
   try {
     axios.all([
-    axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
+      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${variableValue.value}`),
       axios.get(`/vparams/${store.state.user.structure_id}`)
     ])
       .then(axios.spread(({ data: params }, { data: values }) => {
@@ -483,7 +493,7 @@ const onSubmit = async () => {
     if (data.status === 200) {
       showModal.value = false;
       result.ParametersID = "",
-      result.Name = '';
+        result.Name = '';
       result.ShortName = '';
       result.Comment = '';
       result.Value = '';

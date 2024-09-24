@@ -110,7 +110,7 @@ const result = reactive({
   GTime: "",
   Value: "",
   SourceID: "",
-  BlogsID: structureID,
+  BlogsID: structureID[0],
   userId: store.state.user.id
 });
 const resultEdit = reactive({

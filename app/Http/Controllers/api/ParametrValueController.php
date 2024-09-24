@@ -36,7 +36,8 @@ class ParametrValueController extends Controller
         $units = ValuesParameters::all();
         return response()->json($units);
     }
-    public function getParamsForId($id){
+    public function getParamsForId($id)
+    {
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
@@ -46,8 +47,8 @@ class ParametrValueController extends Controller
         // $date = Carbon::parse($date_at)->format('Y-m-d');
         $idArray = explode(',', $id);
         return ValuesParameters::whereIn('BlogID', $idArray)
-        // ->whereDate('created_at', $date)
-        ->get();
+            // ->whereDate('created_at', $date)
+            ->get();
     }
     // private function create(Request $request)
     // {
@@ -68,7 +69,7 @@ class ParametrValueController extends Controller
     //                 'updated_at' => now()
     //             ]
     //         );
-            
+
     //         $unit = ValuesParameters::where('id', $uuidString)->first();
 
 
@@ -91,6 +92,7 @@ class ParametrValueController extends Controller
     private function create(Request $request)
     {
         // $parameters = [
+        // dd($request);
         //     'ParametersID' => $request->ParametersID,
         //     'SourcesID' => $request->SourceID,
         //     'TimeID' => $request->GTid,
@@ -98,7 +100,7 @@ class ParametrValueController extends Controller
         // ];
         // // dd($parameters);
         // $existingRecord = ValuesParameters::where($parameters)->first();
-    
+
         try {
             // if ($existingRecord) {
             //     $existingRecord->update([
@@ -109,7 +111,7 @@ class ParametrValueController extends Controller
             //         'Changed' => now(),
             //         'Changer' => $request->userId,
             //     ]);
-    
+
             //     $unit = $existingRecord;
             //     $message = "Data successfully updated";
             $uuidString = (string) Str::uuid();
@@ -117,25 +119,25 @@ class ParametrValueController extends Controller
                 'id' => $uuidString,
                 'ParametersID' => $request->ParametersID,
                 'SourcesID' => $request->SourceID,
+                'BlogID' => $request->BlogsID, // Ensure this field is set
                 'TimeID' => $request->GTid, // Ensure this field is set
                 'GraphicsTimesID' => $request->GrapicsID,
                 'Value' => $request->Value,
-                'BlogID' => intval($request->BlogsID), // Ensure this field is set
                 'Comment' => $request->Comment,
                 'Created' => now(),
                 'Creator' => $request->userId,
                 'updated_at' => now(), // For consistency
             ]);
             $message = "Data successfully created";
-    
-            
-    
+
+
+
             return response()->json([
                 'status' => 200,
                 'message' => $message,
                 'unit' => $unit
             ]);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
@@ -160,7 +162,7 @@ class ParametrValueController extends Controller
             'Value' => $request->Value,
             'Comment' => $request->Comment,
             'Changer' => $request->userId,
-            'Changed' =>now(),
+            'Changed' => now(),
 
         ]);
 
@@ -170,7 +172,17 @@ class ParametrValueController extends Controller
             'unit' => $unit
         ]);
     }
+    public function vparamsGetValue($id)
+    {
 
+        return ValuesParameters::join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id')
+            ->where('BlogID', $id)
+            ->where('TimeID', NULL)
+            ->whereDate('values_parameters.created_at', Carbon::today()) // Filter for current day
+            ->select('parameters.id as Pid', 'parameters.Min', 'parameters.Max', 'parameters.Name', 'parameters.NameRus', 'values_parameters.*')
+            ->get();
+        
+    }
     public function delete(Request $request, $id)
     {
         try {
@@ -182,13 +194,13 @@ class ParametrValueController extends Controller
             return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
         }
     }
-  
-        public function sendTimeUpdate()
-        {
-            $currentTime = now()->format('H:i'); 
-    
-            broadcast(new TimeUpdated($currentTime));
-            // event();
-            return response()->json(['status' => 'Yangilandi!']);
-        }
+
+    public function sendTimeUpdate()
+    {
+        $currentTime = now()->format('H:i');
+
+        broadcast(new TimeUpdated($currentTime));
+        // event();
+        return response()->json(['status' => 'Yangilandi!']);
+    }
 }

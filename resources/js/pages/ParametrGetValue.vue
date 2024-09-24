@@ -4,7 +4,7 @@
 
     <main>
 
-      <!-- <div class="flex justify-between">
+      <div class="flex justify-between">
         <span class="flex w-full"></span>
         <VaButton @click="showModal = true" class="w-14 h-12 mt-3 mr-1" icon="add" />
       </div>
@@ -17,16 +17,21 @@
             <div class="grid grid-cols-1 md:grid-cols-1 gap-1 items-end w-full">
               <VaSelect v-model="result.ParametersID" value-by="value" class="mb-1" label="Parametr turini tanlang"
                 :options="ParamOptions" clearable />
-             
+              <!-- <VaSelect v-model="result.UnitsID" class="mb-1" label="Manbani tanlang" :options="SourceOptions"
+                clearable /> -->
+              <!-- <VaSelect v-model="result.GTime" class="mb-1" label="Grafik vaqtini tanlang" :options="TimesOptions"
+                clearable /> -->
             </div>
             <VaInput class="w-full" v-model="result.Value"
               :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
               label="Qiymat" />
-            
+            <!-- <VaInput class="w-full" v-model="result.ShortName"
+              :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+              label="Qisqa nomi" /> -->
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" label="Izoh" />
           </VaForm>
         </div>
-      </VaModal> -->
+      </VaModal>
 
       <VaModal v-model="showModalEdit" ok-text="Saqlash" cancel-text="Bekor qilish" @ok="onSubmitEdit(currentRowNode)"
         close-button>
@@ -50,7 +55,7 @@
         <VaSelect v-model="result.Change" value-by="value" :label="t('menu.changes')" :options="changesOptions"
           clearable />
 
-        <VaButton @click="goToRoute" class="btn btn-primary items-center justify-center mt-3 ml-3" icon="grade">
+        <VaButton @click="goToRoute" class="btn btn-primary mt-3 ml-3" icon="grade">
         </VaButton>
       </div>
       <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
@@ -88,12 +93,14 @@ const selectedRow = ref(null);
 const editingTimeout = ref(null);
 const userId = store.state.user.id;
 const structureID = store.state.user.structure_id;
+// console.log(structureID);
 
 const oldTableData = ref([])
 const ParamOptions = ref([]);
 const SourceOptions = ref([]);
 const TimesOptions = ref([]);
 const variableValue = ref(0); // Initialize the variable to 0
+
 const result = reactive({
   ParametersID: "",
   Change: "",
@@ -102,8 +109,8 @@ const result = reactive({
   Comment: "",
   GTime: "",
   Value: "",
-  BlogsID: store.state.user.structure_id,
   SourceID: "",
+  BlogsID: structureID,
   userId: store.state.user.id
 });
 const resultEdit = reactive({
@@ -119,44 +126,44 @@ const columnDefs = ref([
     width: 80,
     headerClass: 'header-center',
   },
-  {
-    headerName: t('table.change'),
-    field: "Change",
-    width: 80,
-    headerClass: 'header-center',
-  },
-  {
-    headerName: t('table.OrderNumber'),
-    field: "OrderNumber",
-    width: 80,
-    headerClass: 'header-center',
-  },
+  // {
+  //   headerName: t('table.change'),
+  //   field: "Change",
+  //   width: 80,
+  //   headerClass: 'header-center',
+  // },
+  // {
+  //   headerName: t('table.OrderNumber'),
+  //   field: "OrderNumber",
+  //   width: 80,
+  //   headerClass: 'header-center',
+  // },
   {
     headerName: t('table.parameters'),
-    field: computed(() => locale.value === 'ru' ? 'PNameRus' : 'PName'),
+    field: computed(() => locale.value === 'ru' ? 'NameRus' : 'Name'),
     flex: 1,
     headerClass: 'header-center',
   },
-  {
-    headerName: t('table.graphictimes'),
-    headerClass: 'header-center',
-    children: [
-      {
-        headerName: t('table.startingTime'),
-        field: 'STime',
-        width: 120,
-        valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-        headerClass: 'header-center',
-      },
-      {
-        headerName: t('table.endingTime'),
-        field: 'ETime',
-        width: 120,
-        valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-        headerClass: 'header-center',
-      }
-    ]
-  },
+  // {
+  //   headerName: t('table.graphictimes'),
+  //   headerClass: 'header-center',
+  //   children: [
+  //     {
+  //       headerName: t('table.startingTime'),
+  //       field: 'STime',
+  //       width: 120,
+  //       valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
+  //       headerClass: 'header-center',
+  //     },
+  //     {
+  //       headerName: t('table.endingTime'),
+  //       field: 'ETime',
+  //       width: 120,
+  //       valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
+  //       headerClass: 'header-center',
+  //     }
+  //   ]
+  // },
   {
     headerName: t('table.interval'),
     headerClass: 'header-center',
@@ -295,7 +302,7 @@ const determineChange = () => {
 
 const goToRoute = () => {
   // variableValue.value = variableValue.value === 1 ? 0 : 1; 
-  router.push('/vparamsget');
+  router.push('/vparams');
 };
 
 result.Change = determineChange();
@@ -353,27 +360,36 @@ const currentChange = computed(() => determineChange());
 //     console.error('Error fetching data:', error);
 //   }
 // };
+// const fetchData = async () => {
+//   const currentChange = result.Change;
+//   const currentTime = format(day.value, dateFormat);
+//   const currentHour = new Date().getHours();
+//   const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
+//   try {
+//     axios.all([
+//       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${variableValue.value}`),
+//       axios.get(`/vparams/${store.state.user.structure_id}`)
+//     ])
+//       .then(axios.spread(({ data: params }, { data: values }) => {
+//         params.forEach((parametr, index) => {
+//           const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
+//           if (select) {
+//             params[index] = { ...parametr, ...select };
+//           }
+//         });
+//         // params.sort((a, b) => (a.Value ? 1 : -1));
+//         rowData.value = params;
+//       }));
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//   }
+// };
 const fetchData = async () => {
-  
-  const currentChange = result.Change;
-  const currentTime = format(day.value, dateFormat);
-  const currentHour = new Date().getHours();
-  const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
+    const currentChange = result.Change;
+    const currentTime = format(day.value, dateFormat);
   try {
-    axios.all([
-      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
-      axios.get(`/vparams/${store.state.user.structure_id}`)
-    ])
-      .then(axios.spread(({ data: params }, { data: values }) => {
-        params.forEach((parametr, index) => {
-          const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
-          if (select) {
-            params[index] = { ...parametr, ...select };
-          }
-        });
-        // params.sort((a, b) => (a.Value ? 1 : -1));
-        rowData.value = params;
-      }));
+    const response = await axios.get(`/vparamsGetValue/${store.state.user.structure_id}`);
+    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -399,9 +415,9 @@ const onRowClicked = (event) => {
 };
 
 const saveDataToServer = async (data) => {
-  console.log(data);
+  // console.log(data);
   try {
-    const response = await axios.post('/vparams', { ...data, userId });
+    const response = await axios.post('/vparams', { ...data, userId,structureID });
     removeFocusFromGrid();
     // focusOnMinColumn();
     fetchData()
@@ -487,16 +503,19 @@ const startIntervals = () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/vparams", result);
+    const { data } = await axios.post("/vparams", {...result});
     if (data.status === 200) {
       showModal.value = false;
       result.ParametersID = "",
-        result.Name = '';
+      result.Name = '';
       result.ShortName = '';
       result.Comment = '';
       result.Value = '';
+      result.BlogsID = '';
 
       await fetchData();
+      window.location.reload()
+
     } else {
       console.error('Error saving data:', data.message);
     }

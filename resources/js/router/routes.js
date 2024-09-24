@@ -112,6 +112,14 @@ export default [
 		},
 	},
 	{
+		path: '/vparamsget',
+		name:'vparamsget',
+		component: () => import('../pages/ParametrGetValue.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
 		path: '/users',
 		name:'users',
 		component: () => import('../pages/UsersPage.vue'),

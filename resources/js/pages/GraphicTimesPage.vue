@@ -18,11 +18,11 @@
                 :options="graphicsOptions" clearable />
               <VaSelect v-model="result.ChangeId" value-by="value" class="mb-6" :label="t('form.selectChange')"
                 :options="changesOptions" clearable />
-              <VaSwitch v-model="result.Current" class="mb-2" @change="updateTimes">
+              <!-- <VaSwitch v-model="result.Current" class="mb-2" @change="updateTimes">
                 <template #innerLabel>
                   Joriy vaqtda
                 </template>
-              </VaSwitch>
+              </VaSwitch> -->
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 items-end">
               <VaTimeInput clearable clearable-icon="cancel" color="textPrimary" :label="t('form.name')"
@@ -71,7 +71,7 @@ const result = reactive({
   Name: "",
   StartTime: "",
   EndTime: "",
-  Current: false
+  // Current: false
 });
 
 function ondeleted(selectedData) {
@@ -85,9 +85,9 @@ function onupdated(rowNode, data) {
 provide('ondeleted', ondeleted);
 provide('onupdated', onupdated);
 
-const updateTimes = () => {
-  console.log(result.Current);
-};
+// const updateTimes = () => {
+//   console.log(result.Current);
+// };
 
 const columnDefs = computed(() => [
   { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1", width: 80 },
@@ -171,7 +171,7 @@ const onSubmit = async () => {
       result.Name = '';
       result.StartTime = '';
       result.EndTime = '';
-      result.Current=false;
+      // result.Current=false;
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
     } else {

@@ -253,12 +253,12 @@ const gridOptions = {
   //   }
   // },
 };
-const onCellDoubleClicked = (params) => {
-  const { colDef, data } = params; // Get the entire row data
-  if (colDef.field === 'Value' && data.Value) {
-    openEditModal(params);
-  }
-};
+// const onCellDoubleClicked = (params) => {
+//   const { colDef, data } = params; // Get the entire row data
+//   if (colDef.field === 'Value' && data.Value) {
+//     openEditModal(params);
+//   }
+// };
 const openEditModal = (params) => {
   console.log(params);
 

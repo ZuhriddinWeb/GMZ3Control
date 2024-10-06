@@ -50,95 +50,38 @@ class ParametrValueController extends Controller
             // ->whereDate('created_at', $date)
             ->get();
     }
-    // private function create(Request $request)
-    // {
-    //     $uuidString = (string) Str::uuid();
-    //     try {
-    //         ValuesParameters::updateOrInsert(
-    //             [
-    //                 'ParametersID' => $request->ParametersID,
-    //                 'SourcesID' => $request->SourceID,
-    //                 'TimeID' => $request->GTid,
-    //             ],
-    //             [
-    //                 'id' => $uuidString,
-    //                 'Value' => $request->Value,
-    //                 'GraphicsTimesID' => $request->GrapicsID,
-    //                 'BlogID' => $request->BlogsID,
-    //                 'Comment' => $request->Comment,
-    //                 'updated_at' => now()
-    //             ]
-    //         );
-
-    //         $unit = ValuesParameters::where('id', $uuidString)->first();
-
-
-    //         return response()->json([
-    //             'status' => 200,
-    //             'message' => "Ma`lumot muvafaqiyatli qo'shildi",
-    //             'unit' => $unit
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
-
-    //         return response()->json([
-    //             'status' => 500,
-    //             'message' => 'There was an error processing the request.',
-    //             'error' => $e->getMessage()
-    //         ]);
-    //     }
-    // }
     private function create(Request $request)
     {
-        // $parameters = [
-        // dd($request);
-        //     'ParametersID' => $request->ParametersID,
-        //     'SourcesID' => $request->SourceID,
-        //     'TimeID' => $request->GTid,
-        //     'GraphicsTimesID' => $request->GrapicsID,
-        // ];
-        // // dd($parameters);
-        // $existingRecord = ValuesParameters::where($parameters)->first();
-
+        $uuidString = (string) Str::uuid();
         try {
-            // if ($existingRecord) {
-            //     $existingRecord->update([
-            //         'Value' => $request->Value,
-            //         'BlogID' => intval($request->BlogsID), 
-            //         'Comment' => $request->Comment,
-            //         'updated_at' => now(),
-            //         'Changed' => now(),
-            //         'Changer' => $request->userId,
-            //     ]);
+            ValuesParameters::updateOrInsert(
+                [
+                    'ParametersID' => $request->ParametersID,
+                    'SourcesID' => $request->SourceID,
+                    'TimeID' => $request->GTid,
+                ],
+                [
+                    'id' => $uuidString,
+                    'Value' => $request->Value,
+                    'GraphicsTimesID' => $request->GrapicsID,
+                    'BlogID' => $request->BlogsID,
+                    'Comment' => $request->Comment,
+                    'updated_at' => now()
+                ]
+            );
 
-            //     $unit = $existingRecord;
-            //     $message = "Data successfully updated";
-            $uuidString = (string) Str::uuid();
-            $unit = ValuesParameters::create([
-                'id' => $uuidString,
-                'ParametersID' => $request->ParametersID,
-                'SourcesID' => $request->SourceID,
-                'BlogID' => $request->BlogsID, // Ensure this field is set
-                'TimeID' => $request->GTid, // Ensure this field is set
-                'GraphicsTimesID' => $request->GrapicsID,
-                'Value' => $request->Value,
-                'Comment' => $request->Comment,
-                'Created' => now(),
-                'Creator' => $request->userId,
-                'updated_at' => now(), // For consistency
-            ]);
-            $message = "Data successfully created";
-
+            $unit = ValuesParameters::where('id', $uuidString)->first();
 
 
             return response()->json([
                 'status' => 200,
-                'message' => $message,
+                'message' => "Ma`lumot muvafaqiyatli qo'shildi",
                 'unit' => $unit
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'status' => 500,
                 'message' => 'There was an error processing the request.',
@@ -146,6 +89,63 @@ class ParametrValueController extends Controller
             ]);
         }
     }
+    // private function create(Request $request)
+    // {
+    //     // $parameters = [
+    //     // dd($request);
+    //     //     'ParametersID' => $request->ParametersID,
+    //     //     'SourcesID' => $request->SourceID,
+    //     //     'TimeID' => $request->GTid,
+    //     //     'GraphicsTimesID' => $request->GrapicsID,
+    //     // ];
+    //     // // dd($parameters);
+    //     // $existingRecord = ValuesParameters::where($parameters)->first();
+
+    //     try {
+    //         // if ($existingRecord) {
+    //         //     $existingRecord->update([
+    //         //         'Value' => $request->Value,
+    //         //         'BlogID' => intval($request->BlogsID), 
+    //         //         'Comment' => $request->Comment,
+    //         //         'updated_at' => now(),
+    //         //         'Changed' => now(),
+    //         //         'Changer' => $request->userId,
+    //         //     ]);
+
+    //         //     $unit = $existingRecord;
+    //         //     $message = "Data successfully updated";
+    //         $uuidString = (string) Str::uuid();
+    //         $unit = ValuesParameters::create([
+    //             'id' => $uuidString,
+    //             'ParametersID' => $request->ParametersID,
+    //             'SourcesID' => $request->SourceID,
+    //             'BlogID' => $request->BlogsID, // Ensure this field is set
+    //             'TimeID' => $request->GTid, // Ensure this field is set
+    //             'GraphicsTimesID' => $request->GrapicsID,
+    //             'Value' => $request->Value,
+    //             'Comment' => $request->Comment,
+    //             'Created' => now(),
+    //             'Creator' => $request->userId,
+    //             'updated_at' => now(), // For consistency
+    //         ]);
+    //         $message = "Data successfully created";
+
+
+
+    //         return response()->json([
+    //             'status' => 200,
+    //             'message' => $message,
+    //             'unit' => $unit
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => 500,
+    //             'message' => 'There was an error processing the request.',
+    //             'error' => $e->getMessage()
+    //         ]);
+    //     }
+    // }
 
     public function update(Request $request)
     {

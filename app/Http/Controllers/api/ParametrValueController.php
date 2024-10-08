@@ -41,17 +41,22 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-    private function getByBlog($id)
+    private function getByBlog($factoryId)
     {
-        // dd($id,$change,$date);
-        // $date = Carbon::parse($date_at)->format('Y-m-d');
-        $idArray = explode(',', $id);
-        return ValuesParameters::whereIn('BlogID', $idArray)
-            // ->whereDate('created_at', $date)
+        $idArray = explode(',', $factoryId);
+        // $query = ValuesParameters::whereIn('FactoryStructureID', $factoryId);
+        
+        // if (!is_null($factoryId)) {
+        //     $query->where('BlogID', $idArray); // Replace 'SomeField' with the actual field
+        // }
+        // return $query->get();
+        return ValuesParameters::where('FactoryStructureID', $factoryId)
+            // ->where('BlogID', $blogId)
             ->get();
     }
     private function create(Request $request)
     {
+        // dd($request);
         $uuidString = (string) Str::uuid();
         try {
             ValuesParameters::updateOrInsert(
@@ -65,6 +70,7 @@ class ParametrValueController extends Controller
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
                     'BlogID' => $request->BlogsID,
+                    'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
                     'updated_at' => now()
                 ]

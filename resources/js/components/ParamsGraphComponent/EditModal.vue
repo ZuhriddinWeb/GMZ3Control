@@ -4,7 +4,7 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchParams">
-        {{ t('modals.editFactory') }}
+        {{ t('modals.editFactory') }} {{ props.params.data['id'] }}
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
@@ -17,8 +17,8 @@
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1" :label="t('menu.structure')"
               :options="structureOptions" clearable />
-            <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
-              :options="blogsOptions" clearable />
+              <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
+              :options="blogsOptions ?? []" clearable />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
             <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
@@ -69,6 +69,7 @@ const result = reactive({
 });
 
 const fetchParams = async () => {
+  
   try {
     const [resParam, resGraphic, resStruct, resBlogs, resSources, response] = await Promise.all([
       axios.get('/param'),

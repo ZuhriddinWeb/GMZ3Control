@@ -15,6 +15,7 @@ class ValuesParameters extends Model
         'Value',
         'Comment',
         'TimeID',
+        'FactoryStructureID',
         'BlogID',
         'GraphicsTimesID',
         'Created',

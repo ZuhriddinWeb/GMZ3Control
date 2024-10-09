@@ -362,7 +362,7 @@ const fetchData = async () => {
   try {
     axios.all([
       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
-      axios.get(`/vparams/${store.state.user.structure_id}`)
+      axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
     ])
       .then(axios.spread(({ data: params }, { data: values }) => {
         params.forEach((parametr, index) => {

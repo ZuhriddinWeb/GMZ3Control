@@ -8,6 +8,7 @@ use App\Models\ValuesParameters;
 use DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+
 use App\Events\TimeUpdated;
 use Carbon\Carbon;
 class ParametrValueController extends Controller
@@ -41,7 +42,7 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-    private function getByBlog($factoryId)
+    public function getByBlog($factoryId,$current)
     {
         $idArray = explode(',', $factoryId);
         // $query = ValuesParameters::whereIn('FactoryStructureID', $factoryId);
@@ -52,42 +53,63 @@ class ParametrValueController extends Controller
         // return $query->get();
         return ValuesParameters::where('FactoryStructureID', $factoryId)
             // ->where('BlogID', $blogId)
+            ->whereDate('created_at', $current)
             ->get();
     }
+    
     private function create(Request $request)
     {
-        // dd($request);
         $uuidString = (string) Str::uuid();
         try {
-            ValuesParameters::updateOrInsert(
-                [
+            // Yangi yoki mavjud yozuvni topish
+            $existingRecord = ValuesParameters::where([
+                'ParametersID' => $request->ParametersID,
+                'SourcesID' => $request->SourceID,
+                'TimeID' => $request->GTid
+            ])->first();
+    
+            // Agar yozuv mavjud bo'lmasa, yangi yozuv qo'shiladi
+            if (!$existingRecord) {
+                ValuesParameters::create([
+                    'id' => $uuidString,
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
                     'TimeID' => $request->GTid,
-                ],
-                [
-                    'id' => $uuidString,
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
                     'BlogID' => $request->BlogsID,
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
-                    'updated_at' => now()
-                ]
-            );
-
+                    'created_at' => now(),
+                    'Created' => now(),
+                    'Creator' => $request->userId,  // Yaratgan foydalanuvchini saqlash
+                ]);
+            } else {
+                // Mavjud yozuv yangilansa, faqat 'updated_at' yangilanadi va 'Updater' yangilanadi
+                $existingRecord->update([
+                    'Value' => $request->Value,
+                    'GraphicsTimesID' => $request->GrapicsID,
+                    'BlogID' => $request->BlogsID,
+                    'FactoryStructureID' => $request->FactoryStructureID,
+                    'Comment' => $request->Comment,
+                    'updated_at' => now(),
+                    'Changed' => now(),
+                    'Changer' => $request->userId  // Faqat 'Updater' yangilanadi
+                ]);
+                $uuidString = $existingRecord->id; // Mavjud yozuvning id-si saqlanadi
+            }
+    
             $unit = ValuesParameters::where('id', $uuidString)->first();
-
-
+    
             return response()->json([
                 'status' => 200,
-                'message' => "Ma`lumot muvafaqiyatli qo'shildi",
+                'message' => "Ma`lumot muvaffaqiyatli qo'shildi yoki yangilandi",
                 'unit' => $unit
             ]);
-
+    
         } catch (\Exception $e) {
             \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
-
+    
             return response()->json([
                 'status' => 500,
                 'message' => 'There was an error processing the request.',
@@ -95,6 +117,8 @@ class ParametrValueController extends Controller
             ]);
         }
     }
+    
+    
     // private function create(Request $request)
     // {
     //     // $parameters = [

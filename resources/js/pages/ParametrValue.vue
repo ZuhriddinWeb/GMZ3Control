@@ -49,13 +49,27 @@
         <VaDateInput v-model="day" class="mr-2" label="Day" />
         <VaSelect v-model="result.Change" value-by="value" :label="t('menu.changes')" :options="changesOptions"
           clearable />
+        <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3"
+          icon="fullscreen" />
 
         <VaButton @click="goToRoute" class="btn btn-primary items-center justify-center mt-3 ml-3" icon="grade">
         </VaButton>
       </div>
-      <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
+      <div ref="gridContainer" class="ag-grid-container h-full">
+        <VaTabs v-model="selectedTab" stateful grow>
+          <template #tabs>
+            <VaTab v-for="page in pagesValue" :key="page.id" :name="page.id">
+              {{ page.Name }}
+            </VaTab>
+          </template>
+        </VaTabs>
+        <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef"
+          :gridOptions="gridOptions" animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
+          @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
+      </div>
+      <!-- <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-        @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
+        @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue> -->
 
       <EditValue v-if="showModalEdit" :showModalEdit="showModalEdit" :resultEdit="resultEdit" @update="handleUpdate" />
     </main>
@@ -71,6 +85,8 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import { Value } from 'sass';
 import EditValue from '../components/ParameterValueComponent/EditValue.vue';
 import { useRouter } from 'vue-router';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs } from 'vuestic-ui';
+
 const router = useRouter();
 
 const { t, locale } = useI18n();
@@ -82,15 +98,17 @@ const day = ref(new Date());
 const showModal = ref(null);
 const showModalEdit = ref(null);
 const currentRowNode = ref(null);
-
+const gridContainer = ref(null);
 const dateFormat = 'yyyy-MM-dd';
 const selectedRow = ref(null);
 const editingTimeout = ref(null);
 const userId = store.state.user.id;
 const structureID = store.state.user.structure_id;
-
+const selectedTab = ref(null);
 const oldTableData = ref([])
 const ParamOptions = ref([]);
+const pagesValue = ref([]);
+
 const SourceOptions = ref([]);
 const TimesOptions = ref([]);
 const variableValue = ref(0); // Initialize the variable to 0
@@ -201,10 +219,38 @@ const columnDefs = ref([
     headerClass: 'header-center',
   }
 ]);
+function toggleFullScreen() {
+  const element = gridContainer.value;  
 
+  if (!document.fullscreenElement) {
+   
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.mozRequestFullScreen) { 
+      element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullscreen) { 
+      element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) { 
+      element.msRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) { 
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) { 
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+}
 const fetchGraphics = async () => {
   try {
     const responseChanges = await axios.get('/changes');
+    const responsePages = await axios.get('/pages');
+    pagesValue.value = responsePages.data
+
     const responseParams = await axios.get(`/paramWithId/${structureID}`);
     changesOptions.value = responseChanges.data.map(change => ({
       value: change.Change,
@@ -354,14 +400,14 @@ const currentChange = computed(() => determineChange());
 //   }
 // };
 const fetchData = async () => {
-  
+ 
   const currentChange = result.Change;
   const currentTime = format(day.value, dateFormat);
   const currentHour = new Date().getHours();
   const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
   try {
     axios.all([
-      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
+      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${1}`),
       axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
     ])
       .then(axios.spread(({ data: params }, { data: values }) => {
@@ -378,6 +424,32 @@ const fetchData = async () => {
     console.error('Error fetching data:', error);
   }
 };
+async function getPages(newValue) {
+  // console.log(newValue);
+
+  const currentChange = result.Change;
+  const currentTime = format(day.value, dateFormat);
+  const currentHour = new Date().getHours();
+  const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
+  try {
+    axios.all([
+      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${newValue}`),
+      axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
+    ])
+      .then(axios.spread(({ data: params }, { data: values }) => {
+        params.forEach((parametr, index) => {
+          const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
+          if (select) {
+            params[index] = { ...parametr, ...select };
+          }
+        });
+        // params.sort((a, b) => (a.Value ? 1 : -1));
+        rowData.value = params;
+      }));
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
 const onCellValueChanged = async (event) => {
   const { data, colDef, newValue, oldValue } = event;
   if (newValue !== oldValue) {
@@ -541,7 +613,9 @@ const onGridReady = (params) => {
   startIntervals(); // Start intervals when the grid is ready
 }
 watch([() => result.Change, () => day.value], fetchData);
-
+watch(selectedTab, (newTab) => {
+  getPages(newTab);
+});
 
 onMounted(() => {
   fetchData();
@@ -555,6 +629,11 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+.ag-grid-container {
+  width: 100%;
+  height: 100%;
+}
+
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;

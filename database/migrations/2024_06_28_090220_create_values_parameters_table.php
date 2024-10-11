@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('ParametersID')->nullable();
             $table->integer('SourcesID')->nullable();
             $table->integer('TimeID')->nullable();
+            $table->integer('FactoryStructureID')->nullable();
             $table->integer('BlogID')->nullable();
             $table->double('Value')->nullable();
             $table->text('Comment')->nullable();

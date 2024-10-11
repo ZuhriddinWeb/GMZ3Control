@@ -44,6 +44,7 @@ class ParametrValueController extends Controller
     }
     public function getByBlog($factoryId,$current)
     {
+        // dd($factoryId);
         $idArray = explode(',', $factoryId);
         // $query = ValuesParameters::whereIn('FactoryStructureID', $factoryId);
         

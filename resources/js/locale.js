@@ -49,7 +49,8 @@ export default {
       logout: "Выход",
       timer:"Время",
       edit:"Редактировать",
-      lists:"Cправочники"
+      lists:"Cправочники",
+      pages:"Страница"
     },
     buttons: {
       save: "Сохранить",
@@ -57,6 +58,7 @@ export default {
     },
     modals: {
       addUnitTitle: "Добавить единицу измерения",
+      addPageTitle: "Создать cтраница",
       addStructureTitle: "Создать новый цех",
       addBlogTitle: "Создать новый участок",
       addGraphicTitle: "Создать время графика",
@@ -181,7 +183,8 @@ export default {
       logout: "Chiqish",
       timer:"Vaqt",
       edit:"Tahrirlash",
-      lists:"Ma'lumotnomalar"
+      lists:"Ma'lumotnomalar",
+      pages:"Sahifalar"
     },
     buttons: {
       save: "Saqlash",
@@ -189,6 +192,7 @@ export default {
     },
     modals: {
       addUnitTitle: "O'lchov birliklarini kiritish",
+      addPageTitle: "Yangi sahifa yaratish",
       addStructureTitle: "Yangi sex yaratish",
       addBlogTitle: "Yangi bo'linma yaratish",
       addGraphicTitle: "Grafik vaqtini yaratish",

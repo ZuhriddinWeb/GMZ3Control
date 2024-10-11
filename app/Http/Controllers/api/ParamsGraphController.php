@@ -57,9 +57,8 @@ class ParamsGraphController extends Controller
             ->select('graphics_paramenters.*', 'graphics.id as Gid', 'graphics.Name as GName', 'parameters.id as Pid', 'parameters.name as Pname', 'factory_structures.id as Sid', 'factory_structures.Name as SName', 'blogs.id as Bid', 'blogs.Name as BName', 'sources.id as Cid', 'sources.Name as Cname')
             ->first();
     }
-    public function getParamsForUser($id, $change, $ChangeDay)
+    public function getParamsForUser($id, $change, $ChangeDay,$tabId)
     {
-        
         // Split the ID string into an array of integers
         $idArray = explode(',', $id);
         $blogsIds = array_map('intval', $idArray); // Ensure IDs are integers
@@ -87,7 +86,7 @@ class ParamsGraphController extends Controller
                 INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
                 INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
                 WHERE FactoryStructureID IN ($blogsIdsString)
-                    AND (Change = ? OR ? = 0) 
+                    AND (Change = ? OR ? = 0) AND PageId=$tabId
             ) p
             WHERE p.StartDateTime <= GETDATE()
             ORDER BY StartDateTime DESC, OrderNumber
@@ -184,6 +183,8 @@ class ParamsGraphController extends Controller
             'BlogsID' => $request->BlogID,
             'GrapicsID' => $request->GrapicsID,
             'SourceID' => $request->SourceID,
+            'PageId' => $request->PageId,
+
             'CurrentTime' => date('Y-m-d H:i:s', strtotime($request->CurrentTime)),
             'EndingTime' => date('Y-m-d H:i:s', strtotime($request->EndingTime)),
         ]);

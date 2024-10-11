@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('BlogsID');
             $table->integer('GrapicsID');
             $table->integer('SourceID');
-
+            $table->integer('PageId');
             $table->dateTime('CurrentTime')->nullable();
             $table->dateTime('EndingTime')->nullable();
             $table->dateTime('Created')->nullable();

@@ -88,6 +88,14 @@ export default [
 		},
 	},
 	{
+		path: '/pages',
+		name:'pages',
+		component: () => import('../pages/NumberPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
 		path: '/sources',
 		name:'sources',
 		component: () => import('../pages/SourcesPage.vue'),

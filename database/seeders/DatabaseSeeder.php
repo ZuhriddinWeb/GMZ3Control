@@ -19,6 +19,23 @@ class DatabaseSeeder extends Seeder
             'Name' => 'Har 1 soatda',
             'Comment' => 'Sutka davomida har soatda kiritiladi',
         ]);
+        DB::table('number_pages')->insert([[
+            'StructureID' => 1,
+            'BlogID' => NUll,
+            'NumberPage' => 1,
+            'Name' => "KPS zichligi",
+            'NameRus' => "Mustafoyev",
+            'Comment' => 'Sutka davomida har soatda kiritiladi',
+
+        ],[
+            'StructureID' => 1,
+            'BlogID' => NUll,
+            'NumberPage' => 2,
+            'Name' => "GSO zichligi",
+            'NameRus' => "Mustafoyev",
+            'Comment' => 'Sutka davomida har soatda kiritiladi',
+
+        ]]);
         DB::table('users')->insert([
             'name' => 'Zuhriddin',
             'phone' => '5972323',
@@ -44,6 +61,7 @@ class DatabaseSeeder extends Seeder
             ['user_id' => 1,'role_id'=>15,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
             ['user_id' => 1,'role_id'=>16,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
             ['user_id' => 1,'role_id'=>17,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>18,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
 
         ]);
         DB::table('roles')->insert([
@@ -57,6 +75,7 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'menu.graphics',"parent_id"=>1],
             ['Name' => 'menu.graphictimes',"parent_id"=>1],
             ['Name' => 'menu.paramtypes',"parent_id"=>1],
+            ['Name' => 'menu.pages',"parent_id"=>1],
             ['Name' => 'menu.params',"parent_id"=>1],
             ['Name' => 'menu.sources',"parent_id"=>1],
             ['Name' => 'menu.changes',"parent_id"=>1],
@@ -96,20 +115,20 @@ class DatabaseSeeder extends Seeder
             ['StructureID' => 1,'Name'=>'Moy baki'],
             ['StructureID' => 1,'Name'=>'Vagonlar'],
         ]);
-        DB::table('graphics_paramenters')->insert([
-            ['OrderNumber' => 1,'ParametersID'=>'62f0a8e1-b7cd-47f3-a25b-6f6f837e6079','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 2,'ParametersID'=>'fb3a19c0-89fe-4a00-bd3c-19f4ede0afeb','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 3,'ParametersID'=>'f78fedae-d7d1-4f2b-9d6d-1d883299feb9','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 4,'ParametersID'=>'366280ab-7800-43f3-84a8-f86b5b1c9f2e','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 5,'ParametersID'=>'ca1abe46-a810-400e-b4d8-1a596de974ce','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 6,'ParametersID'=>'ca1abe46-a810-400e-b4d8-1a596de974cb','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 7,'ParametersID'=>'f2b4ee93-9a6c-4373-ab8a-c8f9f84f1098','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 8,'ParametersID'=>'c62cc14c-5dde-4cbc-ba11-91e2f5a1225e','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 9,'ParametersID'=>'b21d769d-f63c-4ce3-bf58-26e7ca1fda79','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 10,'ParametersID'=>'f38678ff-9b4e-4e14-acac-c5e64c944d40','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
-            ['OrderNumber' => 11,'ParametersID'=>'74859597-8263-440e-b912-b24fe544a62d','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        // DB::table('graphics_paramenters')->insert([
+        //     ['OrderNumber' => 1,'ParametersID'=>'62f0a8e1-b7cd-47f3-a25b-6f6f837e6079','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 2,'ParametersID'=>'fb3a19c0-89fe-4a00-bd3c-19f4ede0afeb','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 3,'ParametersID'=>'f78fedae-d7d1-4f2b-9d6d-1d883299feb9','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 4,'ParametersID'=>'366280ab-7800-43f3-84a8-f86b5b1c9f2e','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 5,'ParametersID'=>'ca1abe46-a810-400e-b4d8-1a596de974ce','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 6,'ParametersID'=>'ca1abe46-a810-400e-b4d8-1a596de974cb','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 7,'ParametersID'=>'f2b4ee93-9a6c-4373-ab8a-c8f9f84f1098','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 8,'ParametersID'=>'c62cc14c-5dde-4cbc-ba11-91e2f5a1225e','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 9,'ParametersID'=>'b21d769d-f63c-4ce3-bf58-26e7ca1fda79','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 10,'ParametersID'=>'f38678ff-9b4e-4e14-acac-c5e64c944d40','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
+        //     ['OrderNumber' => 11,'ParametersID'=>'74859597-8263-440e-b912-b24fe544a62d','FactoryStructureID'=>1,'BlogsID'=>1,'GrapicsID'=>1,'SourceID'=>1],
 
-        ]);
+        // ]);
         DB::table('graphic_times')->insert([
             ['GraphicsID' => 1, 'Change' => 1, 'Name' => '8:00', 'StartTime' => '08:00:00.0000000', 'EndTime' => '08:05:00.0000000'],
             ['GraphicsID' => 1, 'Change' => 1, 'Name' => '9:00', 'StartTime' => '09:00:00.0000000', 'EndTime' => '09:05:00.0000000'],

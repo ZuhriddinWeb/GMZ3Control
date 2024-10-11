@@ -17,6 +17,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\api\ParamsGraphController;
 use App\Http\Controllers\api\BlogsController;
+use App\Http\Controllers\api\NumberPageController;
+
 use App\Http\Controllers\TreeController;
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +40,8 @@ Route::post('/logout' , [UserController::class, 'login']);
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'authenticatedUser']);
 
 Route::match(['get', 'post', 'put', 'delete'], '/units/{id?}', [UnitsController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/pages/{id?}', [NumberPageController::class, 'handle']);
+
 Route::match(['get', 'post', 'put', 'delete'], '/graphictimes/{id?}', [GraphicTimesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/sources/{id?}', [SourcesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/changes/{id?}', [ChangesController::class, 'handle']);
@@ -59,7 +63,7 @@ Route::post('/treeChart', [TreeController::class, 'treeChart']);
 
 Route::get('get-params-for-user-count/{user_id}/{change_id}' , [ParamsGraphController::class, 'getParamsForUserCount']);
 Route::get('get-params-for-id-edit/{param_id}' , [ParamsGraphController::class, 'getRowParamEdit']);
-Route::get('get-params-for-user/{user_id}/{change_id}/{date}' , [ParamsGraphController::class, 'getParamsForUser']);
+Route::get('get-params-for-user/{user_id}/{change_id}/{date}/{tabId}' , [ParamsGraphController::class, 'getParamsForUser']);
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
 Route::post('vparamsEdit' , [ParametrValueController::class, 'update']);
 Route::get('vparams-value/{factoryId}/{cuurent_date}' , [ParametrValueController::class, 'getByBlog']);

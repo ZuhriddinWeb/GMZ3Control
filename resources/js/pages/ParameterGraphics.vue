@@ -19,8 +19,8 @@
               :options="GraphicTimeOptions" clearable />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-            <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1" :label="t('menu.structure')"
-              :options="structureOptions" clearable />
+            <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1"  @update:modelValue="getPages"
+              :label="t('menu.structure')" :options="structureOptions" clearable />
             <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
               :options="BlogsOptions" clearable />
           </div>
@@ -30,7 +30,7 @@
           </div>
           <div class="flex gap-5 flex-wrap w-full">
             <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
-            <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend :weekends="getWeekends" />
+            <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend />
             <!-- <VaInput v-model="result.CurrentTime"  label="Joriy etish vaqti" placeholder="DD/MM/YYYY" mask="date" /> -->
             <!-- <VaInput v-model="result.EndingTime"  label="Bekor qilish vaqti" placeholder="DD/MM/YYYY" mask="date" /> -->
           </div>
@@ -42,6 +42,10 @@
               <va-date-picker v-model="result.EndingTime" :label="t('modals.startTime')" class="w-1/2" />
             </div>
           </div> -->
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+            <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
+              :options="pagesOptions" clearable />
+          </div>
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             :label="t('modals.ordernumber')" />
@@ -73,6 +77,7 @@ const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
 const paramsOptions = ref([]);
+const pagesOptions = ref([]);
 const structureOptions = ref([]);
 const GraphicTimeOptions = ref([]);
 const BlogsOptions = ref([]);
@@ -86,7 +91,8 @@ const result = reactive({
   CurrentTime: "",
   EndingTime: "",
   OrderNumber: "",
-  BlogID: ""
+  BlogID: "",
+  PageId:""
 });
 
 function ondeleted(selectedData) {
@@ -96,6 +102,7 @@ function ondeleted(selectedData) {
 function onupdated(rowNode, data) {
   rowNode.setData(data)
 }
+
 
 provide('ondeleted', ondeleted)
 provide('onupdated', onupdated)
@@ -191,6 +198,17 @@ const fetchParams = async () => {
     console.error('Error fetching graphics data:', error);
   }
 };
+async function getPages(newValue) {
+  try {
+    const response = await axios.get(`/pages/${newValue}`);
+    pagesOptions.value = response.data.map(pages => ({
+      value: pages.id,
+      text: pages.Name
+    }));
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
 const onSubmit = async () => {
   try {
     const { data } = await axios.post("/paramsgraph", result);
@@ -203,6 +221,8 @@ const onSubmit = async () => {
         result.EndingTime = "",
         result.OrderNumber = "",
         result.BlogID = "",
+        result.PageId = "",
+
         await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
     } else {

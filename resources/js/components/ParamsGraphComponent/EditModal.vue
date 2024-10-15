@@ -28,6 +28,9 @@
             <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
             <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend  />
           </div>
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+            <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
+              :options="pagesOptions" clearable /></div>
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             :label="t('modals.ordernumber')" />
@@ -65,6 +68,7 @@ const result = reactive({
   EndingTime: "",
   OrderNumber: "",
   BlogID: "",
+  PageId:"",
   id: props.params.data['id']
 });
 
@@ -109,7 +113,7 @@ const fetchParams = async () => {
     result.OrderNumber = +response.data.OrderNumber;
     result.CurrentTime = parseISO(response.data.CurrentTime);
     result.EndingTime = parseISO(response.data.EndingTime);
-
+    
   } catch (error) {
     console.error('Error fetching data:', error);
   }

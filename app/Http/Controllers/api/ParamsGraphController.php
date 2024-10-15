@@ -59,6 +59,7 @@ class ParamsGraphController extends Controller
     }
     public function getParamsForUser($id, $change, $ChangeDay,$tabId)
     {
+        // dd($id);
         // Split the ID string into an array of integers
         $idArray = explode(',', $id);
         $blogsIds = array_map('intval', $idArray); // Ensure IDs are integers

@@ -86,6 +86,7 @@ import { Value } from 'sass';
 import EditValue from '../components/ParameterValueComponent/EditValue.vue';
 import { useRouter } from 'vue-router';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs } from 'vuestic-ui';
+import store from '../store';
 
 const router = useRouter();
 
@@ -136,24 +137,32 @@ const columnDefs = ref([
     valueGetter: "node.rowIndex + 1",
     width: 80,
     headerClass: 'header-center',
+    editable: false, // Not editable
+    suppressNavigable: true, // Prevent focus and navigation
   },
   {
     headerName: t('table.change'),
     field: "Change",
     width: 80,
     headerClass: 'header-center',
+    editable: false, // Not editable
+    suppressNavigable: true, // Prevent focus and navigation
   },
   {
     headerName: t('table.OrderNumber'),
     field: "OrderNumber",
     width: 80,
     headerClass: 'header-center',
+    editable: false, // Not editable
+    suppressNavigable: true, // Prevent focus and navigation
   },
   {
     headerName: t('table.parameters'),
     field: computed(() => locale.value === 'ru' ? 'PNameRus' : 'PName'),
     flex: 1,
     headerClass: 'header-center',
+    editable: false, // Not editable
+    suppressNavigable: true, // Prevent focus and navigation
   },
   {
     headerName: t('table.graphictimes'),
@@ -165,6 +174,8 @@ const columnDefs = ref([
         width: 120,
         valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
         headerClass: 'header-center',
+        editable: false, // Not editable
+        suppressNavigable: true, // Prevent focus and navigation
       },
       {
         headerName: t('table.endingTime'),
@@ -172,6 +183,8 @@ const columnDefs = ref([
         width: 120,
         valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
         headerClass: 'header-center',
+        editable: false, // Not editable
+        suppressNavigable: true, // Prevent focus and navigation
       }
     ]
   },
@@ -184,12 +197,16 @@ const columnDefs = ref([
         field: 'Min',
         width: 100,
         headerClass: 'header-center',
+        editable: false, // Not editable
+        suppressNavigable: true, // Prevent focus and navigation
       },
       {
         headerName: t('table.max'),
         field: 'Max',
         width: 100,
         headerClass: 'header-center',
+        editable: false, // Not editable
+        suppressNavigable: true, // Prevent focus and navigation
       }
     ]
   },
@@ -197,7 +214,8 @@ const columnDefs = ref([
     headerName: t('table.value'),
     field: "Value",
     width: 150,
-    editable: true,
+    editable: true, // Editable
+    suppressNavigable: false, // Allow focus and navigation
     cellEditor: "agNumberCellEditor",
     cellClassRules: {
       'cell-green': (params) => params.data && params.data.Value === lastEnteredValues.value[params.data.id],
@@ -213,12 +231,14 @@ const columnDefs = ref([
     headerName: t('table.comment'),
     field: "Comment",
     flex: 1,
-    editable: true,
+    editable: true, // Editable
+    suppressNavigable: false, // Allow focus and navigation
     cellEditor: 'agLargeTextCellEditor',
     cellEditorPopup: true,
     headerClass: 'header-center',
   }
 ]);
+
 function toggleFullScreen() {
   const element = gridContainer.value;  
 
@@ -291,7 +311,8 @@ const getRowClass = (params) => {
 const gridOptions = {
   columnDefs: columnDefs.value,
   getRowClass,
-  headerHeight: 43,
+  headerHeight: 27,
+  rowHeight: 35
   // onCellDoubleClicked : (params) => {
   //   const { colDef, data } = params; // Get the entire row data
   //   if (colDef.field === 'Value' && data.Value) {
@@ -399,34 +420,36 @@ const currentChange = computed(() => determineChange());
 //     console.error('Error fetching data:', error);
 //   }
 // };
-const fetchData = async () => {
- 
-  const currentChange = result.Change;
-  const currentTime = format(day.value, dateFormat);
-  const currentHour = new Date().getHours();
-  const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
-  try {
-    axios.all([
-      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${1}`),
-      axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
-    ])
-      .then(axios.spread(({ data: params }, { data: values }) => {
-        params.forEach((parametr, index) => {
-          const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
-          if (select) {
-            params[index] = { ...parametr, ...select };
-          }
-        });
-        // params.sort((a, b) => (a.Value ? 1 : -1));
-        rowData.value = params;
-      }));
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-async function getPages(newValue) {
-  // console.log(newValue);
 
+// const fetchData = async () => {
+ 
+//   const currentChange = result.Change;
+//   const currentTime = format(day.value, dateFormat);
+//   const currentHour = new Date().getHours();
+//   const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
+//   try {
+//     axios.all([
+//       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${1}`),
+//       axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
+//     ])
+//       .then(axios.spread(({ data: params }, { data: values }) => {
+//         params.forEach((parametr, index) => {
+//           const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
+//           if (select) {
+//             params[index] = { ...parametr, ...select };
+//           }
+//         });
+//         // params.sort((a, b) => (a.Value ? 1 : -1));
+//         rowData.value = params;
+//       }));
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//   }
+// };
+async function getPages(newValue) {
+  store.state.newValue=newValue
+
+  // console.log(store.state.newValue)
   const currentChange = result.Change;
   const currentTime = format(day.value, dateFormat);
   const currentHour = new Date().getHours();
@@ -452,18 +475,40 @@ async function getPages(newValue) {
 }
 const onCellValueChanged = async (event) => {
   const { data, colDef, newValue, oldValue } = event;
+
+  // Check if the value has changed
   if (newValue !== oldValue) {
     try {
+      // Save the updated data to the server
       await saveDataToServer(data);
+
       const rowIndex = event.rowIndex;
+      const totalRows = gridApi.value.getDisplayedRowCount();
+
+      // Ensure the row is visible (existing behavior)
       if (gridApi.value) {
         gridApi.value.ensureIndexVisible(rowIndex, 'bottom');
+      }
+
+      // Move focus to the next row's "Value" or "Comment" column without starting the editor
+      if (rowIndex < totalRows - 1) {
+        // Stop editing to save the current state
+        gridApi.value.stopEditing();
+        
+        // Decide whether to focus on "Value" or "Comment" based on which column was edited
+        const nextColumnKey = colDef.field === 'Value' ? 'Value' : 'Comment';
+
+        // Set focus on the next row's respective column
+        gridApi.value.setFocusedCell(rowIndex + 1, nextColumnKey);
       }
     } catch (error) {
       console.error('Error saving data', error);
     }
   }
 };
+
+
+
 
 const onRowClicked = (event) => {
   selectedRow.value = event.data;
@@ -476,7 +521,7 @@ const saveDataToServer = async (data) => {
     const response = await axios.post('/vparams', { ...data, userId });
     removeFocusFromGrid();
     // focusOnMinColumn();
-    fetchData()
+    // fetchData()
     return response;
   } catch (error) {
     console.error('Error saving data', error);
@@ -501,7 +546,7 @@ const closeEditorIfOpen = () => {
   if (isEditingCell.value && gridApi.value) {
     gridApi.value.stopEditing(); // Close the cell editor
     isEditingCell.value = false; // Reset the flag
-    fetchData()
+    // fetchData()
 
   }
 };
@@ -550,7 +595,8 @@ const handleCellBlur = (event) => {
 
 const startIntervals = () => {
   if (!dataIntervalId) {
-    dataIntervalId = setInterval(fetchData, 60000);
+    store.state.newValue = store.state.newValue || 1;
+    dataIntervalId = setInterval(() => getPages(store.state.newValue), 60000);
   }
   if (!graphicsIntervalId) {
     graphicsIntervalId = setInterval(fetchGraphics, 60000);
@@ -568,7 +614,7 @@ const onSubmit = async () => {
       result.Comment = '';
       result.Value = '';
 
-      await fetchData();
+      // await fetchData();
     } else {
       console.error('Error saving data:', data.message);
     }
@@ -612,13 +658,13 @@ const onGridReady = (params) => {
   params.api.addEventListener('cellBlurred', handleCellBlur);
   startIntervals(); // Start intervals when the grid is ready
 }
-watch([() => result.Change, () => day.value], fetchData);
+// watch([() => result.Change, () => day.value], fetchData);
 watch(selectedTab, (newTab) => {
   getPages(newTab);
 });
 
 onMounted(() => {
-  fetchData();
+  // fetchData();
   fetchGraphics();
   startIntervals(); // Start intervals when component mounts
 });
@@ -691,4 +737,5 @@ onBeforeUnmount(() => {
 .header-center .ag-header-cell-label {
   font-weight: bold;
 }
+
 </style>

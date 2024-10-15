@@ -11,6 +11,7 @@ export default createStore({
       currentTime:null,
       userTabel:'',
       structureID:null,
+      newvalue:null,
 
     };
   },

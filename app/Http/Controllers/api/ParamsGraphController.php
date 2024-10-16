@@ -52,10 +52,11 @@ class ParamsGraphController extends Controller
             ->join('factory_structures', 'graphics_paramenters.FactoryStructureID', '=', 'factory_structures.id')
             ->join('blogs', 'graphics_paramenters.BlogsID', '=', 'blogs.id')
             ->join('sources', 'graphics_paramenters.SourceID', '=', 'sources.id')
+            ->join('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.id')
             ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->where('graphics_paramenters.id', $id)
-            ->select('graphics_paramenters.*', 'graphics.id as Gid', 'graphics.Name as GName', 'parameters.id as Pid', 'parameters.name as Pname', 'factory_structures.id as Sid', 'factory_structures.Name as SName', 'blogs.id as Bid', 'blogs.Name as BName', 'sources.id as Cid', 'sources.Name as Cname')
-            ->first();
+            ->select('number_pages.id as Nid','number_pages.Name as NumName','graphics_paramenters.*', 'graphics.id as Gid', 'graphics.Name as GName', 'parameters.id as Pid', 'parameters.name as Pname', 'factory_structures.id as Sid', 'factory_structures.Name as SName', 'blogs.id as Bid', 'blogs.Name as BName', 'sources.id as Cid', 'sources.Name as Cname')
+            ->get();
     }
     public function getParamsForUser($id, $change, $ChangeDay,$tabId)
     {

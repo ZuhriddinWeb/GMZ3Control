@@ -312,7 +312,7 @@ const gridOptions = {
   columnDefs: columnDefs.value,
   getRowClass,
   headerHeight: 27,
-  rowHeight: 35
+  rowHeight: 30
   // onCellDoubleClicked : (params) => {
   //   const { colDef, data } = params; // Get the entire row data
   //   if (colDef.field === 'Value' && data.Value) {

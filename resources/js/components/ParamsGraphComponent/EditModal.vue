@@ -10,7 +10,7 @@
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaSelect v-model="result.ParametersID" value-by="value" class="mb-1" :label="t('menu.params')"
-              :options="paramsOptions" />
+              :options="paramsOptions" searchable />
             <VaSelect v-model="result.GrapicsID" value-by="value" class="mb-1" :label="t('menu.graphictimes')"
               :options="graphicOptions" clearable />
           </div>
@@ -58,7 +58,7 @@ const graphicOptions = ref([]);
 const structureOptions = ref([]);
 const blogsOptions = ref([]);
 const sourcesOptions = ref([]);
-
+const pagesOptions =ref([]);
 const result = reactive({
   ParametersID: "",
   FactoryStructureID: "",
@@ -75,12 +75,13 @@ const result = reactive({
 const fetchParams = async () => {
   
   try {
-    const [resParam, resGraphic, resStruct, resBlogs, resSources, response] = await Promise.all([
+    const [resParam, resGraphic, resStruct, resBlogs, resSources,responsePages, response] = await Promise.all([
       axios.get('/param'),
       axios.get('/graphics'),
       axios.get('/structure'),
       axios.get('/blogs'),
       axios.get('/sources'),
+      axios.get('/pages'),
       axios.get(`get-params-for-id-edit/${props.params.data['id']}`)
     ]);
 
@@ -104,16 +105,22 @@ const fetchParams = async () => {
       value: source.id,
       text: source.Name
     }));
-
-    result.ParametersID = response.data.Pid;
-    result.GrapicsID = +response.data.Gid;
-    result.FactoryStructureID = +response.data.Sid;
-    result.BlogID = +response.data.Bid;
-    result.SourceID = +response.data.Cid;
-    result.OrderNumber = +response.data.OrderNumber;
-    result.CurrentTime = parseISO(response.data.CurrentTime);
-    result.EndingTime = parseISO(response.data.EndingTime);
+    pagesOptions.value = responsePages.data.map(source => ({
+      value: source.id,
+      text: source.Name
+    }));
     
+    result.ParametersID = response.data[0].Pid;
+    result.GrapicsID = +response.data[0].GrapicsID;
+    result.FactoryStructureID = +response.data[0].Sid;
+    result.BlogID = +response.data[0].BlogsID;
+    result.SourceID = +response.data[0].SourceID;
+    result.PageId = +response.data[0].PageId;
+    result.OrderNumber = response.data[0].OrderNumber;
+
+    result.CurrentTime = parseISO(response.data[0].CurrentTime);
+    result.EndingTime = parseISO(response.data[0].EndingTime);
+
   } catch (error) {
     console.error('Error fetching data:', error);
   }

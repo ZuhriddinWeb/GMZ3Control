@@ -23,4 +23,15 @@ class GraphicsParamenters extends Model
         'Changed',
         'Changer',
     ];
+
+    protected $casts = [
+        'OrderNumber' => 'integer',
+        'FactoryStructureID' => 'integer',
+        'GrapicsID' => 'integer',
+        'BlogsID' => 'integer',
+        'PageId' => 'integer',
+        'SourceID' => 'integer'
+
+
+    ];
 }

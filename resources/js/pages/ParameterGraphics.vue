@@ -14,7 +14,7 @@
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaSelect v-model="result.ParametersID" value-by="value" class="mb-1" :label="t('menu.params')"
-              :options="paramsOptions" clearable />
+              :options="paramsOptions" searchable clearable />
             <VaSelect v-model="result.GrapicsID" value-by="value" class="mb-1" :label="t('menu.graphictimes')"
               :options="GraphicTimeOptions" clearable />
           </div>

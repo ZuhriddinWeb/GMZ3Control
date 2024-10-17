@@ -115,7 +115,7 @@ const fetchParams = async () => {
     result.FactoryStructureID = +response.data[0].Sid;
     // result.BlogID = +response.data[0].BlogsID;
     result.SourceID = +response.data[0].SourceID;
-    result.PageId = +response.data[0].PageId;
+    // result.PageId = +response.data[0].PageId;
     result.OrderNumber = response.data[0].OrderNumber;
 
     result.CurrentTime = parseISO(response.data[0].CurrentTime);

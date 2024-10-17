@@ -36,7 +36,9 @@ class NumberPageController extends Controller
     }
     private function getRowUnit($id)
     {
-        $unit = NumberPage::where('StructureID',$id)->get();
+        $unit = NumberPage::join('factory_structures','number_pages.StructureID','=','factory_structures.id')
+        ->select('factory_structures.Name as SName','number_pages.*')
+        ->where('number_pages.id',$id)->first();
         return response()->json($unit);
     }
     private function create(Request $request)
@@ -66,21 +68,21 @@ class NumberPageController extends Controller
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'NameRus' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'ShortNameRus' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
+        // $request->validate([
+        //     'id' => 'required|integer|exists:units,id',
+        //     'Name' => 'required|string|max:255',
+        //     'NameRus' => 'required|string|max:255',
+        //     'ShortName' => 'required|string|max:255',
+        //     'ShortNameRus' => 'required|string|max:255',
+        //     'Comment' => 'nullable|string|max:255',
+        // ]);
 
         $unit = NumberPage::find($request->id);
         $unit->update([
             'Name' => $request->Name,
             'NameRus' => $request->NameRus,
-            'ShortName' => $request->ShortName,
-            'ShortNameRus' => $request->ShortNameRus,
+            'StructureID' => $request->StructureID,
+            'NumberPage' => $request->NumberPage,
             'Comment' => $request->Comment,
         ]);
 

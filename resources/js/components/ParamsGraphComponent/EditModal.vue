@@ -113,7 +113,7 @@ const fetchParams = async () => {
     result.ParametersID = response.data[0].Pid;
     result.GrapicsID = +response.data[0].GrapicsID;
     result.FactoryStructureID = +response.data[0].Sid;
-    result.BlogID = +response.data[0].BlogsID;
+    // result.BlogID = +response.data[0].BlogsID;
     result.SourceID = +response.data[0].SourceID;
     result.PageId = +response.data[0].PageId;
     result.OrderNumber = response.data[0].OrderNumber;

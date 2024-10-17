@@ -1,18 +1,12 @@
 {
-  "_EditBlog-3825a9f6.js": {
-    "file": "assets/EditBlog-3825a9f6.js",
+  "_EditUnitsModal-77744b14.js": {
+    "file": "assets/EditUnitsModal-77744b14.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_EditUnitsModal-d440b01b.js": {
-    "file": "assets/EditUnitsModal-d440b01b.js",
-    "imports": [
-      "resources/js/app.js"
-    ]
-  },
-  "_EditValue-3c48b734.js": {
-    "file": "assets/EditValue-3c48b734.js",
+  "_EditValue-f116b4e5.js": {
+    "file": "assets/EditValue-f116b4e5.js",
     "imports": [
       "resources/js/app.js"
     ]
@@ -112,7 +106,7 @@
       "resources/js/pages/ParametrGetValue.vue",
       "resources/js/pages/UsersPage.vue"
     ],
-    "file": "assets/app-b6c98efa.js",
+    "file": "assets/app-d9ae6f7d.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
@@ -125,10 +119,9 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/BlogsPage-409081ab.js",
+    "file": "assets/BlogsPage-fcc73d2b.js",
     "imports": [
-      "resources/js/app.js",
-      "_EditBlog-3825a9f6.js"
+      "resources/js/app.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/BlogsPage.vue"
@@ -142,10 +135,10 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ChangesPage-67279ad1.js",
+    "file": "assets/ChangesPage-62ec729f.js",
     "imports": [
       "resources/js/app.js",
-      "_EditUnitsModal-d440b01b.js"
+      "_EditUnitsModal-77744b14.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/ChangesPage.vue"
@@ -159,7 +152,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/FactoriesPage-df117fd5.js",
+    "file": "assets/FactoriesPage-d2f9a370.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -175,7 +168,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/FactoriesStructurePage-f8f54cfd.js",
+    "file": "assets/FactoriesStructurePage-51b9b39b.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -191,7 +184,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/GraphicTimesPage-3f577efd.js",
+    "file": "assets/GraphicTimesPage-3cfc299e.js",
     "imports": [
       "resources/js/app.js",
       "_format-45c98358.js"
@@ -208,7 +201,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/GraphicsPage-4a3c0aa4.js",
+    "file": "assets/GraphicsPage-d44cf7c7.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -226,7 +219,7 @@
     "css": [
       "assets/HomePage-a6d6481b.css"
     ],
-    "file": "assets/HomePage-c156ab1c.js",
+    "file": "assets/HomePage-e82ce616.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -237,7 +230,7 @@
     "assets": [
       "assets/ngmk-6e65eb69.png"
     ],
-    "file": "assets/LoginPage-9d0272ec.js",
+    "file": "assets/LoginPage-c141c879.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -253,10 +246,9 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/NumberPage-18585841.js",
+    "file": "assets/NumberPage-8d34253a.js",
     "imports": [
-      "resources/js/app.js",
-      "_EditBlog-3825a9f6.js"
+      "resources/js/app.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/NumberPage.vue"
@@ -270,7 +262,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParameterGraphics-3f001c2e.js",
+    "file": "assets/ParameterGraphics-acacd040.js",
     "imports": [
       "resources/js/app.js",
       "_format-45c98358.js"
@@ -287,7 +279,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametersPage-fca4b833.js",
+    "file": "assets/ParametersPage-726e6b10.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -303,7 +295,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametersTypesPage-49a0f531.js",
+    "file": "assets/ParametersTypesPage-845a3d4f.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -319,10 +311,10 @@
       "assets/ParametrGetValue-6f22618d.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametrGetValue-e2e6f980.js",
+    "file": "assets/ParametrGetValue-45a35d67.js",
     "imports": [
       "resources/js/app.js",
-      "_EditValue-3c48b734.js",
+      "_EditValue-f116b4e5.js",
       "_format-45c98358.js"
     ],
     "isDynamicEntry": true,
@@ -337,10 +329,10 @@
       "assets/ParametrValue-fdb5184b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametrValue-b7cf3053.js",
+    "file": "assets/ParametrValue-f9e1a4ea.js",
     "imports": [
       "resources/js/app.js",
-      "_EditValue-3c48b734.js",
+      "_EditValue-f116b4e5.js",
       "_format-45c98358.js"
     ],
     "isDynamicEntry": true,
@@ -355,7 +347,7 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/SourcesPage-903c2e77.js",
+    "file": "assets/SourcesPage-26ce8a70.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -371,10 +363,10 @@
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/UnitsPage-53b5d281.js",
+    "file": "assets/UnitsPage-fe428b85.js",
     "imports": [
       "resources/js/app.js",
-      "_EditUnitsModal-d440b01b.js"
+      "_EditUnitsModal-77744b14.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/UnitsPage.vue"
@@ -388,7 +380,7 @@
       "assets/UsersPage-b3a7e46d.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/UsersPage-0701f0f3.js",
+    "file": "assets/UsersPage-20b6874e.js",
     "imports": [
       "resources/js/app.js"
     ],

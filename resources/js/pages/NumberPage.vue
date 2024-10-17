@@ -43,8 +43,8 @@
 import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteBlog from '../components/BlogsComponent/DeleteBlog.vue';
-import EditBlog from '../components/BlogsComponent/EditBlog.vue';
+import DeleteBlog from '../components/NumberPage/DeleteBlog.vue';
+import EditBlog from '../components/NumberPage/EditBlog.vue';
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();

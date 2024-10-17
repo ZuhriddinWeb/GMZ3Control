@@ -74,3 +74,5 @@ Route::get('/vparamsGetValue/{id}', [ParametrValueController::class, 'vparamsGet
 
 // Route::get('/vparamsuser/{blog_id}/{change_id}/{date}', [ParametrValueController::class, 'getByBlog']);
 Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);
+Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
+

@@ -37,8 +37,13 @@ class NumberPageController extends Controller
     private function getRowUnit($id)
     {
         $unit = NumberPage::join('factory_structures','number_pages.StructureID','=','factory_structures.id')
-        ->select('factory_structures.Name as SName','number_pages.*')
-        ->where('number_pages.id',$id)->first();
+        ->where('factory_structures.id',$id)
+        ->select('factory_structures.Name as SName','number_pages.*')->get();
+        return response()->json($unit);
+    }
+    public function getRowPages($id)
+    {
+        $unit = NumberPage::where('StructureID',$id)->get();
         return response()->json($unit);
     }
     private function create(Request $request)

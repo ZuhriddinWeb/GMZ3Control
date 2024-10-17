@@ -4,7 +4,7 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchParams">
-        {{ t('modals.editFactory') }} {{ props.params.data['id'] }}
+        <!-- {{ t('modals.editFactory') }} {{ props.params.data['id'] }} -->
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">

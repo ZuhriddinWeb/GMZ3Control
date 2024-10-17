@@ -82,7 +82,7 @@ const fetchParams = async () => {
       axios.get('/blogs'),
       axios.get('/sources'),
       axios.get('/pages'),
-      axios.get(`get-params-for-id-edit/${props.params.data['id']}`)
+      axios.get(`get-params-for-id-edit/${props.params.data['id']}`,{ timeout: 10000 })
     ]);
 
     paramsOptions.value = resParam.data.map(param => ({
@@ -110,16 +110,17 @@ const fetchParams = async () => {
       text: source.Name
     }));
     
-    result.ParametersID = response.data[0].ParametersID;
-    result.GrapicsID = +response.data[0].GrapicsID;
-    result.FactoryStructureID = +response.data[0].Sid;
-    // result.BlogID = +response.data[0].BlogsID;
-    result.SourceID = +response.data[0].SourceID;
-    // result.PageId = +response.data[0].PageId;
-    result.OrderNumber = response.data[0].OrderNumber;
+    result.ParametersID = response.data[0]?.ParametersID || null;
+    result.GrapicsID = +response.data[0]?.GrapicsID || null;
+    result.FactoryStructureID = +response.data[0]?.Sid || null;
+    result.SourceID = +response.data[0]?.SourceID || null;
+    result.OrderNumber = response.data[0]?.OrderNumber || null;
 
-    result.CurrentTime = parseISO(response.data[0].CurrentTime);
-    result.EndingTime = parseISO(response.data[0].EndingTime);
+    result.CurrentTime = response.data[0]?.CurrentTime ? parseISO(response.data[0].CurrentTime) : null;
+    result.EndingTime = response.data[0]?.EndingTime ? parseISO(response.data[0].EndingTime) : null;
+    // result.BlogID = +response.data[0].BlogsID;
+    // result.PageId = +response.data[0].PageId;
+
 
   } catch (error) {
     console.error('Error fetching data:', error);

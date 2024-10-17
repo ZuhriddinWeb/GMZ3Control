@@ -110,7 +110,7 @@ const fetchParams = async () => {
       text: source.Name
     }));
     
-    result.ParametersID = response.data[0].Pid;
+    result.ParametersID = response.data[0].ParametersID;
     result.GrapicsID = +response.data[0].GrapicsID;
     result.FactoryStructureID = +response.data[0].Sid;
     // result.BlogID = +response.data[0].BlogsID;

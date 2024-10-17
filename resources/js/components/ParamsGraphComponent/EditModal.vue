@@ -4,7 +4,7 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchParams">
-        <!-- {{ t('modals.editFactory') }} {{ props.params.data['id'] }} -->
+        {{ t('modals.editFactory') }} {{ props.params.data['id'] }}
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
@@ -30,7 +30,7 @@
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
             <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
-              :options="pagesOptions" clearable /></div>
+              :options="pagesOptions" searchable  /></div>
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             :label="t('modals.ordernumber')" />

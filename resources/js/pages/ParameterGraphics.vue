@@ -9,7 +9,7 @@
       <VaModal v-model="showModal" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
         close-button>
         <h3 class="va-h3" @vue:mounted="fetchParams">
-          <!-- {{ t('modals.addParamsGrafTitle') }} -->
+          {{ t('modals.addParamsGrafTitle') }}
         </h3>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">

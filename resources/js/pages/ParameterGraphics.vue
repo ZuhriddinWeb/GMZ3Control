@@ -109,6 +109,7 @@ provide('onupdated', onupdated)
 
 const columnDefs = computed(() => [
   { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
+  { headerName: "Sahifa nomi", field: "NumName", flex: 1 },
   { headerName: "Parametr nomi", field: "PName", flex: 1 },
   { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
   { headerName: "Grafik", field: "GName" },

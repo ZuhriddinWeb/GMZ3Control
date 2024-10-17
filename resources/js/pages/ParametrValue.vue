@@ -56,9 +56,9 @@
         </VaButton>
       </div>
       <div ref="gridContainer" class="ag-grid-container h-full">
-        <VaTabs v-model="selectedTab" stateful grow>
+        <VaTabs v-model="selectedTab" stateful grow @keydown="handleTabKey" tabindex="0">
           <template #tabs>
-            <VaTab v-for="page in pagesValue" :key="page.id" :name="page.id">
+            <VaTab v-for="page in pagesValue" :key="page.id" :name="page.id" >
               {{ page.Name }}
             </VaTab>
           </template>
@@ -105,7 +105,7 @@ const selectedRow = ref(null);
 const editingTimeout = ref(null);
 const userId = store.state.user.id;
 const structureID = store.state.user.structure_id;
-const selectedTab = ref(null);
+const selectedTab = ref(1);
 const oldTableData = ref([])
 const ParamOptions = ref([]);
 const pagesValue = ref([]);
@@ -238,7 +238,50 @@ const columnDefs = ref([
     headerClass: 'header-center',
   }
 ]);
+const handleTabKey = (event) => {
+  if (event.key === ' ') {
+    event.preventDefault(); // Prevent default space behavior like scrolling
 
+    if (event.shiftKey) {
+      // Shift + Space: move to the previous tab
+      if (selectedTab.value > 1) {
+        selectedTab.value -= 1;
+      } else {
+        selectedTab.value = pagesValue.value.length;
+      }
+    } else {
+      // Space: move to the next tab
+      if (selectedTab.value < pagesValue.value.length) {
+        selectedTab.value += 1;
+      } else {
+        selectedTab.value = 1;
+      }
+    }
+  }
+};
+const handleArrowKeysForGrid = (event) => {
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault(); // Prevent default behavior
+
+    // Only handle arrow keys within ag-Grid cells
+    if (document.activeElement.classList.contains('ag-cell')) {
+      gridApi.navigateToNextCell({ key: event.key });
+    }
+  }
+};
+const addKeyboardListeners = () => {
+  window.addEventListener('keydown', (event) => {
+    // Always allow space to handle tabs
+    if (event.key === ' ') {
+      handleSpaceKeyForTabs(event);
+    }
+
+    // Handle arrow keys only for ag-Grid
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      handleArrowKeysForGrid(event);
+    }
+  });
+};
 function toggleFullScreen() {
   const element = gridContainer.value;  
 
@@ -312,7 +355,19 @@ const gridOptions = {
   columnDefs: columnDefs.value,
   getRowClass,
   headerHeight: 27,
-  rowHeight: 30
+  rowHeight: 30,
+  // suppressTabbing: false,
+  navigateToNextCell: (params) => {
+    const { key } = params.event;
+
+    // Only allow arrow key navigation
+    if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
+      return true; // ag-Grid will handle the navigation
+    }
+
+    // Prevent other keys from navigating between cells
+    return params.previousCellDef;
+  }
   // onCellDoubleClicked : (params) => {
   //   const { colDef, data } = params; // Get the entire row data
   //   if (colDef.field === 'Value' && data.Value) {
@@ -667,6 +722,7 @@ onMounted(() => {
   // fetchData();
   fetchGraphics();
   startIntervals(); // Start intervals when component mounts
+  addKeyboardListeners();
 });
 
 onBeforeUnmount(() => {

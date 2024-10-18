@@ -36,10 +36,10 @@ class ParamsGraphController extends Controller
     {
         $Gparams = GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->join('factory_structures', 'graphics_paramenters.FactoryStructureID', '=', 'factory_structures.id')
-            ->join('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.id')
+            // ->join('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.id')
 
             ->join('graphics', 'graphics_paramenters.GrapicsID', '=', 'graphics.id')
-            ->select('number_pages.Name as NumName','graphics.id as Gid', 'graphics.name as GName', 'parameters.id as Puuid', 'parameters.name as PName', 'parameters.name as PNameRus', 'factory_structures.id as Fid', 'factory_structures.name as FName', 'graphics_paramenters.*')
+            ->select('graphics.id as Gid', 'graphics.name as GName', 'parameters.id as Puuid', 'parameters.name as PName', 'parameters.name as PNameRus', 'factory_structures.id as Fid', 'factory_structures.name as FName', 'graphics_paramenters.*')
             ->get();
         return response()->json($Gparams);
     }

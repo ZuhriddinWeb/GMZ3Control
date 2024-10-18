@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\api\CalculatorController;
+use App\Http\Controllers\api\FormulaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\UnitsController;
@@ -57,6 +59,9 @@ Route::match(['get', 'post', 'put', 'delete'], '/role/{id?}', [RoleController::c
 Route::match(['get', 'post', 'put', 'delete'], '/user_role/{id?}', [UserRoleController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/paramsgraph/{id?}', [ParamsGraphController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/blogs/{id?}', [BlogsController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/formula/{id?}', [FormulaController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/calculator/{id?}', [CalculatorController::class, 'handle']);
+
 Route::get('/tree', [TreeController::class, 'getTree']);
 Route::post('/node-clicked', [TreeController::class, 'handleNodeClick']);
 Route::post('/treeChart', [TreeController::class, 'treeChart']);
@@ -75,4 +80,6 @@ Route::get('/vparamsGetValue/{id}', [ParametrValueController::class, 'vparamsGet
 // Route::get('/vparamsuser/{blog_id}/{change_id}/{date}', [ParametrValueController::class, 'getByBlog']);
 Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);
 Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
+Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);
+
 

@@ -50,7 +50,8 @@ export default {
       timer:"Время",
       edit:"Редактировать",
       lists:"Cправочники",
-      pages:"Страница"
+      pages:"Страница",
+      formula:"Формула"
     },
     buttons: {
       save: "Сохранить",
@@ -58,6 +59,7 @@ export default {
     },
     modals: {
       addUnitTitle: "Добавить единицу измерения",
+      addFormula: "Создать новую формулу",
       addPageTitle: "Создать cтраница",
       addStructureTitle: "Создать новый цех",
       addBlogTitle: "Создать новый участок",
@@ -184,7 +186,8 @@ export default {
       timer:"Vaqt",
       edit:"Tahrirlash",
       lists:"Ma'lumotnomalar",
-      pages:"Sahifalar"
+      pages:"Sahifalar",
+      formula:"Formula",
     },
     buttons: {
       save: "Saqlash",
@@ -192,6 +195,7 @@ export default {
     },
     modals: {
       addUnitTitle: "O'lchov birliklarini kiritish",
+      addFormula:"Yangi formula yaratish",
       addPageTitle: "Yangi sahifa yaratish",
       addStructureTitle: "Yangi sex yaratish",
       addBlogTitle: "Yangi bo'linma yaratish",

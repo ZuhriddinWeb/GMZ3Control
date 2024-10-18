@@ -58,14 +58,15 @@
       <div ref="gridContainer" class="ag-grid-container h-full">
         <VaTabs v-model="selectedTab" stateful grow @keydown="handleTabKey" tabindex="0">
           <template #tabs>
-            <VaTab v-for="page in pagesValue" :key="page.id" :name="page.id" >
+            <VaTab v-for="page in pagesValue" :key="page.id" :name="page.id">
               {{ page.Name }}
             </VaTab>
           </template>
         </VaTabs>
         <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef"
           :gridOptions="gridOptions" animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-          @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
+          @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"
+          :suppressRowTransform="true"></ag-grid-vue>
       </div>
       <!-- <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
@@ -148,13 +149,23 @@ const columnDefs = ref([
     editable: false, // Not editable
     suppressNavigable: true, // Prevent focus and navigation
   },
+
   {
     headerName: t('table.OrderNumber'),
     field: "OrderNumber",
     width: 80,
     headerClass: 'header-center',
-    editable: false, // Not editable
-    suppressNavigable: true, // Prevent focus and navigation
+    rowSpan: params => {
+      const OrderNumber = params.data.Change;
+      if (OrderNumber == '1') {
+        return 2;
+      } 
+    },
+    cellClassRules: {
+      'cell-span': "value === '1' || value === '2'",
+    },
+    editable: false,
+    suppressNavigable: true,
   },
   {
     headerName: t('table.parameters'),
@@ -227,6 +238,7 @@ const columnDefs = ref([
     },
     headerClass: 'header-center',
   },
+
   {
     headerName: t('table.comment'),
     field: "Comment",
@@ -238,6 +250,7 @@ const columnDefs = ref([
     headerClass: 'header-center',
   }
 ]);
+
 const handleTabKey = (event) => {
   if (event.key === ' ') {
     event.preventDefault(); // Prevent default space behavior like scrolling
@@ -283,25 +296,25 @@ const addKeyboardListeners = () => {
   });
 };
 function toggleFullScreen() {
-  const element = gridContainer.value;  
+  const element = gridContainer.value;
 
   if (!document.fullscreenElement) {
-   
+
     if (element.requestFullscreen) {
       element.requestFullscreen();
-    } else if (element.mozRequestFullScreen) { 
+    } else if (element.mozRequestFullScreen) {
       element.mozRequestFullScreen();
-    } else if (element.webkitRequestFullscreen) { 
+    } else if (element.webkitRequestFullscreen) {
       element.webkitRequestFullscreen();
-    } else if (element.msRequestFullscreen) { 
+    } else if (element.msRequestFullscreen) {
       element.msRequestFullscreen();
     }
   } else {
     if (document.exitFullscreen) {
       document.exitFullscreen();
-    } else if (document.mozCancelFullScreen) { 
+    } else if (document.mozCancelFullScreen) {
       document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) { 
+    } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
     } else if (document.msExitFullscreen) {
       document.msExitFullscreen();
@@ -477,7 +490,7 @@ const currentChange = computed(() => determineChange());
 // };
 
 // const fetchData = async () => {
- 
+
 //   const currentChange = result.Change;
 //   const currentTime = format(day.value, dateFormat);
 //   const currentHour = new Date().getHours();
@@ -502,7 +515,7 @@ const currentChange = computed(() => determineChange());
 //   }
 // };
 async function getPages(newValue) {
-  store.state.newValue=newValue
+  store.state.newValue = newValue
 
   // console.log(store.state.newValue)
   const currentChange = result.Change;
@@ -549,7 +562,7 @@ const onCellValueChanged = async (event) => {
       if (rowIndex < totalRows - 1) {
         // Stop editing to save the current state
         gridApi.value.stopEditing();
-        
+
         // Decide whether to focus on "Value" or "Comment" based on which column was edited
         const nextColumnKey = colDef.field === 'Value' ? 'Value' : 'Comment';
 
@@ -785,6 +798,8 @@ onBeforeUnmount(() => {
   /* font-size: 16px; Adjust font size if needed */
 }
 
+
+
 /* Center align header text */
 .header-center {
   text-align: center;
@@ -793,5 +808,4 @@ onBeforeUnmount(() => {
 .header-center .ag-header-cell-label {
   font-weight: bold;
 }
-
 </style>

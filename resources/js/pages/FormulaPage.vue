@@ -1,29 +1,34 @@
-<<template>
+<template>
   <div class="grid grid-rows-[55px,1fr]">
     <!-- Add new Elements start -->
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton @click="showModal = true, fetchGraphics" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
-      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
+      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit"
+        close-button>
         <h3 class="va-h3">
-          {{ t('modals.addUnitTitle') }}
+          {{ t('modals.addFormula') }}
         </h3>
         <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+          <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+              <VaSelect v-model="result.StructureID" value-by="value" class="mb-1" :label="t('form.structureName')"
+                :options="factoryOptions" @update:modelValue="getParams" clearable />
+            </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.name')" />
             <VaInput class="w-full" v-model="result.NameRus"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.nameRus')" />
-            <VaInput class="w-full" v-model="result.ShortName"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.shortName')" />
-            <VaInput class="w-full" v-model="result.ShortNameRus"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.shortNameRus')" />
+
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+              <VaSelect v-model="result.ParametersId" value-by="value" class="mb-1" :label="t('form.structureName')"
+                :options="graphicOptions" multiple />
+            </div>
+
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
           </VaForm>
         </div>
@@ -37,26 +42,33 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
+import DeleteBlog from '../components/BlogsComponent/DeleteBlog.vue';
+import EditBlog from '../components/BlogsComponent/EditBlog.vue';
+import Calculator from '../components/FormulaComponent/Calculator.vue';
+
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
+
 const { locale, t } = useI18n();
 
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
+const factoryOptions = ref([]);
+const graphicOptions = ref([]);
+
 
 const result = reactive({
+  StructureID: "",
   Name: "",
-  ShortName: "",
   NameRus: "",
-  ShortNameRus: "",
+  ParametersId: "",
   Comment: ""
 });
 
@@ -73,22 +85,29 @@ provide('onupdated', onupdated);
 
 const columnDefs = computed(() => [
   { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
-  { headerName: t('table.shortName'), field: getFieldShortName() },
-  { headerName: t('table.comment'), field: 'Comment', flex: 1 },
+  { headerName: t('table.structure'), field: getFielBlog(), flex: 1 },
+  { headerName: t('table.Name'), field: getFieldName(), flex: 1 },
+  { headerName: t('table.Comment'), field: 'Comment' },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: EditUnitsModal,
+    cellRenderer: Calculator,
   },
   {
     cellClass: ['px-0'],
     headerName: "",
     field: "",
     width: 70,
-    cellRenderer: DeleteUnitsModal,
+    cellRenderer: EditBlog,
+  },
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
+    cellRenderer: DeleteBlog,
   },
 ]);
 
@@ -101,30 +120,55 @@ const getFieldName = () => {
   return locale.value === 'uz' ? 'Name' : 'NameRus';
 };
 
-const getFieldShortName = () => {
-  return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
+
+const getFielBlog = () => {
+  return locale.value === 'uz' ? 'SName' : 'NameRus';
 };
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
-    console.log(response.data);
-    
-    rowData.value = response.data;
+    const response = await axios.get('/formula');
+    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
 
+const fetchGraphics = async () => {
+  try {
+    const responseGraphics = await axios.get('/structure');
+    factoryOptions.value = responseGraphics.data.map(factory => ({
+      value: factory.id,
+      text: locale.value === 'uz' ? factory.Name : factory.NameRus
+    }));
+
+   
+  } catch (error) {
+    console.error('Error fetching graphics data:', error);
+  }
+};
+async function getParams(newValue) {
+  
+  try {
+    const response = await axios.get(`/get-graph-with-params/${newValue}`);
+    graphicOptions.value = response.data.map(grapfic => ({
+      value: grapfic.ParametersID,
+      text: grapfic.Name
+    }));
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/units", result);
+    const { data } = await axios.post("/formula", result);
     if (data.status === 200) {
       showModal.value = false;
+      result.StructureID = '';
       result.Name = '';
-      result.ShortName = '';
       result.NameRus = '';
-      result.ShortNameRus = '';
+      result.ParametersId = '';
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
@@ -138,27 +182,20 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
   }
-  (async () => {
-    try {
-      const response = await axios.get('/units');
-      rowData.value = response.data;
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  })();
+  fetchData();
+  fetchGraphics();
 });
 
 const changeLanguage = () => {
   locale.value = locale.value === 'uz' ? 'ru' : 'uz';
   // Save language preference to localStorage
   localStorage.setItem('locale', locale.value);
-  // Refresh grid data with the new language
-  fetchData();
+  // Refresh factory options with the new language
+  // fetchGraphics();
 };
 
 const currentLanguageLabel = computed(() => {
@@ -173,7 +210,7 @@ const currentLanguageLabel = computed(() => {
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
-  
+
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -183,4 +220,3 @@ const currentLanguageLabel = computed(() => {
   direction: ltr;
 }
 </style>
->

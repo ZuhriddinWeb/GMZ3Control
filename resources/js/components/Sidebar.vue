@@ -128,6 +128,7 @@ const menu = ref([
       { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },
       { title: 'menu.pages', icon: 'auto_stories', path: '/pages' },
       { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
+      { title: 'menu.formula', icon: 'calculate', path: '/formula' },
       { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
     // ]
   // },

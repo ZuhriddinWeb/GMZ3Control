@@ -62,6 +62,12 @@ class ParamsGraphController extends Controller
 
             ->get();
     }
+
+    public function getGraficWithParams($id){
+        return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+        ->where('FactoryStructureID',$id)
+        ->get();
+    }
     public function getParamsForUser($id, $change, $ChangeDay,$tabId)
     {
         // dd($id);
@@ -69,7 +75,7 @@ class ParamsGraphController extends Controller
         $idArray = explode(',', $id);
         $blogsIds = array_map('intval', $idArray); // Ensure IDs are integers
         $blogsIdsString = implode(',', $blogsIds); // Create comma-separated string
-
+        
         // Prepare the SQL query with parameter binding
         $query = DB::select("SELECT * FROM 
             (

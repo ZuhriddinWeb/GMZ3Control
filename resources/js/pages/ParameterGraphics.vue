@@ -200,7 +200,6 @@ const fetchParams = async () => {
   }
 };
 async function getPages(newValue) {
-  console.log(newValue);
   
   try {
     const response = await axios.get(`/pages-select/${newValue}`);

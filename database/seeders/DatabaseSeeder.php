@@ -62,6 +62,8 @@ class DatabaseSeeder extends Seeder
             ['user_id' => 1,'role_id'=>16,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
             ['user_id' => 1,'role_id'=>17,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
             ['user_id' => 1,'role_id'=>18,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+            ['user_id' => 1,'role_id'=>19,'view'=>1,'create'=>1,'update'=>1,'delete'=>1],
+
 
         ]);
         DB::table('roles')->insert([
@@ -83,6 +85,8 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'menu.vparams',"parent_id"=>0],
             ['Name' => 'menu.users',"parent_id"=>0],
             ['Name' => 'menu.logout',"parent_id"=>0],
+            ['Name' => 'menu.formula',"parent_id"=>1],
+
         ]);
         DB::table('factory_structures')->insert([
             ['Name' => 'Maydalash sexi'],

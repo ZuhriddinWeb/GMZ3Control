@@ -68,6 +68,34 @@ class ParamsGraphController extends Controller
         ->where('FactoryStructureID',$id)
         ->get();
     }
+    public function getForFormule($id)
+    {
+        // Fetch the main graphic parameter record by its ID
+        $data = GraphicsParamenters::find($id);
+    
+        if (!$data) {
+            return response()->json(['message' => 'Graphic parameter not found'], 404);
+        }
+        // Fetch all graphic parameters that share the same FactoryStructureID
+        $units = GraphicsParamenters::where('FactoryStructureID', $data->FactoryStructureID)
+        ->where('PageId', $data->PageId)->get();
+    
+        $allParameters = [];
+        
+        foreach ($units as $unit) {
+            // Retrieve parameters using the relationship
+            $parameters = $unit->parameters; // This should fetch the related Parameters record based on ParametersID
+    
+            
+            $allParameters[] = [
+                'formula' => $unit,
+                'parameters' => $parameters ? $parameters : null, // Explicitly check if parameters exist
+            ];
+        }
+        
+        return response()->json($allParameters);
+    }
+    
     public function getParamsForUser($id, $change, $ChangeDay,$tabId)
     {
         // dd($id);

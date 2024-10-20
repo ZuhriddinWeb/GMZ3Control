@@ -68,6 +68,8 @@ import { useI18n } from 'vue-i18n';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import EditModal from '../components/ParamsGraphComponent/EditModal.vue';
 import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
+import Calculator from '../components/FormulaComponent/Calculator.vue';
+
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const { t } = useI18n();
@@ -136,7 +138,13 @@ const columnDefs = computed(() => [
       return format(date, 'dd/MM/yyyy');
     },
   },
-
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
+    cellRenderer: Calculator,
+  },
   {
     cellClass: ['px-0'],
     headerName: "",

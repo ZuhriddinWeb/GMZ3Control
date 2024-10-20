@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\GraphicsParamenters;
 class Parameters extends Model
 {
     use HasFactory;
@@ -24,4 +24,13 @@ class Parameters extends Model
         'Changer',
         'Comment'
     ];
+    protected $casts = [
+       
+        'id' => 'string',
+
+    ];
+    public function graphicsParameters()
+    {
+        return $this->hasMany(GraphicsParamenters::class, 'ParametersID', 'id');
+    }
 }

@@ -58,6 +58,7 @@ import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteParam from '../components/ParamsPageComponent/DeleteParam.vue';
 import EditParam from '../components/ParamsPageComponent/EditParam.vue'
+
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const { t } = useI18n();
@@ -100,6 +101,7 @@ const columnDefs = reactive([
   { headerName: t("table.min"), field: "Min" },
   { headerName: t("table.max"), field: "Max" },
   { headerName: t("table.comment"), field: "Comment", flex: 1 },
+
   {
     cellClass: ['px-0'],
     headerName: "",

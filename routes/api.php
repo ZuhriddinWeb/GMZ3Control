@@ -81,5 +81,5 @@ Route::get('/vparamsGetValue/{id}', [ParametrValueController::class, 'vparamsGet
 Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);
 Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
 Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);
-
+Route::get('/getForFormule/{id}',  [ParamsGraphController::class, 'getForFormule']);
 

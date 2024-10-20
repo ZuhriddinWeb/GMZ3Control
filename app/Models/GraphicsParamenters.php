@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use DB;
+use App\Models\Parameters;
 class GraphicsParamenters extends Model
 {
     use HasFactory;
@@ -30,8 +31,15 @@ class GraphicsParamenters extends Model
         'GrapicsID' => 'integer',
         'BlogsID' => 'integer',
         'PageId' => 'integer',
-        'SourceID' => 'integer'
-
+        'SourceID' => 'integer',
+        'ParametersID' => 'string',
 
     ];
+    public function parameters()
+{
+    return $this->belongsTo(Parameters::class, 'ParametersID', 'id');
+}
+    
+    
+    
 }

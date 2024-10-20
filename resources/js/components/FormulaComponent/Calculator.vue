@@ -4,19 +4,14 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
-        {{ t('modals.addFormula') }}
+        {{ t('modals.addFormula') }}{{ props.params.data['id'] }}
       </h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
           <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
-            <VaTextarea 
-              class="w-full" 
-              v-model="displayCalculate" 
-              :max-length="125" 
-              readonly
-            />
+            <VaTextarea class="w-full" v-model="displayCalculate" :max-length="125" readonly />
           </div>
-         
+
           <div class="grid grid-cols-9 gap-1 mt-3 w-full">
             <VaButton color="success" @click="appendToCalculate('&')" :style="{ borderRadius: '0' }">&</VaButton>
             <VaButton color="info" @click="appendToCalculate('(')" :style="{ borderRadius: '0' }">(</VaButton>
@@ -26,10 +21,11 @@
             <VaButton color="info" @click="appendToCalculate('*')" :style="{ borderRadius: '0' }">×</VaButton>
             <VaButton color="info" @click="appendToCalculate('/')" :style="{ borderRadius: '0' }">÷</VaButton>
             <VaButton color="info" @click="appendToCalculate('%')" :style="{ borderRadius: '0' }">%</VaButton>
-            <VaButton color="info" @click="removeLastCharacter" :style="{ borderRadius: '0' }"><=</VaButton>
+            <!-- <VaButton color="info" @click="removeLastCharacter" :style="{ borderRadius: '0' }">
+              <=< /VaButton> -->
 
           </div>
-          
+
           <div class="grid grid-cols-11 gap-1 mt-3 w-full">
             <VaButton color="secondary" @click="appendToCalculate('1')" :style="{ borderRadius: '0' }">1</VaButton>
             <VaButton color="secondary" @click="appendToCalculate('2')" :style="{ borderRadius: '0' }">2</VaButton>
@@ -43,25 +39,20 @@
             <VaButton color="secondary" @click="appendToCalculate('0')" :style="{ borderRadius: '0' }">0</VaButton>
             <VaButton color="secondary" @click="appendToCalculate('.')" :style="{ borderRadius: '0' }">.</VaButton>
           </div>
-          
-          <div class="flex justify-between gap-1 mt-4">
-            <VaButton 
-              v-for="(parameter, index) in parameters" 
-              :key="parameter.id" 
-              color="primary"
-              :style="{ borderRadius: '0' }"
-              @click="appendParameter(parameter)" 
-            >
-              {{ parameter.Name }} 
-            </VaButton>
+          <div v-if="parameters.length">
+            <div class="flex justify-between gap-1 mt-4">
+              <VaButton v-for="(parameter, index) in parameters" :key="parameter.id" color="primary"
+                :style="{ borderRadius: '0' }" @click="appendParameter(parameter)">
+                {{ parameter.Name }}
+              </VaButton>
+            </div>
           </div>
-          
-          <VaTextarea 
-            class="w-full" 
-            v-model="result.Comment" 
-            :max-length="125" 
-            :label="t('form.comment')" 
-          />
+          <div v-else>
+            Loading parameters...
+          </div>
+
+
+          <VaTextarea class="w-full" v-model="result.Comment" :max-length="125" :label="t('form.comment')" />
         </VaForm>
       </div>
     </VaModal>
@@ -81,13 +72,13 @@ const onupdated = inject('onupdated');
 const factoryOptions = ref([]);
 
 const getButton = ref(null);
-const parameters = ref(null);
+const parameters = ref([]);
 const displayCalculate = ref("");
 
 const { t, locale } = useI18n();
 
 const result = reactive({
-  Calculate:"",
+  Calculate: "",
   Comment: "",
   id: props.params.data['id'],
 });
@@ -101,7 +92,7 @@ const appendToCalculate = (value) => {
 
 // Function to append parameter by ID
 const appendParameter = (parameter) => {
-  result.Calculate += parameter.id ; // Append the parameter ID
+  result.Calculate += parameter.id; // Append the parameter ID
   displayCalculate.value += parameter.Name + ','; // Append the parameter Name for display
 };
 
@@ -129,9 +120,12 @@ const fetchGraphics = async () => {
       text: locale.value === 'uz' ? factory.Name : factory.NameRus
     }));
 
-    const response = await axios.get(`formula/${props.params.data['id']}`);
+    const response = await axios.get(`getForFormule/${props.params.data['id']}`);
+
+    const formulas = response.data;
+    const allParameters = formulas.map(entry => entry.parameters);
     getButton.value = response.data.formula; // Contains the formula details
-    parameters.value = response.data.parameters; // Contains the associated parameters
+    parameters.value = allParameters.flat();// Contains the associated parameters
 
 
     // result.StructureID = +response.data.StructureID;
@@ -148,8 +142,8 @@ const onSubmit = async () => {
   try {
     const { data } = await axios.post("/calculator", result);
     if (data.status === 200) {
-      result.Calculate='',
-      result.ParametersId = '';
+      result.Calculate = '',
+        result.ParametersId = '';
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

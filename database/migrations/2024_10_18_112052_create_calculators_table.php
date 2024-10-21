@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('calculators', function (Blueprint $table) {
             $table->id();
-            $table->integer('FormulaId');
+            $table->string('ParametersID');
             $table->text('Calculate')->nullable();
             $table->text('Comment')->nullable();
             $table->timestamps();

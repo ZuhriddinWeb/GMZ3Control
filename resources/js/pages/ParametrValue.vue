@@ -65,8 +65,7 @@
         </VaTabs>
         <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef"
           :gridOptions="gridOptions" animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-          @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"
-          :suppressRowTransform="true"></ag-grid-vue>
+          @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
       </div>
       <!-- <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
@@ -106,7 +105,7 @@ const selectedRow = ref(null);
 const editingTimeout = ref(null);
 const userId = store.state.user.id;
 const structureID = store.state.user.structure_id;
-const selectedTab = ref(1);
+const selectedTab = ref(null);
 const oldTableData = ref([])
 const ParamOptions = ref([]);
 const pagesValue = ref([]);
@@ -149,23 +148,13 @@ const columnDefs = ref([
     editable: false, // Not editable
     suppressNavigable: true, // Prevent focus and navigation
   },
-
   {
     headerName: t('table.OrderNumber'),
     field: "OrderNumber",
     width: 80,
     headerClass: 'header-center',
-    rowSpan: params => {
-      const OrderNumber = params.data.Change;
-      if (OrderNumber == '1') {
-        return 2;
-      } 
-    },
-    cellClassRules: {
-      'cell-span': "value === '1' || value === '2'",
-    },
-    editable: false,
-    suppressNavigable: true,
+    editable: false, // Not editable
+    suppressNavigable: true, // Prevent focus and navigation
   },
   {
     headerName: t('table.parameters'),
@@ -238,7 +227,6 @@ const columnDefs = ref([
     },
     headerClass: 'header-center',
   },
-
   {
     headerName: t('table.comment'),
     field: "Comment",
@@ -250,7 +238,6 @@ const columnDefs = ref([
     headerClass: 'header-center',
   }
 ]);
-
 const handleTabKey = (event) => {
   if (event.key === ' ') {
     event.preventDefault(); // Prevent default space behavior like scrolling
@@ -516,8 +503,6 @@ const currentChange = computed(() => determineChange());
 // };
 async function getPages(newValue) {
   store.state.newValue = newValue
-
-  // console.log(store.state.newValue)
   const currentChange = result.Change;
   const currentTime = format(day.value, dateFormat);
   const currentHour = new Date().getHours();
@@ -534,6 +519,14 @@ async function getPages(newValue) {
             params[index] = { ...parametr, ...select };
           }
         });
+        const parameterIds = values.map(param => param.ParametersID);
+        console.log(parameterIds);
+
+        const parameterQueries = parameterIds.map(id =>
+          axios.get(`/calculator/${id}`)
+        );
+        console.log(parameterQueries);
+        
         // params.sort((a, b) => (a.Value ? 1 : -1));
         rowData.value = params;
       }));
@@ -797,8 +790,6 @@ onBeforeUnmount(() => {
   padding: 0 10px;
   /* font-size: 16px; Adjust font size if needed */
 }
-
-
 
 /* Center align header text */
 .header-center {

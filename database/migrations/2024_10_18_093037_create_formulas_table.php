@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('formulas', function (Blueprint $table) {
             $table->id();
-            $table->integer('StructureID');
-            $table->string('Name');
-            $table->string('NameRus');
-            $table->json('ParametersId')->nullable();
+            $table->string('Name')->nullable();
+            $table->string('ShortName')->nullable();
             $table->text('Comment')->nullable();
+            $table->dateTime('Created')->nullable();
+            $table->string('Creator')->nullable();
+            $table->dateTime('Changed')->nullable();
+            $table->string('Changer')->nullable();
             $table->timestamps();
         });
     }

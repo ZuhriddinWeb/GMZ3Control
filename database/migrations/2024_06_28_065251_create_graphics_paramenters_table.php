@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('OrderNumber');
             $table->string('ParametersID');
+            $table->integer('WithFormula');
             $table->integer('FactoryStructureID');
             $table->integer('BlogsID')->nullable();
             $table->integer('GrapicsID');

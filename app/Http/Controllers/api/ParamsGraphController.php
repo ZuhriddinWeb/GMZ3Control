@@ -221,6 +221,8 @@ class ParamsGraphController extends Controller
             'ParametersID' => $request->ParametersID,
             'FactoryStructureID' => $request->FactoryStructureID,
             'BlogsID' => $request->BlogID,
+            'WithFormula' => $request->WithFormula,
+
             'GrapicsID' => $request->GrapicsID,
             'SourceID' => $request->SourceID,
             'PageId' => $request->PageId,

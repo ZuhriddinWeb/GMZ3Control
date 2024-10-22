@@ -214,16 +214,31 @@ const columnDefs = ref([
     headerName: t('table.value'),
     field: "Value",
     width: 150,
-    editable: true, // Editable
+    editable: (params) => {
+      console.log('params.data:', params.data);
+      return params.data && params.data.WithFormula !== "1";
+    },
+
     suppressNavigable: false, // Allow focus and navigation
     cellEditor: "agNumberCellEditor",
+
     cellClassRules: {
-      'cell-green': (params) => params.data && params.data.Value === lastEnteredValues.value[params.data.id],
-      'cell-yellow': (params) => params.data && params.data.Value !== lastEnteredValues.value[params.data.id] && lastEnteredValues.value[params.data.id] === undefined
+      'cell-green': (params) => {
+        return params.data && params.data.Value === lastEnteredValues.value?.[params.data.id];
+      },
+      'cell-yellow': (params) => {
+        // This rule can be adjusted as needed, possibly removed or updated for clarity
+        return params.data && params.data.Value !== lastEnteredValues.value?.[params.data.id] && lastEnteredValues.value?.[params.data.id] === undefined && params.data.WithFormula !== "1";
+      },
+      'cell-pink': (params) => {
+        return params.data && params.data.WithFormula === "1";
+      }
     },
-    cellStyle: {
-      'font-size': '16px',
-      'text-align': 'center',
+    cellStyle: (params) => {
+      return {
+        'font-size': '16px',
+        'text-align': 'center',
+      };
     },
     headerClass: 'header-center',
   },
@@ -520,13 +535,13 @@ async function getPages(newValue) {
           }
         });
         const parameterIds = values.map(param => param.ParametersID);
-        console.log(parameterIds);
 
-        const parameterQueries = parameterIds.map(id =>
-          axios.get(`/calculator/${id}`)
-        );
-        console.log(parameterQueries);
-        
+        // const parameterQueries = parameterIds.map(id =>
+        // // console.log(parameterIds);
+        //   axios.get(`/calculator/${id}`)
+        // );
+        // console.log(parameterQueries);
+
         // params.sort((a, b) => (a.Value ? 1 : -1));
         rowData.value = params;
       }));
@@ -577,10 +592,11 @@ const onRowClicked = (event) => {
 };
 
 const saveDataToServer = async (data) => {
-  console.log(data);
+  // console.log(data);
   try {
     const response = await axios.post('/vparams', { ...data, userId });
     removeFocusFromGrid();
+    getPages(store.state.newValue)
     // focusOnMinColumn();
     // fetchData()
     return response;
@@ -766,8 +782,13 @@ onBeforeUnmount(() => {
   color: white;
 }
 
+.cell-pink {
+  background-color: rgb(234 179 8);
+  color: black;
+}
+
 .cell-yellow {
-  background-color: rgb(185, 181, 181);
+  background-color:rgb(22 163 74);
   color: black;
 }
 

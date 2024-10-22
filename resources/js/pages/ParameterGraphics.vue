@@ -28,6 +28,10 @@
             <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
               :options="SourceOptions" clearable />
           </div>
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+            <VaSelect v-model="result.WithFormula" value-by="value" class="mb-1" :label="t('menu.formula')"
+              :options="FormulaOptions" clearable />
+          </div>
           <div class="flex gap-5 flex-wrap w-full">
             <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
             <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend />
@@ -84,6 +88,8 @@ const structureOptions = ref([]);
 const GraphicTimeOptions = ref([]);
 const BlogsOptions = ref([]);
 const SourceOptions = ref([]);
+const FormulaOptions = ref([]);
+
 
 const result = reactive({
   ParametersID: "",
@@ -94,7 +100,8 @@ const result = reactive({
   EndingTime: "",
   OrderNumber: "",
   BlogID: "",
-  PageId:""
+  PageId:"",
+  WithFormula:null,
 });
 
 function ondeleted(selectedData) {
@@ -182,6 +189,8 @@ const fetchParams = async () => {
     const responseTimes = await axios.get('/graphics');
     const responseBlogs = await axios.get('/blogs');
     const responseSource = await axios.get('/source');
+    const responseFormula = await axios.get('/formula');
+
 
     paramsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.Uuid,
@@ -200,6 +209,10 @@ const fetchParams = async () => {
       text: change.Name
     }));
     SourceOptions.value = responseSource.data.map(change => ({
+      value: change.id,
+      text: change.Name
+    }));
+    FormulaOptions.value = responseFormula.data.map(change => ({
       value: change.id,
       text: change.Name
     }));
@@ -232,7 +245,7 @@ const onSubmit = async () => {
         result.OrderNumber = "",
         result.BlogID = "",
         result.PageId = "",
-
+        result.WithFormula="",
         await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
     } else {

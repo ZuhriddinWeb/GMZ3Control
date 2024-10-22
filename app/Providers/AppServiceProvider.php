@@ -3,7 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
+use App\Models\ValuesParameters;
+use App\Observers\ValuesParametersObserver;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        ValuesParameters::observe(ValuesParametersObserver::class);
         // \App\Models\GraphicTimes::observe(\App\Observers\GraphicTimesObserver::class);
     }
 }

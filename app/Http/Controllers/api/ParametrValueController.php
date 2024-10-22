@@ -58,8 +58,9 @@ class ParametrValueController extends Controller
             ->get();
     }
     
-    private function create(Request $request)
+    public function create(Request $request)
     {
+        // dd($request);
         $uuidString = (string) Str::uuid();
         try {
             // Yangi yoki mavjud yozuvni topish

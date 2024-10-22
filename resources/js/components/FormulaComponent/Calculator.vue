@@ -4,12 +4,12 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
-        {{ t('modals.addFormula') }}{{ props.params.data['ParametersID'] }}
+        {{ t('modals.addFormula') }}
       </h3>
-      <div>
+      <div class="flex justify-between">
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
           <div class="flex justify-between">
-            <div class="calculator">
+            <div class="calculator w-1/2">
               <div class="answer">{{ answer }}</div>
               <div class="display">{{ logList + current }}</div>
               <div @click="clear" id="clear" class="btn operator">C</div>
@@ -37,7 +37,7 @@
               <div @click="dot" id="dot" class="btn">.</div>
               <div @click="equal" id="equal" class="btn operator">=</div>
             </div>
-            <div v-if="parameters.length" class="ml-2">
+            <div v-if="parameters.length" class="ml-2 w-1/2">
               <div class="flex justify-between gap-1">
                 <VaButton v-for="(parameter, index) in parameters" :key="parameter.id" color="#f4faff"
                   :style="{ borderRadius: '0' }" @click="append(parameter)">

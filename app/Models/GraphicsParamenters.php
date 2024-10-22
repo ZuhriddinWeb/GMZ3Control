@@ -14,6 +14,7 @@ class GraphicsParamenters extends Model
         'ParametersID',
         'FactoryStructureID',
         'GrapicsID',
+        'WithFormula',
         'BlogsID',
         'PageId',
         'SourceID',
@@ -33,6 +34,7 @@ class GraphicsParamenters extends Model
         'PageId' => 'integer',
         'SourceID' => 'integer',
         'ParametersID' => 'string',
+        'WithFormula'=>'integer'
 
     ];
     public function parameters()

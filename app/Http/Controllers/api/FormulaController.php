@@ -30,9 +30,7 @@ class FormulaController extends Controller
 
     private function index()
     {
-        $units = Formula::join('factory_structures', 'formulas.StructureID', '=', 'factory_structures.id')
-            ->select('factory_structures.Name as SName', 'formulas.*')
-            ->get();
+        $units = Formula::all();
         return response()->json($units);
     }
     private function getRowUnit($id)

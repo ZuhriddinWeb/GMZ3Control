@@ -163,6 +163,10 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'Qo`lda kiritiladi', 'Shortname' => 'Kiritiladi'],
             // ['Name' => 'WINCC tizimidan olinadi', 'Shortname' => 'WINCC'],
         ]);
+        DB::table('formulas')->insert([
+            ['Name' => 'Formula bilan natija yaratish', 'Shortname' => 'Formula bilan natija yaratish'],
+            ['Name' => 'Operator tomonidan kiritiladi', 'Shortname' => 'Operator tomonidan kiritiladi'],
+        ]);
         DB::table('paramenters_types')->insert([
             ['Name' => 'Son', 'Comment' => 'float'],
             ['Name' => 'Matn', 'Comment' => 'string'],

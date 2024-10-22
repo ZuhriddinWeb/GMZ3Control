@@ -1,48 +1,22 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Observers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Calculator;
 use App\Models\ValuesParameters;
+use App\Models\Calculator;
 use App\Models\GraphicsParamenters;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Http\Controllers\api\ParametrValueController;
-use Illuminate\Support\Facades\Route; 
-class CalculatorController extends Controller
+
+class ValuesParametersObserver
 {
-    public function handle(Request $request, $id = null)
+    /**
+     * Handle the ValuesParameters "created" event.
+     */
+    public function saved(ValuesParameters $valuesParameters)
     {
-        if ($id !== null && $request->isMethod('get')) {
-            return $this->getRowUnit($id);
-        }
-
-        switch ($request->method()) {
-            case 'GET':
-                return $this->index();
-            case 'POST':
-                return $this->create($request);
-            case 'PUT':
-                return $this->update($request, $id);
-            case 'DELETE':
-                return $this->delete($request, $id);
-            default:
-                return response()->json(['message' => 'Method not allowed'], 405);
-        }
-    }
-
-    private function index()
-    {
-        $units = Calculator::all();
-        return response()->json($units);
-    }
-    private function getRowUnit($id)
-    {
-        // dd($id);
-        // Step 1: Fetch all Calculator entries where the Calculate field contains the given $id (ParametersID)
-        $calculator = Calculator::whereJsonContains('Calculate', $id)->first();
-        // dd($calculator->ParametersID);
+        // dd($valuesParameters->TimeID);
+        $calculator = Calculator::whereJsonContains('Calculate', $valuesParameters->ParametersID)->first();
         $param = GraphicsParamenters::where('ParametersID',$calculator->ParametersID)->first();
         // dd($param);
 
@@ -72,7 +46,7 @@ class CalculatorController extends Controller
             return response()->json(['error' => 'No valid ParametersID found in Calculate field'], 400);
         }
         $timeId =   ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('TimeID', )->toArray();
-        dd($timeId[0]);
+        // dd($timeId[0]);
         // Step 4: Query the parameters_value table using the extracted ParametersID values
         $parameters = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('Value', 'ParametersID')->toArray();
         
@@ -125,12 +99,10 @@ class CalculatorController extends Controller
     
         // Call the calculation function with precedence handling
         $result = $this->calculateWithPrecedence($values);
-        
-        // return round($result, 2); // Return the final calculated result rounded to 2 decimal places
         $data = [
             'ParametersID' => (string)$param->ParametersID,
             'SourceID' => (string)$param->SourceID,
-            'GTid' => (string)$timeId[0],
+            'GTid' => (string)$valuesParameters->TimeID,
             'Value' => round($result, 2),
             'GraphicsTimesID' => (string)$param->GrapicsID,
             'BlogID' => (string)$param->BlogsID,
@@ -138,14 +110,13 @@ class CalculatorController extends Controller
             'created_at' => now(),
             'Created' => now(),
         ];
-        dd($data);
         $existingValue = ValuesParameters::where([
-            'ParametersID' => $data['ParametersID'],
             'TimeID' => $data['GTid'],
+            'ParametersID' => $data['ParametersID'],
             'SourcesID' => $data['SourceID'],
         ])->first();
-        // dd($existingValue);
         if ($existingValue) {
+            // dd($existingValue);
             // Update the existing record
             $existingValue->update([
                 'Value' => $data['Value'],
@@ -162,14 +133,9 @@ class CalculatorController extends Controller
             $parameterValueController = new ParametrValueController();
             return $parameterValueController->create($request);
         }
-        // $request = new Request($data);
-        
-        // $parameterValueController = new ParametrValueController();
-        // return $parameterValueController->create($request);
+        // dd($result);
         
     }
-    
-    // Helper function to calculate with precedence
     private function calculateWithPrecedence(array $values)
     {
         // Initialize the result with the first numeric value
@@ -202,52 +168,27 @@ class CalculatorController extends Controller
     
         return $result; // Return the calculated result
     }
-    
-
-
-    private function create(Request $request)
+    /**
+     * Handle the ValuesParameters "deleted" event.
+     */
+    public function deleted(ValuesParameters $valuesParameters): void
     {
-        $unit = Calculator::create([
-            'ParametersID' => $request->id,
-            'Calculate' => $request->Calculate,
-            'Comment' => $request->Comment,
-        ]);
-
-        return response()->json([
-            'status' => 200,
-            'message' => "Javob muvafaqiyatli qo'shildi",
-            'unit' => $unit
-        ]);
+        //
     }
 
-    private function update(Request $request)
+    /**
+     * Handle the ValuesParameters "restored" event.
+     */
+    public function restored(ValuesParameters $valuesParameters): void
     {
-
-
-        $unit = Calculator::find($request->id);
-        $unit->update([
-            'FormulaId' => $request->id,
-            'Calculate' => $request->Calculate,
-            'Comment' => $request->Comment,
-        ]);
-
-        return response()->json([
-            'status' => 200,
-            'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $unit
-        ]);
+        //
     }
 
-    public function delete(Request $request, $id)
+    /**
+     * Handle the ValuesParameters "force deleted" event.
+     */
+    public function forceDeleted(ValuesParameters $valuesParameters): void
     {
-        try {
-            $unit = Units::findOrFail($id);
-            $unit->delete();
-
-            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
-        }
+        //
     }
-
 }

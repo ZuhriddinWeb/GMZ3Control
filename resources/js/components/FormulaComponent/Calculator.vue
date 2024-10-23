@@ -36,6 +36,9 @@
               <div @click="append('0')" id="n0" class="zero">0</div>
               <div @click="dot" id="dot" class="btn">.</div>
               <div @click="equal" id="equal" class="btn operator">=</div>
+              <div @click="append('(')" id="leftBracket" class="btn p-4">(</div>
+              <div @click="append(')')" id="rightBracket" class="btn p-4">)</div>
+
             </div>
             <div v-if="parameters.length" class="ml-2 w-1/2">
               <div class="flex justify-between gap-1">
@@ -86,7 +89,6 @@ const result = reactive({
   id: props.params.data['ParametersID'],
 });
 const append = (input) => {
-  console.log(input); // Log the input (either number or parameter)
 
   if (operatorClicked.value) {
     current.value = '';
@@ -202,6 +204,7 @@ const equal = () => {
     answer.value = 'WHAT?!!';
   }
 };
+
 const fetchGraphics = async () => {
   try {
     const responseGraphics = await axios.get('/structure');

@@ -139,6 +139,18 @@ const columnDefs = ref([
     headerClass: 'header-center',
     editable: false, // Not editable
     suppressNavigable: true, // Prevent focus and navigation
+    cellClassRules: {
+      'cell-green': (params) => {
+        return params.data && params.data.Value === lastEnteredValues.value?.[params.data.id];
+      },
+      'cell-yellow': (params) => {
+        // This rule can be adjusted as needed, possibly removed or updated for clarity
+        return params.data && params.data.Value !== lastEnteredValues.value?.[params.data.id] && lastEnteredValues.value?.[params.data.id] === undefined && params.data.WithFormula !== "1";
+      },
+      'cell-pink': (params) => {
+        return params.data && params.data.WithFormula === "1";
+      }
+    },
   },
   {
     headerName: t('table.change'),
@@ -779,7 +791,7 @@ onBeforeUnmount(() => {
 
 .cell-green {
   background-color: rgb(211, 207, 207);
-  color: white;
+  color: black;
 }
 
 .cell-pink {

@@ -44,8 +44,8 @@ class ValuesParametersObserver
         if (empty($parameterIds)) {
             return response()->json(['error' => 'No valid ParametersID found in Calculate field'], 400);
         }
-        $timeId = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('TimeID', )->toArray();
-        // dd($timeId[0]);
+        $timeId = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('TimeID', 'ParametersID')->toArray();
+        // dd($timeId);
         // Step 4: Query the parameters_value table using the extracted ParametersID values
         $parameters = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('Value', 'ParametersID')->toArray();
 

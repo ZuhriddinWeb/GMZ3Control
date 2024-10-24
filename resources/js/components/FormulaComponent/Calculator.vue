@@ -4,7 +4,7 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
-        {{ t('modals.addFormula') }}
+        {{ t('modals.addFormula') }}{{ props.params.data }}
       </h3>
       <div class="flex justify-between">
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">

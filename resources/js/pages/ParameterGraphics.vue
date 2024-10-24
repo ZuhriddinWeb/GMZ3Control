@@ -73,6 +73,7 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import EditModal from '../components/ParamsGraphComponent/EditModal.vue';
 import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
 import Calculator from '../components/FormulaComponent/Calculator.vue';
+import Times from '../components/FormulaComponent/Times.vue';
 
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
@@ -150,6 +151,13 @@ const columnDefs = computed(() => [
     headerName: "",
     field: "",
     width: 70,
+    cellRenderer: Times,
+  },
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
     cellRenderer: Calculator,
   },
   {
@@ -178,6 +186,8 @@ const fetchData = async () => {
   try {
     const response = await axios.get('/paramsgraph');
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
+    console.log(rowData.value);
+    
   } catch (error) {
     console.error('Error fetching data:', error);
   }

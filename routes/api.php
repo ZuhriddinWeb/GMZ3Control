@@ -45,6 +45,7 @@ Route::match(['get', 'post', 'put', 'delete'], '/units/{id?}', [UnitsController:
 Route::match(['get', 'post', 'put', 'delete'], '/pages/{id?}', [NumberPageController::class, 'handle']);
 
 Route::match(['get', 'post', 'put', 'delete'], '/graphictimes/{id?}', [GraphicTimesController::class, 'handle']);
+
 Route::match(['get', 'post', 'put', 'delete'], '/sources/{id?}', [SourcesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/changes/{id?}', [ChangesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/graphics/{id?}', [GraphicsController::class, 'handle']);
@@ -82,4 +83,5 @@ Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']
 Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
 Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);
 Route::get('/getForFormule/{id}',  [ParamsGraphController::class, 'getForFormule']);
+Route::get('/getRowTimes/{id}',  [GraphicTimesController::class, 'getRowTimes']);
 

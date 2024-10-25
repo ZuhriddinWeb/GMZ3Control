@@ -4,12 +4,12 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
-        {{ t('modals.addFormula') }}{{ props.params.data }}
+        {{ t('modals.addFormula') }}
       </h3>
-      <div class="flex justify-between">
+      <div class="">
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
           <div class="flex justify-between">
-            <div class="calculator w-1/2">
+            <div class="calculator " >
               <div class="answer">{{ answer }}</div>
               <div class="display">{{ logList + current }}</div>
               <div @click="clear" id="clear" class="btn operator">C</div>
@@ -32,7 +32,7 @@
               <div @click="append('2')" id="n2" class="btn">2</div>
               <div @click="append('3')" id="n3" class="btn">3</div>
               <div @click="plus" id="plus" class="btn operator">+</div>
-              
+
               <div @click="append('0')" id="n0" class="zero">0</div>
               <div @click="dot" id="dot" class="btn">.</div>
               <div @click="equal" id="equal" class="btn operator">=</div>
@@ -40,18 +40,20 @@
               <div @click="append(')')" id="rightBracket" class="btn p-4">)</div>
 
             </div>
-            <div v-if="parameters.length" class="ml-2 w-1/2">
-              <div class="flex justify-between gap-1">
-                <VaButton v-for="(parameter, index) in parameters" :key="parameter.id" color="#f4faff"
-                  :style="{ borderRadius: '0' }" @click="append(parameter)">
-                  {{ parameter.Name }}
-                </VaButton>
+            <div class="ml-4">
+              <div v-if="parameters.length" class="ml-2">
+                <!-- <div class="flex justify-between"> -->
+                  <VaButton preset="primary" class="mr-6 mb-2"  border-color="primary" round v-for="(parameter, index) in parameters" :key="parameter.id" 
+                    :style="{ borderRadius: '0' }" @click="append(parameter)">
+                    {{ parameter.Name }}
+                  </VaButton>
+                <!-- </div> -->
               </div>
+              <div v-else>
+                Loading parameters...
+              </div>
+  
             </div>
-            <div v-else>
-              Loading parameters...
-            </div>
-
           </div>
 
 
@@ -84,9 +86,12 @@ const operatorClicked = ref(true);
 const { t, locale } = useI18n();
 
 const result = reactive({
+
   Calculate: [],
   Comment: "",
-  id: props.params.data['ParametersID'],
+  id: props.params.data['GparamID'],
+  TimeID: props.params.data['id'],
+
 });
 const append = (input) => {
 
@@ -101,7 +106,7 @@ const append = (input) => {
     result.Calculate.push(input); // Push the number to the array
     current.value += input; // Display the number on the screen
   }
-  
+
   // Check if input is a parameter (object with 'Name' property)
   else if (typeof input === 'object' && input !== null && input.Name) {
     animateNumber(`n${input.id}`);
@@ -213,7 +218,7 @@ const fetchGraphics = async () => {
       text: locale.value === 'uz' ? factory.Name : factory.NameRus
     }));
 
-    const response = await axios.get(`getForFormule/${props.params.data['id']}`);
+    const response = await axios.get(`getForFormule/${props.params.data['GPid']}`);
 
     const formulas = response.data;
     const allParameters = formulas.map(entry => entry.parameters);
@@ -267,8 +272,9 @@ watch(() => result.StructureID, (newVal) => {
   font-weight: 300;
   font-size: 18px;
   background-color: #ffffff;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   box-shadow: 0px 3px 50px -30px rgb(79, 98, 112);
+  border: 1px solid rgb(21, 78, 193);
 }
 
 .btn,
@@ -282,7 +288,7 @@ watch(() => result.StructureID, (newVal) => {
   outline: none;
   color: #484848;
   background-color: #f4faff;
-  border-radius: 5px;
+  /* border-radius: 5px; */
 }
 
 .display,
@@ -294,7 +300,7 @@ watch(() => result.StructureID, (newVal) => {
 
 .display {
   color: #a3a3a3;
-  border-bottom: 1px solid #e1e1e1;
+  border-bottom: 1px solid rgb(21, 78, 193);
   margin-bottom: 15px;
   overflow: hidden;
   text-overflow: clip;

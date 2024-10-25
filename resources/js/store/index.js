@@ -12,7 +12,8 @@ export default createStore({
       userTabel:'',
       structureID:null,
       newvalue:null,
-
+      GParamID:null,
+      GPid:null,
     };
   },
   mutations: {

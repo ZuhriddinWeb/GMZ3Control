@@ -207,7 +207,9 @@ class CalculatorController extends Controller
 
     private function create(Request $request)
     {
+        // dd($request);
         $unit = Calculator::create([
+            'TimeID'=>$request->TimeID,
             'ParametersID' => $request->id,
             'Calculate' => $request->Calculate,
             'Comment' => $request->Comment,

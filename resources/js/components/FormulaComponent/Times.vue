@@ -109,8 +109,10 @@ const defaultColDef = {
 };
 
 const fetchData = async () => {
+  store.state.GParamID = props.params.data['ParametersID'];
+  store.state.GPid=props.params.data['id'];
   try {
-    const response = await axios.get(`/getRowTimes/${result.GraphicId}`);
+    const response = await axios.get(`/getRowTimes/${result.GraphicId}/${store.state.GParamID}/${store.state.GPid}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);

@@ -9,6 +9,7 @@ class Calculator extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'TimeID',
         'ParametersID',
         'Calculate',
         'Comment',

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('calculators', function (Blueprint $table) {
             $table->id();
+            $table->integer('TimeID');
             $table->string('ParametersID');
             $table->text('Calculate')->nullable();
             $table->text('Comment')->nullable();

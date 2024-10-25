@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\GraphicTimes;
 use Carbon\Carbon;
-
+use DB;
 class GraphicTimesController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -44,13 +44,13 @@ class GraphicTimesController extends Controller
             ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*')
             ->first();
     }
-    public function getRowTimes($id)
+    public function getRowTimes($id,$GparamID,$GPid)
     {
-        // dd($id);
+        // dd($GparamID);
         return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
             ->join('changes', 'graphic_times.change', '=', 'changes.id')
             ->where('graphics.id', $id)
-            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*')
+            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*',DB::raw("'$GparamID' as GparamID"),DB::raw("'$GPid' as GPid"))
             ->get();
     }
     private function create(Request $request)

@@ -44,13 +44,22 @@ class GraphicTimesController extends Controller
             ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*')
             ->first();
     }
-    public function getRowTimes($id,$GparamID,$GPid)
+    public function getRowTimes($id,$GparamID,$GPid,$GrapicsID)
     {
         // dd($GparamID);
         return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
             ->join('changes', 'graphic_times.change', '=', 'changes.id')
             ->where('graphics.id', $id)
-            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*',DB::raw("'$GparamID' as GparamID"),DB::raw("'$GPid' as GPid"))
+            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*',DB::raw("'$GrapicsID' as GrapicsID"),DB::raw("'$GparamID' as GparamID"),DB::raw("'$GPid' as GPid"))
+            ->get();
+    }
+    public function getRowFormuleTimes($GparamID)
+    {
+        // dd($GparamID);
+        return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
+            ->join('changes', 'graphic_times.change', '=', 'changes.id')
+            ->where('graphic_times.GraphicsID', $GparamID)
+            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*')
             ->get();
     }
     private function create(Request $request)

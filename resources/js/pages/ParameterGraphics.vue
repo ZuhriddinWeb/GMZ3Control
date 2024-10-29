@@ -153,13 +153,13 @@ const columnDefs = computed(() => [
     width: 70,
     cellRenderer: Times,
   },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: Calculator,
-  },
+  // {
+  //   cellClass: ['px-0'],
+  //   headerName: "",
+  //   field: "",
+  //   width: 70,
+  //   cellRenderer: Calculator,
+  // },
   {
     cellClass: ['px-0'],
     headerName: "",

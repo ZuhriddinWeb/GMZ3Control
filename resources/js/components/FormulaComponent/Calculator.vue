@@ -9,7 +9,7 @@
       <div class="">
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
           <div class="flex justify-between">
-            <div class="calculator " >
+            <div class="calculator ">
               <div class="answer">{{ answer }}</div>
               <div class="display">{{ logList + current }}</div>
               <div @click="clear" id="clear" class="btn operator">C</div>
@@ -43,19 +43,28 @@
             <div class="ml-4">
               <div v-if="parameters.length" class="ml-2">
                 <!-- <div class="flex justify-between"> -->
-                  <VaButton preset="primary" class="mr-6 mb-2"  border-color="primary" round v-for="(parameter, index) in parameters" :key="parameter.id" 
-                    :style="{ borderRadius: '0' }" @click="append(parameter)">
-                    {{ parameter.Name }}
-                  </VaButton>
+                <VaButton preset="primary" class="mr-6 mb-2" border-color="primary" round
+                  v-for="(parameter, index) in parameters" :key="parameter.id" :style="{ borderRadius: '0' }"
+                  @click="append(parameter)">
+                  {{ parameter.Name }}
+                </VaButton>
                 <!-- </div> -->
               </div>
               <div v-else>
                 Loading parameters...
               </div>
-  
+
             </div>
           </div>
+          <div v-if="timesG.length" class="mt-2">
+            <!-- <div class="flex justify-between"> -->
+            <VaButton preset="primary" class="mr-6 mb-2" border-color="primary" round v-for="(time, index) in timesG"
+              :key="time.id" :style="{ borderRadius: '0' }" @click="append(time)">
+              {{ time.Name }}
+            </VaButton>
 
+            <!-- </div> -->
+          </div>
 
           <VaTextarea class="w-full" v-model="result.Comment" :max-length="125" :label="t('form.comment')" />
         </VaForm>
@@ -78,6 +87,8 @@ const factoryOptions = ref([]);
 
 const getButton = ref(null);
 const parameters = ref([]);
+const timesG = ref([]);
+
 const displayCalculate = ref("");
 const logList = ref('');
 const current = ref('');
@@ -94,14 +105,20 @@ const result = reactive({
 
 });
 const append = (input) => {
-
+  console.log(input);
+  
   if (operatorClicked.value) {
     current.value = '';
     operatorClicked.value = false;
   }
-
+ // Check if input is a time object (with GName property)
+ if (typeof input === 'object' && input !== null && input.GName) {
+    animateNumber(`n${input.id}`);
+    result.Calculate.push(`Tid=${input.id}`); // Push "Tid=id" to the array
+    current.value += `[${input.Name}]`; // Display it as "[Tid=id]"
+  } 
   // Check if input is a number (string or number)
-  if (typeof input === 'number' || typeof input === 'string') {
+  else if (typeof input === 'string') {
     animateNumber(`n${input}`);
     result.Calculate.push(input); // Push the number to the array
     current.value += input; // Display the number on the screen
@@ -111,9 +128,15 @@ const append = (input) => {
   else if (typeof input === 'object' && input !== null && input.Name) {
     animateNumber(`n${input.id}`);
     result.Calculate.push(input.id); // Push the parameter ID to the array
-    current.value += input.Name; // Display the parameter's Name on the screen
+    current.value += `[${input.Name}]`; // Wrap the parameter's Name in brackets and display it
+  }
+  else if (typeof input === 'object' && input !== null && input.GName) {
+    animateNumber(`n${input.id}`);
+    result.Calculate.push(`Tid=${input.id}`);
+    current.value += `[${input.GName}]`; // Wrap the GName in brackets and display it
   }
 };
+
 
 
 
@@ -225,6 +248,18 @@ const fetchGraphics = async () => {
     getButton.value = response.data.formula; // Contains the formula details
     parameters.value = allParameters.flat();// Contains the associated parameters
 
+    const responseTimes = await axios.get(`getForFormuleTimes/${props.params.data['GraphicsID']}`);
+    timesG.value = responseTimes.data.map(time => ({
+      ...time,
+      StartTime: time.StartTime ? time.StartTime.substring(0, 5) : null,
+      EndTime: time.EndTime ? time.EndTime.substring(0, 5) : null,
+      Name: time.Name ? time.Name.substring(0, 5) : null,
+
+    }));
+
+    console.log(timesG.value);
+
+    // console.log(responseTimes);
 
     // result.StructureID = +response.data.StructureID;
     // result.Name = response.data.Name;
@@ -241,7 +276,7 @@ const onSubmit = async () => {
     const { data } = await axios.post("/calculator", result);
     if (data.status === 200) {
       result.Calculate = '',
-      result.ParametersId = '';
+        result.ParametersId = '';
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

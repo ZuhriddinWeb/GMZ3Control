@@ -15,8 +15,8 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
-        // dd($valuesParameters->TimeID);
         $calculator = Calculator::whereJsonContains('Calculate', $valuesParameters->ParametersID)->first();
+        // dd($calculator);
         $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
         // dd($param);
 

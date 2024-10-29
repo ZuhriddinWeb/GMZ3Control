@@ -4,7 +4,7 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button class="custom-modal " size="large">
       <h3 class="va-h3">
-        {{ t('modals.addFormula') }}
+        {{ t('modals.addFormula') }}{{ props.params.data['Gid'] }}
       </h3>
       <div class="flex justify-between">
         <main class="h-full w-full">
@@ -111,8 +111,10 @@ const defaultColDef = {
 const fetchData = async () => {
   store.state.GParamID = props.params.data['ParametersID'];
   store.state.GPid=props.params.data['id'];
+  store.state.GrapicsID=props.params.data['Gid'];
+
   try {
-    const response = await axios.get(`/getRowTimes/${result.GraphicId}/${store.state.GParamID}/${store.state.GPid}`);
+    const response = await axios.get(`/getRowTimes/${result.GraphicId}/${store.state.GParamID}/${store.state.GPid}/${props.params.data['Gid']}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);

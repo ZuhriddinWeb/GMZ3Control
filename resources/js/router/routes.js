@@ -31,13 +31,30 @@ export default [
 			guard: 'auth',
 		},
 	},
+	// {
+	// 	path: '/blogs',
+	// 	name:'blogs',
+	// 	component: () => import('../pages/BlogsPage.vue'),
+	// 	meta: {
+	// 		guard: 'auth',
+	// 	},
+	// },
 	{
 		path: '/blogs',
 		name:'blogs',
+		component: () => import('../pages/BlogCardPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
+		path: '/blog/:id',
+		name:'BlogDetail',
 		component: () => import('../pages/BlogsPage.vue'),
 		meta: {
 			guard: 'auth',
 		},
+		props: true,
 	},
 	{
 		path: '/units',
@@ -55,18 +72,44 @@ export default [
 			guard: 'auth',
 		},
 	},
+	// {
+	// 	path: '/graphictimes',
+	// 	name:'graphictimes',
+	// 	component: () => import('../pages/GraphicTimesPage.vue'),
+	// 	meta: {
+	// 		guard: 'auth',
+	// 	},
+	// },
 	{
 		path: '/graphictimes',
 		name:'graphictimes',
-		component: () => import('../pages/GraphicTimesPage.vue'),
+		component: () => import('../pages/TimeCardPage.vue'),
 		meta: {
 			guard: 'auth',
 		},
 	},
 	{
+		path: '/time/:id',
+		name:'TimeDetail',
+		component: () => import('../pages/GraphicTimesPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
+		path: '/card/:id',
+		name:'CardDetail',
+		component: () => import('../pages/ParameterGraphics.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
 		path: '/paramgraphics',
 		name:'paramgraphics',
-		component: () => import('../pages/ParameterGraphics.vue'),
+		component: () => import('../pages/GraphicCardsPage.vue'),
 		meta: {
 			guard: 'auth',
 		},
@@ -95,13 +138,30 @@ export default [
 			guard: 'auth',
 		},
 	},
+	// {
+	// 	path: '/pages',
+	// 	name:'pages',
+	// 	component: () => import('../pages/NumberPage.vue'),
+	// 	meta: {
+	// 		guard: 'auth',
+	// 	},
+	// },
 	{
 		path: '/pages',
 		name:'pages',
+		component: () => import('../pages/NumberPageCard.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
+		path: '/page/:id',
+		name:'PageDetail',
 		component: () => import('../pages/NumberPage.vue'),
 		meta: {
 			guard: 'auth',
 		},
+		props: true,
 	},
 	{
 		path: '/sources',

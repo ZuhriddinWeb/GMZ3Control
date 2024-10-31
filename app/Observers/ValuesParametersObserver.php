@@ -15,10 +15,21 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
-        $calculator = Calculator::whereJsonContains('Calculate', $valuesParameters->ParametersID)->first();
+        // dd($valuesParameters);
+        $calculators = Calculator::all(); // Load all calculators and filter in PHP since partial JSON queries are limited
+        // Find the first calculator where the 'Calculate' array contains "Pid=<ParametersID>" and matches the given TimeID
+        $calculator = $calculators->firstWhere(function ($calc) use ($valuesParameters) {
+            // Check if Calculate contains "Pid=<ParametersID>" and the TimeID matches
+            return in_array("Pid={$valuesParameters->ParametersID}", $calc->Calculate) &&
+                in_array("Tid={$valuesParameters->TimeID}", $calc->Calculate);
+        });
+
+        // dd($calculator);
+        if (!$calculator) {
+            return response()->json(['error' => 'Calculator entry not found'], 404);
+        }
         // dd($calculator);
         $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
-        // dd($param);
 
         if (!$calculator) {
             return response()->json(['error' => 'Calculator entry not found'], 404);
@@ -29,30 +40,51 @@ class ValuesParametersObserver
         // dd($calculateArray);
         // Step 3: Extract the parameter IDs from the 'Calculate' array
         $parameterIds = [];
+        $timeIds = [];
         $operators = [];
+
+        // Iterate through each item in the calculate array
         foreach ($calculateArray as $item) {
-            if (strlen($item) === 36) {
-                // This is likely a ParametersID
-                $parameterIds[] = $item;
+            if (strpos($item, 'Pid=') === 0) {
+                // This item is a ParametersID, so we add it to parameterIds after extracting the ID
+                $parameterIds[] = substr($item, 4); // Extract ID after "Pid="
+            } elseif (strpos($item, 'Tid=') === 0) {
+                // This item is a TimeID, so we add it to timeIds after extracting the ID
+                $timeIds[] = substr($item, 4); // Extract ID after "Tid="
             } elseif (in_array($item, ['+', '-', '*', '÷', '/'])) {
-                // This is an arithmetic operator
+                // This item is an operator
                 $operators[] = $item;
             }
         }
-        // dd($operators,$parameterIds);
+
+        // dd($operators, $parameterIds, $timeIds);
         // Check if we have any ParametersID to query
         if (empty($parameterIds)) {
             return response()->json(['error' => 'No valid ParametersID found in Calculate field'], 400);
         }
-        $timeId = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('TimeID', 'ParametersID')->toArray();
+        // $timeId = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('TimeID', 'ParametersID')->toArray();
         // dd($timeId);
         // Step 4: Query the parameters_value table using the extracted ParametersID values
-        $parameters = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('Value', 'ParametersID')->toArray();
+        // Loop over each parameter ID to create a query with the corresponding TimeID
+        foreach ($parameterIds as $index => $parameterId) {
+            if (isset($timeIds[$index])) {
+                $timeId = $timeIds[$index];
+                // dd($timeId);
+                // Find the record with both matching ParametersID and TimeID
+                $parameterValue = ValuesParameters::where('ParametersID', $parameterId)
+                    ->where('TimeID', $timeId)
+                    ->value('Value');
 
+                if ($parameterValue !== null) {
+                    $parameters[$parameterId] = $parameterValue; // Store with ParametersID as the key
+                }
+            }
+        }
+        // dd($parameters);
         if (empty($parameters)) {
             return response()->json(['error' => 'No parameter values found'], 404);
         }
-
+        // dd($parameters);
         // Initialize variables for calculation
         $result = null;
         $currentOperator = null;
@@ -60,12 +92,19 @@ class ValuesParametersObserver
         $values = [];
         $operatorStack = [];
         foreach ($calculateArray as $item) {
-            if (strlen($item) === 36) {
-                // This is a ParametersID, retrieve its value
-                $value = $parameters[$item] ?? 0; // Use 0 if the parameter is missing
+            if (strpos($item, 'Pid=') === 0) {
+                // Extract the ParametersID after "Pid="
+                $parameterId = substr($item, 4);
 
-                // Concatenate the value to the buffer as a string
+                // Get the associated value for this ParametersID and TimeID if available
+                $value = $parameters[$parameterId] ?? 0; // Use 0 if the parameter is missing
                 $numberBuffer .= (string) $value; // Ensure it's a string
+
+            } elseif (strpos($item, 'Tid=') === 0) {
+                // Extract the TimeID after "Tid="
+                $timeId = substr($item, 4);
+                // Additional logic if needed for Tid; here, we assume Tid is already used to find values
+
             } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
                 // If we have a buffered number, store it in the values array
                 if ($numberBuffer !== "") {
@@ -109,11 +148,12 @@ class ValuesParametersObserver
         if (empty($values)) {
             return null; // No values to calculate
         }
+        // dd($values);
 
         $calculateString = implode(' ', $values);
 
         // Output the final string for debugging
-        $result = eval("return $calculateString;");
+        $result = eval ("return $calculateString;");
         // try {
         //     // Evaluate the string and store the result
         //     $result = eval("return $calculateString;");

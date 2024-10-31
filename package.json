@@ -26,6 +26,7 @@
         "chart.js": "^4.4.3",
         "date-fns": "^3.6.0",
         "material-icons": "^1.13.12",
+        "material-symbols": "^0.25.3",
         "sweetalert2": "^11.12.2",
         "uuid": "^10.0.0",
         "v-mask": "^2.3.0",

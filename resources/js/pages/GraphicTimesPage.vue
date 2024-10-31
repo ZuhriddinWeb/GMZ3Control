@@ -13,9 +13,9 @@
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-            <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-              <VaSelect v-model="result.GraphicId" value-by="value" class="mb-6" :label="t('form.selectGraphic')"
-                :options="graphicsOptions" clearable />
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-1 items-end w-full">
+              <!-- <VaSelect v-model="result.GraphicId" value-by="value" class="mb-6" :label="t('form.selectGraphic')"
+                :options="graphicsOptions" clearable /> -->
               <VaSelect v-model="result.ChangeId" value-by="value" class="mb-6" :label="t('form.selectChange')"
                 :options="changesOptions" clearable />
               <!-- <VaSwitch v-model="result.Current" class="mb-2" @change="updateTimes">
@@ -55,10 +55,13 @@ import DeleteGraphicTimesModal from '../components/GraphicTimesComponent/DeleteG
 import { useI18n } from 'vue-i18n';
 const { locale, t } = useI18n();
 import { format } from 'date-fns';
+import { defineProps } from 'vue'
 
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
-
+const props = defineProps({
+  id: Number
+})
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
@@ -66,7 +69,7 @@ const graphicsOptions = ref([]);
 const changesOptions = ref([]);
 
 const result = reactive({
-  GraphicId: "",
+  GraphicId: props.id,
   ChangeId: "",
   Name: "",
   StartTime: "",
@@ -137,7 +140,7 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/graphictimes');
+    const response = await axios.get(`/getTimes/${props.id}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);

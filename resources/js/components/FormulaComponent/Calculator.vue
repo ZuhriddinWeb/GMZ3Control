@@ -1,6 +1,6 @@
 <template>
   <main class="h-full w-full text-center content-center">
-    <VaButton round icon="functions" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
+    <VaButton round icon="calculate" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
@@ -40,7 +40,7 @@
               <div @click="append(')')" id="rightBracket" class="btn p-4">)</div>
 
             </div>
-            <div class="ml-4">
+            <div class="overflow-y: auto h-full">
               <div v-if="parameters.length" class="ml-2">
                 <!-- <div class="flex justify-between"> -->
                 <VaButton preset="primary" class="mr-6 mb-2" border-color="primary" round
@@ -127,7 +127,7 @@ const append = (input) => {
   // Check if input is a parameter (object with 'Name' property)
   else if (typeof input === 'object' && input !== null && input.Name) {
     animateNumber(`n${input.id}`);
-    result.Calculate.push(input.id); // Push the parameter ID to the array
+    result.Calculate.push(`Pid=${input.id}`);
     current.value += `[${input.Name}]`; // Wrap the parameter's Name in brackets and display it
   }
   else if (typeof input === 'object' && input !== null && input.GName) {

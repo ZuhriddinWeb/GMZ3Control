@@ -36,6 +36,14 @@ class GraphicTimesController extends Controller
             ->get('graphics');
         return response()->json($GraphicTimes);
     }
+    public function getTimes($id)
+    {
+        $GraphicTimes = GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
+            ->where('graphic_times.GraphicsID',$id)
+            ->select('graphics.Name as GName', 'graphics.Comment', 'graphic_times.*')
+            ->get('graphics');
+        return response()->json($GraphicTimes);
+    }
     private function getRowUnit($id)
     {
         return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
@@ -44,13 +52,13 @@ class GraphicTimesController extends Controller
             ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*')
             ->first();
     }
-    public function getRowTimes($id,$GparamID,$GPid,$GrapicsID)
+    public function getRowTimes($id, $GparamID, $GPid, $GrapicsID)
     {
         // dd($GparamID);
         return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')
             ->join('changes', 'graphic_times.change', '=', 'changes.id')
             ->where('graphics.id', $id)
-            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*',DB::raw("'$GrapicsID' as GrapicsID"),DB::raw("'$GparamID' as GparamID"),DB::raw("'$GPid' as GPid"))
+            ->select('graphics.Name as GName', 'graphics.id as Gid', 'changes.change as Change', 'changes.id as Chid', 'graphic_times.*', DB::raw("'$GrapicsID' as GrapicsID"), DB::raw("'$GparamID' as GparamID"), DB::raw("'$GPid' as GPid"))
             ->get();
     }
     public function getRowFormuleTimes($GparamID)
@@ -64,7 +72,7 @@ class GraphicTimesController extends Controller
     }
     private function create(Request $request)
     {
-        
+
         $unit = GraphicTimes::create([
             'GraphicsID' => $request->GraphicId,
             'Change' => $request->ChangeId,

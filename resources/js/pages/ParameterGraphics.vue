@@ -18,19 +18,19 @@
             <VaSelect v-model="result.GrapicsID" value-by="value" class="mb-1" :label="t('menu.graphictimes')"
               :options="GraphicTimeOptions" clearable />
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
-            <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1"  @update:modelValue="getPages"
-              :label="t('menu.structure')" :options="structureOptions" clearable />
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 items-end w-full">
+            <!-- <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1"  @update:modelValue="getPages"
+              :label="t('menu.structure')" :options="structureOptions" clearable /> -->
             <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
               :options="BlogsOptions" clearable />
+              <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
+                :options="SourceOptions" clearable />
+                <VaSelect v-model="result.WithFormula" value-by="value" class="mb-1" :label="t('menu.formula')"
+                  :options="FormulaOptions" clearable />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
-            <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
-              :options="SourceOptions" clearable />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
-            <VaSelect v-model="result.WithFormula" value-by="value" class="mb-1" :label="t('menu.formula')"
-              :options="FormulaOptions" clearable />
           </div>
           <div class="flex gap-5 flex-wrap w-full">
             <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
@@ -74,12 +74,15 @@ import EditModal from '../components/ParamsGraphComponent/EditModal.vue';
 import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
 import Calculator from '../components/FormulaComponent/Calculator.vue';
 import Times from '../components/FormulaComponent/Times.vue';
+import { defineProps } from 'vue'
 
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const { t } = useI18n();
 import { format } from 'date-fns';
-
+const props = defineProps({
+  id: Number
+})
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
@@ -94,7 +97,7 @@ const FormulaOptions = ref([]);
 
 const result = reactive({
   ParametersID: "",
-  FactoryStructureID: "",
+  FactoryStructureID: props.id,
   GrapicsID: "",
   SourceID: "",
   CurrentTime: "",
@@ -184,9 +187,9 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/paramsgraph');
+    const response = await axios.get(`/withCardId/${props.id}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
-    console.log(rowData.value);
+    // console.log(rowData.value);
     
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -230,10 +233,10 @@ const fetchParams = async () => {
     console.error('Error fetching graphics data:', error);
   }
 };
-async function getPages(newValue) {
+async function getPages() {
   
   try {
-    const response = await axios.get(`/pages-select/${newValue}`);
+    const response = await axios.get(`/pages-select/${props.id}`);
     pagesOptions.value = response.data.map(pages => ({
       value: pages.id,
       text: pages.Name
@@ -242,6 +245,7 @@ async function getPages(newValue) {
     console.error('Error fetching data:', error);
   }
 }
+getPages()
 const onSubmit = async () => {
   try {
     const { data } = await axios.post("/paramsgraph", result);

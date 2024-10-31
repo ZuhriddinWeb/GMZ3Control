@@ -12,10 +12,10 @@
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
-            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+            <!-- <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
               <VaSelect v-model="result.StructureID" value-by="value" class="mb-1" :label="t('form.structureName')" :options="factoryOptions"
                 clearable />
-            </div>
+            </div> -->
             <VaInput class="w-full" v-model="result.NumberPage" type="number"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.numberpage')" />
@@ -48,16 +48,19 @@ import EditBlog from '../components/NumberPage/EditBlog.vue';
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
+import { defineProps } from 'vue'
 
 const { locale, t } = useI18n();
-
+const props = defineProps({
+  id: Number
+})
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
 const factoryOptions = ref([]);
 
 const result = reactive({
-  StructureID: "",
+  StructureID:props.id,
   Name: "",
   NameRus: "",
   NumberPage: "",
@@ -116,7 +119,7 @@ const getFielBlog = () => {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/pages');
+    const response = await axios.get(`/getRowPage/${props.id}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);

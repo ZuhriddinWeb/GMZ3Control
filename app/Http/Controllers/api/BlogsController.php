@@ -34,6 +34,14 @@ class BlogsController extends Controller
         ->get();
         return response()->json($units);
     }
+    public function getRowBlog($id)
+    {
+        $units = Blogs::join('factory_structures','blogs.StructureID','=','factory_structures.id')
+        ->where('blogs.StructureID',$id)
+        ->select('factory_structures.Name as SName','blogs.*')
+        ->get();
+        return response()->json($units);
+    }
     private function getRowUnit($id)
     {
         return  Blogs::find($id);

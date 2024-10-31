@@ -81,8 +81,15 @@ Route::get('/vparamsGetValue/{id}', [ParametrValueController::class, 'vparamsGet
 // Route::get('/vparamsuser/{blog_id}/{change_id}/{date}', [ParametrValueController::class, 'getByBlog']);
 Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);
 Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
+Route::get('/getRowPage/{id}',  [NumberPageController::class, 'getRowPage']);
+
 Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);
 Route::get('/getForFormule/{id}',  [ParamsGraphController::class, 'getForFormule']);
 Route::get('/getRowTimes/{id}/{GParamID}/{GPid}/{GrapicsID}',  [GraphicTimesController::class, 'getRowTimes']);
+Route::get('/getTimes/{id}',  [GraphicTimesController::class, 'getTimes']);
+
 Route::get('/getForFormuleTimes/{GParamID}',  [GraphicTimesController::class, 'getRowFormuleTimes']);
+Route::get('/withCardId/{id}',  [ParamsGraphController::class, 'withCardId']);
+Route::get('/getRowBlog/{id}',  [BlogsController::class, 'getRowBlog']);
+
 

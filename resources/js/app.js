@@ -17,7 +17,7 @@ import locale from "./locale.js";
 import "material-icons/iconfont/material-icons.css";
 import { useToast } from "vuestic-ui";
 import InputMask from 'vue-input-mask';
-
+import 'material-symbols/outlined.css';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 

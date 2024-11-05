@@ -16,14 +16,19 @@ class ValuesParametersObserver
     public function saved(ValuesParameters $valuesParameters)
     {
         // dd($valuesParameters);
-        $calculators = Calculator::all(); // Load all calculators and filter in PHP since partial JSON queries are limited
+        $calculators = Calculator::where('TimeID',$valuesParameters->TimeID)->get(); // Load all calculators and filter in PHP since partial JSON queries are limited
         // Find the first calculator where the 'Calculate' array contains "Pid=<ParametersID>" and matches the given TimeID
         $calculator = $calculators->firstWhere(function ($calc) use ($valuesParameters) {
-            // Check if Calculate contains "Pid=<ParametersID>" and the TimeID matches
-            return in_array("Pid={$valuesParameters->ParametersID}", $calc->Calculate) &&
-                in_array("Tid={$valuesParameters->TimeID}", $calc->Calculate);
+            // Decode Calculate if it's JSON
+            $calculateArray = is_string($calc->Calculate) ? json_decode($calc->Calculate, true) : $calc->Calculate;
+        
+            // Ensure calculation array is valid and contains required conditions
+            return is_array($calculateArray) &&
+                   in_array("Pid={$valuesParameters->ParametersID}", $calculateArray) ;
+                //    in_array("Tid={$valuesParameters->TimeID}", $calculateArray);
         });
-
+        
+        
         // dd($calculator);
         if (!$calculator) {
             return response()->json(['error' => 'Calculator entry not found'], 404);
@@ -154,17 +159,7 @@ class ValuesParametersObserver
 
         // Output the final string for debugging
         $result = eval ("return $calculateString;");
-        // try {
-        //     // Evaluate the string and store the result
-        //     $result = eval("return $calculateString;");
-        //     // Output the result
-        //     dd($result);
-        // } catch (ParseError $e) {
-        //     // Handle any errors that occur during evaluation
-        //     dd('Error evaluating expression: ' . $e->getMessage());
-        // }
-        // Call the calculation function with precedence handling
-        // $result = $this->calculateWithPrecedence($values);
+        
         $data = [
             'ParametersID' => (string) $param->ParametersID,
             'SourceID' => (string) $param->SourceID,
@@ -202,41 +197,7 @@ class ValuesParametersObserver
         // dd($result);
 
     }
-    // private function calculateWithPrecedence(array $values)
-    // {
-    //     // Initialize the result with the first numeric value
-    //     $result = array_shift($values); // Take the first value and remove it from the array
 
-    //     while (!empty($values)) {
-    //         $currentOperator = array_shift($values); // Get the next operator
-    //         $nextValue = array_shift($values); // Get the next numeric value
-
-    //         if (is_numeric($nextValue)) { // Ensure nextValue is numeric
-    //             switch ($currentOperator) {
-    //                 case '+':
-    //                     $result += $nextValue;
-    //                     break;
-    //                 case '-':
-    //                     $result -= $nextValue;
-    //                     break;
-    //                 case '*':
-    //                     $result *= $nextValue;
-    //                     break;
-    //                 case '÷':
-    //                 case '/':
-    //                     $result /= ($nextValue != 0) ? $nextValue : 1; // Avoid division by zero
-    //                     break;
-    //                 default:
-    //                     break; // Handle any unexpected operators
-    //             }
-    //         }
-    //     }
-
-    //     return $result; // Return the calculated result
-    // }
-    /**
-     * Handle the ValuesParameters "deleted" event.
-     */
     public function deleted(ValuesParameters $valuesParameters): void
     {
         //

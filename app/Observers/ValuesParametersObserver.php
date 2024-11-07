@@ -15,152 +15,128 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
-        // dd($valuesParameters);
-        $calculators = Calculator::where('TimeID',$valuesParameters->TimeID)->get(); // Load all calculators and filter in PHP since partial JSON queries are limited
-        // Find the first calculator where the 'Calculate' array contains "Pid=<ParametersID>" and matches the given TimeID
-        $calculator = $calculators->firstWhere(function ($calc) use ($valuesParameters) {
-            // Decode Calculate if it's JSON
-            $calculateArray = is_string($calc->Calculate) ? json_decode($calc->Calculate, true) : $calc->Calculate;
-        
-            // Ensure calculation array is valid and contains required conditions
-            return is_array($calculateArray) &&
-                   in_array("Pid={$valuesParameters->ParametersID}", $calculateArray) ;
-                //    in_array("Tid={$valuesParameters->TimeID}", $calculateArray);
-        });
-        
-        
-        // dd($calculator);
+        // Load calculators for the specified TimeID
+        $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
+    
+        // Get the relevant calculator entry
+        $calculator = $this->findRelevantCalculator($calculators, $valuesParameters);
+    
         if (!$calculator) {
             return response()->json(['error' => 'Calculator entry not found'], 404);
         }
-        // dd($calculator);
+    
         $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
-
-        if (!$calculator) {
-            return response()->json(['error' => 'Calculator entry not found'], 404);
+        if (!$param) {
+            return response()->json(['error' => 'Graphics parameter entry not found'], 404);
         }
-
-        // Step 2: Directly access the 'Calculate' field as an array
-        $calculateArray = $calculator->Calculate;
-        // dd($calculateArray);
-        // Step 3: Extract the parameter IDs from the 'Calculate' array
+    
+        // Extract and process calculate array values
+        $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
+        [$parameters, $operators] = $this->extractParametersOperators($calculateArray);
+    
+        // Fetch parameter values
+        $parameterValues = $this->fetchParameterValues($parameters);
+    
+        if (empty($parameterValues)) {
+            return response()->json(['error' => 'No parameter values found'], 404);
+        }
+    
+        // Prepare and evaluate the calculation string
+        $calculateString = $this->buildCalculationString($calculateArray, $parameterValues, $operators);
+        $result = $this->evaluateCalculation($calculateString);
+    
+        // Prepare data for storage
+        $data = $this->prepareData($valuesParameters, $param, $result);
+    
+        // Save or update the result in ValuesParameters table
+        return $this->saveOrUpdateValue($data);
+    }
+    
+    private function findRelevantCalculator($calculators, $valuesParameters)
+    {
+        return $calculators->firstWhere(function ($calc) use ($valuesParameters) {
+            $calculateArray = is_string($calc->Calculate) ? json_decode($calc->Calculate, true) : $calc->Calculate;
+            return is_array($calculateArray) &&
+                   in_array("Pid={$valuesParameters->ParametersID}", $calculateArray);
+        });
+    }
+    
+    private function extractParametersOperators($calculateArray)
+    {
         $parameterIds = [];
-        $timeIds = [];
         $operators = [];
-
-        // Iterate through each item in the calculate array
+    
         foreach ($calculateArray as $item) {
             if (strpos($item, 'Pid=') === 0) {
-                // This item is a ParametersID, so we add it to parameterIds after extracting the ID
-                $parameterIds[] = substr($item, 4); // Extract ID after "Pid="
+                $parameterIds[] = substr($item, 4);
             } elseif (strpos($item, 'Tid=') === 0) {
-                // This item is a TimeID, so we add it to timeIds after extracting the ID
-                $timeIds[] = substr($item, 4); // Extract ID after "Tid="
-            } elseif (in_array($item, ['+', '-', '*', '÷', '/'])) {
-                // This item is an operator
+                // Tid is only processed if specific logic for TimeID is required
+                // Placeholder to manage Tid if needed later
+            } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
                 $operators[] = $item;
             }
         }
-
-        // dd($operators, $parameterIds, $timeIds);
-        // Check if we have any ParametersID to query
-        if (empty($parameterIds)) {
-            return response()->json(['error' => 'No valid ParametersID found in Calculate field'], 400);
-        }
-        // $timeId = ValuesParameters::whereIn('ParametersID', $parameterIds)->get()->pluck('TimeID', 'ParametersID')->toArray();
-        // dd($timeId);
-        // Step 4: Query the parameters_value table using the extracted ParametersID values
-        // Loop over each parameter ID to create a query with the corresponding TimeID
-        foreach ($parameterIds as $index => $parameterId) {
-            if (isset($timeIds[$index])) {
-                $timeId = $timeIds[$index];
-                // dd($timeId);
-                // Find the record with both matching ParametersID and TimeID
-                $parameterValue = ValuesParameters::where('ParametersID', $parameterId)
-                    ->where('TimeID', $timeId)
-                    ->value('Value');
-
-                if ($parameterValue !== null) {
-                    $parameters[$parameterId] = $parameterValue; // Store with ParametersID as the key
-                }
+    
+        return [$parameterIds, $operators];
+    }
+    
+    private function fetchParameterValues($parameterIds)
+    {
+        $parameters = [];
+    
+        foreach ($parameterIds as $parameterId) {
+            $parameterValue = ValuesParameters::where('ParametersID', $parameterId)->value('Value');
+            if ($parameterValue !== null) {
+                $parameters[$parameterId] = $parameterValue;
             }
         }
-        // dd($parameters);
-        if (empty($parameters)) {
-            return response()->json(['error' => 'No parameter values found'], 404);
-        }
-        // dd($parameters);
-        // Initialize variables for calculation
-        $result = null;
-        $currentOperator = null;
-        $numberBuffer = "";
+    
+        return $parameters;
+    }
+    
+    private function buildCalculationString($calculateArray, $parameterValues, $operators)
+    {
         $values = [];
-        $operatorStack = [];
+        $numberBuffer = "";
+    
         foreach ($calculateArray as $item) {
             if (strpos($item, 'Pid=') === 0) {
-                // Extract the ParametersID after "Pid="
                 $parameterId = substr($item, 4);
-
-                // Get the associated value for this ParametersID and TimeID if available
-                $value = $parameters[$parameterId] ?? 0; // Use 0 if the parameter is missing
-                $numberBuffer .= (string) $value; // Ensure it's a string
-
+                $value = $parameterValues[$parameterId] ?? 0;
+                $numberBuffer .= (string)$value;
             } elseif (strpos($item, 'Tid=') === 0) {
-                // Extract the TimeID after "Tid="
-                $timeId = substr($item, 4);
-                // Additional logic if needed for Tid; here, we assume Tid is already used to find values
-
+                // Tid can be handled if needed, currently not added to numberBuffer
             } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
-                // If we have a buffered number, store it in the values array
                 if ($numberBuffer !== "") {
-                    // Store the buffered number as a string
                     $values[] = $numberBuffer;
-                    $numberBuffer = ""; // Reset the buffer
+                    $numberBuffer = "";
                 }
-
-                if ($item === '=') {
-                    break; // End of calculation
-                } elseif ($item === '(') {
-                    // Store opening parentheses directly in values array
-                    $values[] = $item; // Keep the opening parenthesis
-                } elseif ($item === ')') {
-                    // When encountering a closing parenthesis, perform all operations until matching '('
-                    while (!empty($operatorStack) && end($operatorStack) !== '(') {
-                        $values[] = array_pop($operatorStack); // Store the operator
-                    }
-                    // Pop the '(' from the operator stack without storing it
-                    if (!empty($operatorStack) && end($operatorStack) === '(') {
-                        array_pop($operatorStack); // Remove the matching '(' from the stack
-                    }
-                    // Store the closing parenthesis in the values array
-                    $values[] = $item; // Keep the closing parenthesis
-                } else {
-                    // Store the operator in the values array
-                    $values[] = $item; // Keep the operator
-                }
+                if ($item === '=') break;
+                $values[] = $item;
             } else {
-                // Concatenate number values
-                $numberBuffer .= $item; // Concatenate numbers
+                $numberBuffer .= $item;
             }
         }
-
-        // Handle the last buffered number if any
+    
         if ($numberBuffer !== "") {
-            $values[] = $numberBuffer; // Store the last number as a string
+            $values[] = $numberBuffer;
         }
-
-        // Check if values are empty before proceeding
-        if (empty($values)) {
-            return null; // No values to calculate
+    
+        return implode(' ', $values);
+    }
+    
+    private function evaluateCalculation($calculateString)
+    {
+        try {
+            return eval("return $calculateString;");
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Calculation error: ' . $e->getMessage()], 500);
         }
-        // dd($values);
-
-        $calculateString = implode(' ', $values);
-
-        // Output the final string for debugging
-        $result = eval ("return $calculateString;");
-        
-        $data = [
+    }
+    
+    private function prepareData($valuesParameters, $param, $result)
+    {
+        return [
             'ParametersID' => (string) $param->ParametersID,
             'SourceID' => (string) $param->SourceID,
             'GTid' => (string) $valuesParameters->TimeID,
@@ -171,14 +147,17 @@ class ValuesParametersObserver
             'created_at' => now(),
             'Created' => now(),
         ];
+    }
+    
+    private function saveOrUpdateValue($data)
+    {
         $existingValue = ValuesParameters::where([
             'TimeID' => $data['GTid'],
             'ParametersID' => $data['ParametersID'],
             'SourcesID' => $data['SourceID'],
         ])->first();
+    
         if ($existingValue) {
-            // dd($existingValue);
-            // Update the existing record
             $existingValue->update([
                 'Value' => $data['Value'],
                 'GraphicsTimesID' => $data['GraphicsTimesID'],
@@ -186,18 +165,50 @@ class ValuesParametersObserver
                 'FactoryStructureID' => $data['FactoryStructureID'],
                 'updated_at' => now(),
             ]);
-
+    
             return response()->json(['message' => 'Value updated successfully']);
         } else {
-            // Create a new record
             $request = new Request($data);
             $parameterValueController = new ParametrValueController();
             return $parameterValueController->create($request);
         }
-        // dd($result);
-
     }
+    
+    // private function calculateWithPrecedence(array $values)
+    // {
+    //     // Initialize the result with the first numeric value
+    //     $result = array_shift($values); // Take the first value and remove it from the array
 
+    //     while (!empty($values)) {
+    //         $currentOperator = array_shift($values); // Get the next operator
+    //         $nextValue = array_shift($values); // Get the next numeric value
+
+    //         if (is_numeric($nextValue)) { // Ensure nextValue is numeric
+    //             switch ($currentOperator) {
+    //                 case '+':
+    //                     $result += $nextValue;
+    //                     break;
+    //                 case '-':
+    //                     $result -= $nextValue;
+    //                     break;
+    //                 case '*':
+    //                     $result *= $nextValue;
+    //                     break;
+    //                 case '÷':
+    //                 case '/':
+    //                     $result /= ($nextValue != 0) ? $nextValue : 1; // Avoid division by zero
+    //                     break;
+    //                 default:
+    //                     break; // Handle any unexpected operators
+    //             }
+    //         }
+    //     }
+
+    //     return $result; // Return the calculated result
+    // }
+    /**
+     * Handle the ValuesParameters "deleted" event.
+     */
     public function deleted(ValuesParameters $valuesParameters): void
     {
         //

@@ -54,7 +54,7 @@ class ParametrValueController extends Controller
         // return $query->get();
         return ValuesParameters::where('FactoryStructureID', $factoryId)
             // ->where('BlogID', $blogId)
-            // ->whereDate('created_at', $current)
+            ->whereDate('created_at', $current)
             ->get();
     }
     

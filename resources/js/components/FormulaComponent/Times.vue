@@ -29,6 +29,8 @@ import { format } from 'date-fns';
 
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 import Calculator from './Calculator.vue';
+import EditCalculator from './EditCalculator.vue';
+
 const { init } = useToast();
 const selectedDataEdit = ref(false);
 const rowData = ref([]);
@@ -94,6 +96,13 @@ const columnDefs = computed(() => [
   //   width: 70,
   //   cellRenderer: EditGraphicTimesModal,
   // },
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
+    cellRenderer: EditCalculator,
+  },
   {
     cellClass: ['px-0'],
     headerName: "",

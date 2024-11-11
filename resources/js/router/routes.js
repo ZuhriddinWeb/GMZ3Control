@@ -188,6 +188,22 @@ export default [
 		},
 	},
 	{
+		path: '/createDoc',
+		name:'createDoc',
+		component: () => import('../pages/CreateDocument.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
+		path: '/documents',
+		name:'documents',
+		component: () => import('../pages/Documents.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
 		path: '/vparamsget',
 		name:'vparamsget',
 		component: () => import('../pages/ParametrGetValue.vue'),

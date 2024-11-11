@@ -1,10 +1,10 @@
 <template>
   <main class="h-full w-full text-center content-center">
-    <VaButton round icon="calculate" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
+    <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
-        {{ t('modals.addFormula') }}
+        {{ t('modals.editFactory') }}
       </h3>
       <div class="">
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
@@ -104,6 +104,31 @@ const result = reactive({
   TimeID: props.params.data['id'],
 
 });
+// const append = async (input) => {
+//   if (operatorClicked.value) {
+//     current.value = '';
+//     operatorClicked.value = false;
+//   }
+
+//   if (typeof input === 'object' && input !== null && input.GName) {
+//     // Agar input vaqt bo'lsa
+//     animateNumber(`n${input.id}`);
+//     const timeName = await fetchTimeById(input.id);
+//     result.Calculate.push(`[${timeName}]`); // "[09:00]" formatida qo'shish
+//     current.value += `[${timeName}]`;
+//   } else if (typeof input === 'object' && input !== null && input.Name) {
+//     // Agar input parametr bo'lsa
+//     animateNumber(`n${input.id}`);
+//     const paramName = await fetchParameterById(input.id);
+//     result.Calculate.push(`[${paramName}]`); // "[KPS Zichligi]" formatida qo'shish
+//     current.value += `[${paramName}]`;
+//   } else if (typeof input === 'string') {
+//     // Agar input oddiy raqam yoki operator bo'lsa
+//     animateNumber(`n${input}`);
+//     result.Calculate.push(input);
+//     current.value += input;
+//   }
+// };
 const append = (input) => {
   console.log(input);
   
@@ -136,8 +161,6 @@ const append = (input) => {
     current.value += `[${input.GName}]`; // Wrap the GName in brackets and display it
   }
 };
-
-
 
 
 
@@ -233,14 +256,51 @@ const equal = () => {
     answer.value = 'WHAT?!!';
   }
 };
+const fetchParameterById = async (id) => {
+  try {
+    const response = await axios.get(`/param/${id}`);
+    return response.data.Name;
+  } catch (error) {
+    console.error('Parametrni olishda xato:', error);
+    return `Pid=${id}`;
+  }
+};
+
+const fetchTimeById = async (id) => {
+  try {
+    const response = await axios.get(`/time/${id}`);
+    const timeName = response.data.Name;
+    // Vaqtni HH:MM formatiga qisqartirish
+    return timeName ? timeName.substring(0, 5) : `[Tid=${Name}]`;
+  } catch (error) {
+    console.error('Vaqtni olishda xato:', error);
+    return `Tid=${id}`;
+  }
+};
 
 const fetchGraphics = async () => {
   try {
-    const responseGraphics = await axios.get('/structure');
-    factoryOptions.value = responseGraphics.data.map(factory => ({
-      value: factory.id,
-      text: locale.value === 'uz' ? factory.Name : factory.NameRus
+    const responseEdit = await axios.get(`getForFormuleId/${props.params.data['GparamID']}/${props.params.data['id']}`);
+    console.log(responseEdit);
+    
+    const calculateData = responseEdit.data.Calculate;
+    result.Comment = responseEdit.data.Comment || "";
+
+    // Calculate massivini to'ldirish
+    result.Calculate = await Promise.all(calculateData.map(async (item) => {
+      if (item.startsWith("Pid=")) {
+        const paramId = item.split("=")[1];
+        const paramName = await fetchParameterById(paramId);
+        return `[${paramName}]`; // Parametrni qavs ichida qo'shish
+      } else if (item.startsWith("Tid=")) {
+        const timeId = item.split("=")[1];
+        const timeName = await fetchTimeById(timeId);
+        return `[${timeName}]`; // Vaqtni qavs ichida qo'shish
+      }
+      return item;
     }));
+
+    current.value = result.Calculate.join(""); // Bo'sh joylarsiz birlashtirish
 
     const response = await axios.get(`getForFormule/${props.params.data['GPid']}`);
 
@@ -257,15 +317,6 @@ const fetchGraphics = async () => {
       Name: time.Name ? time.Name.substring(0, 5) : null,
 
     }));
-
-    console.log(timesG.value);
-
-    // console.log(responseTimes);
-
-    // result.StructureID = +response.data.StructureID;
-    // result.Name = response.data.Name;
-    // result.ShortName = response.data.ShortName;
-    // result.Comment = response.data.Comment;
   } catch (error) {
     console.error('Error fetching graphics data:', error);
   }
@@ -274,10 +325,10 @@ const fetchGraphics = async () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/calculator", result);
+    const { data } = await axios.put("/calculator", result);
     if (data.status === 200) {
       result.Calculate = '',
-        result.ParametersId = '';
+      result.ParametersId = '';
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

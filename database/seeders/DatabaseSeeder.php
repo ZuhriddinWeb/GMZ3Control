@@ -86,6 +86,10 @@ class DatabaseSeeder extends Seeder
             ['Name' => 'menu.users',"parent_id"=>0],
             ['Name' => 'menu.logout',"parent_id"=>0],
             ['Name' => 'menu.formula',"parent_id"=>1],
+            ['Name' => 'menu.document',"parent_id"=>1],
+            ['Name' => 'menu.create_document',"parent_id"=>1],
+
+
 
         ]);
         DB::table('factory_structures')->insert([

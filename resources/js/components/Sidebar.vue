@@ -130,6 +130,9 @@ const menu = ref([
       { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
       { title: 'menu.formula', icon: 'calculate', path: '/formula' },
       { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
+      { title: 'menu.create_document', icon: 'history_edu', path: '/createDoc' },
+      { title: 'menu.document', icon: 'file_present', path: '/documents' },
+
     // ]
   // },
   { title: 'menu.vparams', icon: 'diamond', path: '/vparams' },

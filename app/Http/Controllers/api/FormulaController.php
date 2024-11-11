@@ -49,6 +49,8 @@ class FormulaController extends Controller
 
         return response()->json(['message' => 'Formula not found'], 404);
     }
+
+    
     private function create(Request $request)
     {
 

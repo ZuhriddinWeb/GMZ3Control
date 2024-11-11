@@ -51,7 +51,9 @@ export default {
       edit:"Редактировать",
       lists:"Cправочники",
       pages:"Страница",
-      formula:"Формула"
+      formula:"Формула",
+      document:"Отчет",
+      create_document:"Создать oтчет"
     },
     buttons: {
       save: "Сохранить",
@@ -188,6 +190,8 @@ export default {
       lists:"Ma'lumotnomalar",
       pages:"Sahifalar",
       formula:"Formula",
+      document:"Hisobot",
+      create_document:"Hisobot yaratish"
     },
     buttons: {
       save: "Saqlash",

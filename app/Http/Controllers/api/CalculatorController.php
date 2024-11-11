@@ -37,6 +37,11 @@ class CalculatorController extends Controller
         $units = Calculator::all();
         return response()->json($units);
     }
+    public function getForFormuleId($paramId,$timeid)
+    {
+        $unit = Calculator::where('ParametersID',$paramId)->where('TimeID',$timeid)->first();
+        return $unit;
+    }
     private function getRowUnit($id)
     {
         // dd($id);
@@ -224,21 +229,33 @@ class CalculatorController extends Controller
 
     private function update(Request $request)
     {
-
-
-        $unit = Calculator::find($request->id);
-        $unit->update([
-            'FormulaId' => $request->id,
-            'Calculate' => $request->Calculate,
-            'Comment' => $request->Comment,
-        ]);
-
-        return response()->json([
-            'status' => 200,
-            'message' => "Javob muvafaqiyatli yangilandi",
-            'unit' => $unit
-        ]);
+        // dd($request);
+        // Mavjud yozuvni `TimeID` va `ParametersID` qiymatlari bo‘yicha topamiz
+        $unit = Calculator::where('TimeID', $request->TimeID)
+                         ->where('ParametersID', $request->id)
+                         ->first();
+    
+        if ($unit) {
+            // Agar yozuv topilsa, uni yangilaymiz
+            $unit->update([
+                'Calculate' => $request->Calculate,
+                'Comment' => $request->Comment,
+            ]);
+    
+            return response()->json([
+                'status' => 200,
+                'message' => "Yozuv muvaffaqiyatli yangilandi",
+                'unit' => $unit
+            ]);
+        } else {
+            // Agar yozuv topilmasa, xato xabarini qaytarish
+            return response()->json([
+                'status' => 404,
+                'message' => "Yozuv topilmadi"
+            ]);
+        }
     }
+    
 
     public function delete(Request $request, $id)
     {

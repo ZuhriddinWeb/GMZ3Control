@@ -380,6 +380,7 @@ const getRowClass = (params) => {
 
 const gridOptions = {
   columnDefs: columnDefs.value,
+  suppressScrollOnNewData: true,
   getRowClass,
   headerHeight: 27,
   rowHeight: 30,

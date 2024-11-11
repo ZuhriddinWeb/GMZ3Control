@@ -44,6 +44,12 @@ class GraphicTimesController extends Controller
             ->get('graphics');
         return response()->json($GraphicTimes);
     }
+    public function time($id)
+    {
+        $GraphicTimes = GraphicTimes::where('graphic_times.id',$id)
+            ->first();
+        return $GraphicTimes;
+    }
     private function getRowUnit($id)
     {
         return GraphicTimes::join('graphics', 'graphic_times.GraphicsID', '=', 'graphics.id')

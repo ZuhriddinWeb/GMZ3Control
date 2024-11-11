@@ -10,6 +10,8 @@ import "sweetalert2/src/sweetalert2.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-community/styles/ag-theme-material.css";
+import 'devextreme/dist/css/dx.material.blue.light.css'; 
+// import 'devextreme/dist/css/dx.common.css';
 import { Bar } from "vue-chartjs";
 import { AgGridVue } from "ag-grid-vue3";
 import { createI18n } from "vue-i18n";

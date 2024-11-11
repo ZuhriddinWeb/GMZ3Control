@@ -25,6 +25,8 @@
         "animejs": "^3.2.2",
         "chart.js": "^4.4.3",
         "date-fns": "^3.6.0",
+        "devextreme": "^24.1.7",
+        "devextreme-vue": "^24.1.7",
         "material-icons": "^1.13.12",
         "material-symbols": "^0.25.3",
         "sweetalert2": "^11.12.2",

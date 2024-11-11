@@ -1,186 +1,115 @@
-<<template>
-  <div class="grid grid-rows-[55px,1fr]">
-    <!-- Add new Elements start -->
+<template>
+  <div class="h-full w-full text-center content-center">
+    <VaButton round icon="history_edu" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
+
+    <VaModal max-width="45%" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+      @close="selectedDataEdit = false" close-button>
+      <h3>
+       <span class="va-h3">123</span>  
+      </h3>
+    <!-- Modal for adding new elements -->
     <main>
-      <div class="flex justify-between">
-        <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
-      </div>
-      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
-        <h3 class="va-h3">
-          {{ t('modals.addUnitTitle') }}
-        </h3>
-        <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-            <VaInput class="w-full" v-model="result.Name"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.name')" />
-            <VaInput class="w-full" v-model="result.NameRus"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.nameRus')" />
-            <VaInput class="w-full" v-model="result.ShortName"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.shortName')" />
-            <VaInput class="w-full" v-model="result.ShortNameRus"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.shortNameRus')" />
-            <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
-          </VaForm>
-        </div>
-      </VaModal>
     </main>
-    <!-- Add new Elements end -->
-    <main class="flex-grow">
-      <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
-        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api"></ag-grid-vue>
+
+    <!-- DataGrid with multiple row selection -->
+    <main class="flex-grow mt-8">
+      <DxDataGrid
+        :data-source="rowData"
+        showBorders="true"
+        rowAlternationEnabled="true"
+        :selectedRowKeys="selectedRowKeys"
+        @selection-changed="onSelectionChanged"
+        columnAutoWidth="true"
+        showColumnLines="true"
+        showRowLines="true"
+        wordWrapEnabled="true"
+        :pager="{ visible: true, showPageSizeSelector: true, allowedPageSizes: [5, 10, 20], showInfo: true }"
+      >
+        <DxSelection mode="multiple" showCheckBoxesMode="always" />
+        <DxColumn dataField="FName" caption="Sex nomi" groupIndex="0" />
+        <DxColumn dataField="id" caption="ID" />
+        <DxColumn dataField="PName" caption="Parameter Name" />
+      </DxDataGrid>
     </main>
+    </VaModal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
+// import 'vuestic-ui/dist/vuestic-ui.css';
+import { DxDataGrid, DxColumn, DxSelection } from 'devextreme-vue/data-grid';
 import { useI18n } from 'vue-i18n';
-import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
-const { init } = useToast();
+import { VaButton, VaModal } from 'vuestic-ui';
+
+const selectedDataEdit = ref(false);
+
 const { locale, t } = useI18n();
-
 const rowData = ref([]);
-const gridApi = ref(null);
-const showModal = ref(false);
-
-const result = reactive({
-  Name: "",
-  ShortName: "",
-  NameRus: "",
-  ShortNameRus: "",
-  Comment: ""
-});
-
-function ondeleted(selectedData) {
-  gridApi.value.applyTransaction({ remove: [selectedData] });
-}
-
-function onupdated(rowNode, data) {
-  rowNode.setData(data);
-}
-
-provide('ondeleted', ondeleted);
-provide('onupdated', onupdated);
-
-const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
-  { headerName: t('table.shortName'), field: getFieldShortName() },
-  { headerName: t('table.comment'), field: 'Comment', flex: 1 },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditUnitsModal,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteUnitsModal,
-  },
-]);
-
-const defaultColDef = {
-  sortable: true,
-  filter: true
-};
-
-const getFieldName = () => {
-  return locale.value === 'uz' ? 'Name' : 'NameRus';
-};
-
-const getFieldShortName = () => {
-  return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
-};
+const selectedRowKeys = ref([]); // Tanlangan satrlarning kalitlari
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
-    console.log(response.data);
-    
+    const response = await axios.get('/paramsgraph');
     rowData.value = response.data;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
 
-const onSubmit = async () => {
-  try {
-    const { data } = await axios.post("/units", result);
-    if (data.status === 200) {
-      showModal.value = false;
-      result.Name = '';
-      result.ShortName = '';
-      result.NameRus = '';
-      result.ShortNameRus = '';
-      result.Comment = '';
-      await fetchData();
-      init({ message: t('login.successMessage'), color: 'success' });
+// Satrlar tanlanganda chaqiriladigan funksiya
+const onSelectionChanged = ({ selectedRowKeys: newSelectedRowKeys }) => {
+  selectedRowKeys.value = newSelectedRowKeys;
+  console.log(selectedRowKeys.value);
+  
+};
 
-    } else {
-      console.error('Error saving data:', data.message);
-    }
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
+// Tanlangan satrlar ustida ishlash funksiyasi
+const processSelectedRows = () => {
+  console.log("Tanlangan satrlar:", selectedRowKeys.value);
+  // Bu yerda tanlangan satrlarni qayta ishlash logikasini qo'shing
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
   }
-  (async () => {
-    try {
-      const response = await axios.get('/units');
-      rowData.value = response.data;
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  })();
-});
-
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  // Save language preference to localStorage
-  localStorage.setItem('locale', locale.value);
-  // Refresh grid data with the new language
   fetchData();
-};
-
-const currentLanguageLabel = computed(() => {
-  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 </script>
 
-
 <style>
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  
+.options {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: rgba(191, 191, 191, 0.15);
+  position: relative;
+}
+
+.caption {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.option {
+  margin-top: 10px;
+}
+
+.checkboxes-mode {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+}
+
+.option > .dx-selectbox {
+  width: 150px;
   display: inline-block;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
+  vertical-align: middle;
+}
+
+.option > span {
+  margin-right: 10px;
 }
 </style>
->

@@ -1,7 +1,7 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="calculate" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
-    <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+    <VaModal  size="large"  v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
         {{ t('modals.addFormula') }}

@@ -1,186 +1,101 @@
-<<template>
+<template>
   <div class="grid grid-rows-[55px,1fr]">
-    <!-- Add new Elements start -->
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton @click="exportToExcel"  class="w-14 h-12 mt-1 mr-1" icon="document_scanner">
+        </VaButton>
       </div>
-      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
-        <h3 class="va-h3">
-          {{ t('modals.addUnitTitle') }}
-        </h3>
-        <div>
-          <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
-            <VaInput class="w-full" v-model="result.Name"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.name')" />
-            <VaInput class="w-full" v-model="result.NameRus"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.nameRus')" />
-            <VaInput class="w-full" v-model="result.ShortName"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.shortName')" />
-            <VaInput class="w-full" v-model="result.ShortNameRus"
-              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
-              :label="t('form.shortNameRus')" />
-            <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
-          </VaForm>
-        </div>
-      </VaModal>
     </main>
-    <!-- Add new Elements end -->
     <main class="flex-grow">
-      <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
-        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api"></ag-grid-vue>
+    <DxDataGrid ref="dataGridRef" :data-source="rowData" showBorders="true" rowAlternationEnabled="true"
+      :selectedRowKeys="selectedRowKeys" @selection-changed="onSelectionChanged" columnAutoWidth="true"
+      showColumnLines="true" showRowLines="true" wordWrapEnabled="true"
+      :pager="{ visible: true, showPageSizeSelector: true, allowedPageSizes: [5, 10, 20], showInfo: true }"
+      keyExpr="id">
+      <!-- <DxSelection mode="multiple" showCheckBoxesMode="always" /> -->
+
+      <!-- Export moduli -->
+      <!-- <DxExport enabled="true" /> -->
+
+      <!-- FactoryStructureID bo'yicha row group -->
+      <DxColumn dataField="FactoryStructureID" caption="Sex nomi" groupIndex="0" />
+
+      <!-- ID va boshqa maydonlar -->
+      <DxColumn dataField="FactoryStructureID" caption="Factory ID" width="50" />
+      <DxColumn dataField="PName" caption="Nomlanishi"  />
+      <DxColumn dataField="Value" caption="Qiymati" />
+    </DxDataGrid>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
-import { useI18n } from 'vue-i18n';
-import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
-const { init } = useToast();
-const { locale, t } = useI18n();
+import { DxDataGrid, DxColumn, DxSelection, DxExport } from 'devextreme-vue/data-grid';
+import { exportDataGrid } from 'devextreme/excel_exporter';
+import { saveAs } from 'file-saver';
+import ExcelJS from 'exceljs';
+import { VaButton } from 'vuestic-ui';
 
 const rowData = ref([]);
-const gridApi = ref(null);
-const showModal = ref(false);
+const selectedRowKeys = ref([]);
+const dataGridRef = ref(null); // DxDataGrid uchun ref yaratamiz
 
-const result = reactive({
-  Name: "",
-  ShortName: "",
-  NameRus: "",
-  ShortNameRus: "",
-  Comment: ""
-});
-
-function ondeleted(selectedData) {
-  gridApi.value.applyTransaction({ remove: [selectedData] });
-}
-
-function onupdated(rowNode, data) {
-  rowNode.setData(data);
-}
-
-provide('ondeleted', ondeleted);
-provide('onupdated', onupdated);
-
-const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
-  { headerName: t('table.shortName'), field: getFieldShortName() },
-  { headerName: t('table.comment'), field: 'Comment', flex: 1 },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditUnitsModal,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteUnitsModal,
-  },
-]);
-
-const defaultColDef = {
-  sortable: true,
-  filter: true
-};
-
-const getFieldName = () => {
-  return locale.value === 'uz' ? 'Name' : 'NameRus';
-};
-
-const getFieldShortName = () => {
-  return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
-};
-
+// Ma'lumotlarni yuklash
 const fetchData = async () => {
   try {
-    const response = await axios.get('/units');
-    console.log(response.data);
-    
-    rowData.value = response.data;
+    const response = await axios.get(`/documents/${store.state.user.id}`);
+    rowData.value = response.data['data'];
+    console.log(rowData.value);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
 
-const onSubmit = async () => {
-  try {
-    const { data } = await axios.post("/units", result);
-    if (data.status === 200) {
-      showModal.value = false;
-      result.Name = '';
-      result.ShortName = '';
-      result.NameRus = '';
-      result.ShortNameRus = '';
-      result.Comment = '';
-      await fetchData();
-      init({ message: t('login.successMessage'), color: 'success' });
+// Tanlangan satrlar o‘zgarganda chaqiriladigan funksiya
+const onSelectionChanged = ({ selectedRowKeys: newSelectedRowKeys }) => {
+  selectedRowKeys.value = newSelectedRowKeys;
+  console.log("Selected row keys:", selectedRowKeys.value);
+};
 
-    } else {
-      console.error('Error saving data:', data.message);
-    }
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
+// Excelga eksport qilish funksiyasi
+const exportToExcel = () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Exported Data');
+
+  exportDataGrid({
+    component: dataGridRef.value.instance, // DataGrid instance beramiz
+    worksheet: worksheet,
+    autoFilterEnabled: true,
+  }).then(() => {
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      saveAs(
+        new Blob([buffer], { type: "application/octet-stream" }),
+        "ExportedData.xlsx"
+      );
+    });
+  });
 };
 
 onMounted(() => {
-  // Load language preference from localStorage
-  const savedLocale = localStorage.getItem('locale');
-  if (savedLocale) {
-    locale.value = savedLocale;
-  }
-  (async () => {
-    try {
-      const response = await axios.get('/units');
-      rowData.value = response.data;
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  })();
-});
-
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  // Save language preference to localStorage
-  localStorage.setItem('locale', locale.value);
-  // Refresh grid data with the new language
   fetchData();
-};
-
-const currentLanguageLabel = computed(() => {
-  return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
 });
 </script>
 
+<style scoped>
+/* Qator balandligi va paddinglarni sozlash */
+.dx-datagrid .dx-row {
+  height: 10px; /* Qator balandligini belgilash */
+}
 
-<style>
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  
-  display: inline-block;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
+.dx-datagrid .dx-data-row td {
+  padding: 4px; /* Qatorlar uchun paddingni kamaytirish */
+}
+
+.dx-datagrid .dx-header-row th {
+  padding: 6px 8px; /* Sarlavha uchun yuqori va pastki paddingni kamaytirish */
+  font-weight: 500; /* Sarlavha shriftini sozlash */
 }
 </style>
->

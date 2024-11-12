@@ -40,7 +40,7 @@
               <div @click="append(')')" id="rightBracket" class="btn p-4">)</div>
 
             </div>
-            <div class="overflow-y: auto h-full">
+            <div class="parameter-list-container h-full">
               <div v-if="parameters.length" class="ml-2">
                 <!-- <div class="flex justify-between"> -->
                 <VaButton preset="primary" class="mr-2 mb-2" border-color="primary" round
@@ -357,4 +357,9 @@ watch(() => result.StructureID, (newVal) => {
   background-color: #d9efff;
   color: #3fa9fc;
 }
+.parameter-list-container {
+  overflow-y: auto;
+  max-height: 550px; /* Max balandlikni mos ravishda o'zgartiring */
+}
+
 </style>

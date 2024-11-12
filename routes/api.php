@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\CalculatorController;
+use App\Http\Controllers\api\DocumentsController;
 use App\Http\Controllers\api\FormulaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +63,10 @@ Route::match(['get', 'post', 'put', 'delete'], '/paramsgraph/{id?}', [ParamsGrap
 Route::match(['get', 'post', 'put', 'delete'], '/blogs/{id?}', [BlogsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/formula/{id?}', [FormulaController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/calculator/{id?}', [CalculatorController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/documents/{id?}', [DocumentsController::class, 'handle']);
+
+
+Route::get('/getUserData/{id}', [DocumentsController::class, 'getUserData']);
 
 Route::get('/tree', [TreeController::class, 'getTree']);
 Route::post('/node-clicked', [TreeController::class, 'handleNodeClick']);

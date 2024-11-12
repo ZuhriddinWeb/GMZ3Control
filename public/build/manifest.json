@@ -1,18 +1,28 @@
 {
-  "_EditSource-4cbaf90d.js": {
-    "file": "assets/EditSource-4cbaf90d.js",
+  "_EditSource-f95cb9c9.js": {
+    "file": "assets/EditSource-f95cb9c9.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_EditUnitsModal-00cc613c.js": {
-    "file": "assets/EditUnitsModal-00cc613c.js",
+  "_EditUnitsModal-081a2e80.js": {
+    "file": "assets/EditUnitsModal-081a2e80.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_EditValue-f40f9b12.js": {
-    "file": "assets/EditValue-f40f9b12.js",
+  "_EditValue-f28694a6.js": {
+    "file": "assets/EditValue-f28694a6.js",
+    "imports": [
+      "__commonjs-dynamic-modules-302442b1.js",
+      "resources/js/app.js"
+    ]
+  },
+  "__commonjs-dynamic-modules-302442b1.js": {
+    "file": "assets/_commonjs-dynamic-modules-302442b1.js"
+  },
+  "_data-grid-4376d92d.js": {
+    "file": "assets/data-grid-4376d92d.js",
     "imports": [
       "resources/js/app.js"
     ]
@@ -199,7 +209,7 @@
       "resources/js/pages/ParametrGetValue.vue",
       "resources/js/pages/UsersPage.vue"
     ],
-    "file": "assets/app-3e4af99e.js",
+    "file": "assets/app-cc23be06.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
@@ -212,7 +222,7 @@
       "assets/BlogCardPage-684e45cd.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/BlogCardPage-5084b886.js",
+    "file": "assets/BlogCardPage-2cc87d9a.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -221,14 +231,14 @@
   },
   "resources/js/pages/BlogsPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/BlogsPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/BlogsPage-4cc4cc7e.js",
+    "file": "assets/BlogsPage-2d1c293f.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -237,17 +247,17 @@
   },
   "resources/js/pages/ChangesPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/ChangesPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ChangesPage-f52eb810.js",
+    "file": "assets/ChangesPage-162b44cf.js",
     "imports": [
       "resources/js/app.js",
-      "_EditUnitsModal-00cc613c.js"
+      "_EditUnitsModal-081a2e80.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/ChangesPage.vue"
@@ -260,40 +270,41 @@
     "css": [
       "assets/CreateDocument-5aa41c9b.css"
     ],
-    "file": "assets/CreateDocument-b3210b69.js",
+    "file": "assets/CreateDocument-40a56053.js",
     "imports": [
-      "resources/js/app.js"
+      "resources/js/app.js",
+      "_data-grid-4376d92d.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/CreateDocument.vue"
   },
   "resources/js/pages/Documents.css": {
-    "file": "assets/FactoriesPage-f836ef2b.css",
+    "file": "assets/Documents-2dcaee04.css",
     "src": "resources/js/pages/Documents.css"
   },
   "resources/js/pages/Documents.vue": {
     "css": [
-      "assets/FactoriesPage-f836ef2b.css",
-      "assets/vuestic-ui-846c3c0a.css"
+      "assets/Documents-2dcaee04.css"
     ],
-    "file": "assets/Documents-26971c91.js",
+    "file": "assets/Documents-9ad119d0.js",
     "imports": [
       "resources/js/app.js",
-      "_EditUnitsModal-00cc613c.js"
+      "_data-grid-4376d92d.js",
+      "__commonjs-dynamic-modules-302442b1.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/Documents.vue"
   },
   "resources/js/pages/FactoriesPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/FactoriesPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/FactoriesPage-93a16a46.js",
+    "file": "assets/FactoriesPage-0fea1e3c.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -302,14 +313,14 @@
   },
   "resources/js/pages/FactoriesStructurePage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/FactoriesStructurePage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/FactoriesStructurePage-a4267d1c.js",
+    "file": "assets/FactoriesStructurePage-b6f22aaf.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -318,17 +329,17 @@
   },
   "resources/js/pages/FormulaPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/FormulaPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/FormulaPage-ba718b6a.js",
+    "file": "assets/FormulaPage-1c8ad29e.js",
     "imports": [
       "resources/js/app.js",
-      "_EditSource-4cbaf90d.js"
+      "_EditSource-f95cb9c9.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/FormulaPage.vue"
@@ -342,7 +353,7 @@
       "assets/BlogCardPage-684e45cd.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/GraphicCardsPage-73cdc423.js",
+    "file": "assets/GraphicCardsPage-eb4fdd2a.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -351,14 +362,14 @@
   },
   "resources/js/pages/GraphicTimesPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/GraphicTimesPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/GraphicTimesPage-eaa02ded.js",
+    "file": "assets/GraphicTimesPage-863bfb63.js",
     "imports": [
       "resources/js/app.js",
       "_format-45c98358.js"
@@ -368,14 +379,14 @@
   },
   "resources/js/pages/GraphicsPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/GraphicsPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/GraphicsPage-c11ef5a9.js",
+    "file": "assets/GraphicsPage-de696dd6.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -393,7 +404,7 @@
     "css": [
       "assets/HomePage-a6d6481b.css"
     ],
-    "file": "assets/HomePage-264ce7f8.js",
+    "file": "assets/HomePage-367fef38.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -404,7 +415,7 @@
     "assets": [
       "assets/ngmk-6e65eb69.png"
     ],
-    "file": "assets/LoginPage-c1cd3b3e.js",
+    "file": "assets/LoginPage-4ca201f8.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -413,14 +424,14 @@
   },
   "resources/js/pages/NumberPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/NumberPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/NumberPage-97b2246b.js",
+    "file": "assets/NumberPage-e799aca0.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -436,7 +447,7 @@
       "assets/BlogCardPage-684e45cd.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/NumberPageCard-c5345afc.js",
+    "file": "assets/NumberPageCard-95ea9e0a.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -444,15 +455,15 @@
     "src": "resources/js/pages/NumberPageCard.vue"
   },
   "resources/js/pages/ParameterGraphics.css": {
-    "file": "assets/ParameterGraphics-72ad3dd5.css",
+    "file": "assets/ParameterGraphics-94d0e8ec.css",
     "src": "resources/js/pages/ParameterGraphics.css"
   },
   "resources/js/pages/ParameterGraphics.vue": {
     "css": [
-      "assets/ParameterGraphics-72ad3dd5.css",
+      "assets/ParameterGraphics-94d0e8ec.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParameterGraphics-f14a962a.js",
+    "file": "assets/ParameterGraphics-b95de7af.js",
     "imports": [
       "resources/js/app.js",
       "_format-45c98358.js"
@@ -462,14 +473,14 @@
   },
   "resources/js/pages/ParametersPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/ParametersPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametersPage-a6f235f5.js",
+    "file": "assets/ParametersPage-c56362d5.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -478,14 +489,14 @@
   },
   "resources/js/pages/ParametersTypesPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/ParametersTypesPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametersTypesPage-35bcd147.js",
+    "file": "assets/ParametersTypesPage-ef7fca0d.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -501,11 +512,12 @@
       "assets/ParametrGetValue-6f22618d.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametrGetValue-150c4d22.js",
+    "file": "assets/ParametrGetValue-fe425394.js",
     "imports": [
       "resources/js/app.js",
-      "_EditValue-f40f9b12.js",
-      "_format-45c98358.js"
+      "_EditValue-f28694a6.js",
+      "_format-45c98358.js",
+      "__commonjs-dynamic-modules-302442b1.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/ParametrGetValue.vue"
@@ -519,28 +531,29 @@
       "assets/ParametrValue-ee1b3d12.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/ParametrValue-87cc95d2.js",
+    "file": "assets/ParametrValue-25d6cc92.js",
     "imports": [
       "resources/js/app.js",
-      "_EditValue-f40f9b12.js",
-      "_format-45c98358.js"
+      "_EditValue-f28694a6.js",
+      "_format-45c98358.js",
+      "__commonjs-dynamic-modules-302442b1.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/ParametrValue.vue"
   },
   "resources/js/pages/SourcesPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/SourcesPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/SourcesPage-3af0115c.js",
+    "file": "assets/SourcesPage-37e421ad.js",
     "imports": [
       "resources/js/app.js",
-      "_EditSource-4cbaf90d.js"
+      "_EditSource-f95cb9c9.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/SourcesPage.vue"
@@ -554,7 +567,7 @@
       "assets/BlogCardPage-684e45cd.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/TimeCardPage-99cb0401.js",
+    "file": "assets/TimeCardPage-7adf4c0d.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -563,17 +576,17 @@
   },
   "resources/js/pages/UnitsPage.css": {
     "file": "assets/FactoriesPage-f836ef2b.css",
-    "src": "resources/js/pages/Documents.css"
+    "src": "resources/js/pages/ChangesPage.css"
   },
   "resources/js/pages/UnitsPage.vue": {
     "css": [
       "assets/FactoriesPage-f836ef2b.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/UnitsPage-803e9cdb.js",
+    "file": "assets/UnitsPage-d48f50e0.js",
     "imports": [
       "resources/js/app.js",
-      "_EditUnitsModal-00cc613c.js"
+      "_EditUnitsModal-081a2e80.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/UnitsPage.vue"
@@ -587,10 +600,11 @@
       "assets/UsersPage-b3a7e46d.css",
       "assets/vuestic-ui-846c3c0a.css"
     ],
-    "file": "assets/UsersPage-37441f69.js",
+    "file": "assets/UsersPage-84a7b928.js",
     "imports": [
       "resources/js/app.js",
-      "resources/js/pages/CreateDocument.vue"
+      "resources/js/pages/CreateDocument.vue",
+      "_data-grid-4376d92d.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/pages/UsersPage.vue"

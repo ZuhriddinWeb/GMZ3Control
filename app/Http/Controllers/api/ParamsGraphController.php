@@ -84,13 +84,14 @@ class ParamsGraphController extends Controller
     {
         // Fetch the main graphic parameter record by its ID
         $data = GraphicsParamenters::find($id);
-    
+        
         if (!$data) {
             return response()->json(['message' => 'Graphic parameter not found'], 404);
         }
         // Fetch all graphic parameters that share the same FactoryStructureID
         $units = GraphicsParamenters::where('FactoryStructureID', $data->FactoryStructureID)
         ->where('PageId', $data->PageId)->get();
+        // dd($units);
     
         $allParameters = [];
         

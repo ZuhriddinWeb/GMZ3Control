@@ -1,8 +1,8 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="calculate" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
-    <VaModal  size="large"  v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
-      @close="selectedDataEdit = false" close-button>
+    <VaModal size="large" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')"
+      @ok="onSubmit" @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
         {{ t('modals.addFormula') }}
       </h3>
@@ -42,19 +42,19 @@
             </div>
             <div class="parameter-list-container h-full">
               <div v-if="parameters.length" class="ml-2">
-                <!-- <div class="flex justify-between"> -->
-                <VaButton preset="primary" class="mr-2 mb-2" border-color="primary" round
-                  v-for="(parameter, index) in parameters" :key="parameter.id" :style="{ borderRadius: '0' }"
-                  @click="append(parameter)">
+                <VaButton
+                  v-for="(parameter, index) in parameters.filter(param => param !== null && param !== undefined)"
+                  :key="parameter.id" preset="primary" class="mr-2 mb-2" border-color="primary" round
+                  :style="{ borderRadius: '0' }" @click="append(parameter)">
                   {{ parameter.Name }}
                 </VaButton>
-                <!-- </div> -->
               </div>
               <div v-else>
                 Loading parameters...
               </div>
-
             </div>
+
+
           </div>
           <div v-if="timesG.length" class="mt-2">
             <!-- <div class="flex justify-between"> -->
@@ -106,17 +106,17 @@ const result = reactive({
 });
 const append = (input) => {
   console.log(input);
-  
+
   if (operatorClicked.value) {
     current.value = '';
     operatorClicked.value = false;
   }
- // Check if input is a time object (with GName property)
- if (typeof input === 'object' && input !== null && input.GName) {
+  // Check if input is a time object (with GName property)
+  if (typeof input === 'object' && input !== null && input.GName) {
     animateNumber(`n${input.id}`);
     result.Calculate.push(`Tid=${input.id}`); // Push "Tid=id" to the array
     current.value += `[${input.Name}]`; // Display it as "[Tid=id]"
-  } 
+  }
   // Check if input is a number (string or number)
   else if (typeof input === 'string') {
     animateNumber(`n${input}`);
@@ -180,7 +180,7 @@ const clear = () => {
   current.value = '';
   answer.value = '';
   logList.value = '';
-  result.Calculate = [];     
+  result.Calculate = [];
   operatorClicked.value = false;
 };
 
@@ -248,6 +248,7 @@ const fetchGraphics = async () => {
     const allParameters = formulas.map(entry => entry.parameters);
     getButton.value = response.data.formula; // Contains the formula details
     parameters.value = allParameters.flat();// Contains the associated parameters
+    console.log(parameters.value);
 
     const responseTimes = await axios.get(`getForFormuleTimes/${props.params.data['GraphicsID']}`);
     timesG.value = responseTimes.data.map(time => ({
@@ -258,7 +259,7 @@ const fetchGraphics = async () => {
 
     }));
 
-    console.log(timesG.value);
+    // console.log(timesG.value);
 
     // console.log(responseTimes);
 
@@ -357,9 +358,10 @@ watch(() => result.StructureID, (newVal) => {
   background-color: #d9efff;
   color: #3fa9fc;
 }
+
 .parameter-list-container {
   overflow-y: auto;
-  max-height: 550px; /* Max balandlikni mos ravishda o'zgartiring */
+  max-height: 550px;
+  /* Max balandlikni mos ravishda o'zgartiring */
 }
-
 </style>

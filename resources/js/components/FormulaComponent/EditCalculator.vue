@@ -1,7 +1,7 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true, fetchGraphics" />
-    <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+    <VaModal size="large" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
       <h3 class="va-h3" @vue:mounted="fetchGraphics">
         {{ t('modals.editFactory') }}
@@ -40,20 +40,18 @@
               <div @click="append(')')" id="rightBracket" class="btn p-4">)</div>
 
             </div>
-            <div class="overflow-y: auto h-full">
+            <div class="parameter-list-container h-full">
               <div v-if="parameters.length" class="ml-2">
-                <!-- <div class="flex justify-between"> -->
-                <VaButton preset="primary" class="mr-2 mb-2" border-color="primary" round
-                  v-for="(parameter, index) in parameters" :key="parameter.id" :style="{ borderRadius: '0' }"
-                  @click="append(parameter)">
+                <VaButton
+                  v-for="(parameter, index) in parameters.filter(param => param !== null && param !== undefined)"
+                  :key="parameter.id" preset="primary" class="mr-2 mb-2" border-color="primary" round
+                  :style="{ borderRadius: '0' }" @click="append(parameter)">
                   {{ parameter.Name }}
                 </VaButton>
-                <!-- </div> -->
               </div>
               <div v-else>
                 Loading parameters...
               </div>
-
             </div>
           </div>
           <div v-if="timesG.length" class="mt-2">

@@ -257,10 +257,12 @@ class ParamsGraphController extends Controller
         $unit->update([
             'OrderNumber' => $request->OrderNumber,
             'ParametersID' => $request->ParametersID,
+            'WithFormula'=>$request->WithFormula,
             'FactoryStructureID' => $request->FactoryStructureID,
             'BlogsID' => $request->BlogID,
             'GrapicsID' => $request->GrapicsID,
             'SourceID' => $request->SourceID,
+            'PageId' => $request->PageId,
             'CurrentTime' => date('Y-m-d H:i:s', strtotime($request->CurrentTime)),
             'EndingTime' => date('Y-m-d H:i:s', strtotime($request->EndingTime)),
         ]);

@@ -23,10 +23,10 @@
               :label="t('menu.structure')" :options="structureOptions" clearable /> -->
             <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
               :options="BlogsOptions" clearable />
-              <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
-                :options="SourceOptions" clearable />
-                <VaSelect v-model="result.WithFormula" value-by="value" class="mb-1" :label="t('menu.formula')"
-                  :options="FormulaOptions" clearable />
+            <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
+              :options="SourceOptions" clearable />
+            <VaSelect v-model="result.WithFormula" value-by="value" class="mb-1" :label="t('menu.formula')"
+              :options="FormulaOptions" clearable />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
           </div>
@@ -104,8 +104,8 @@ const result = reactive({
   EndingTime: "",
   OrderNumber: "",
   BlogID: "",
-  PageId:"",
-  WithFormula:null,
+  PageId: "",
+  WithFormula: null,
 });
 
 function ondeleted(selectedData) {
@@ -190,7 +190,7 @@ const fetchData = async () => {
     const response = await axios.get(`/withCardId/${props.id}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
     // console.log(rowData.value);
-    
+
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -234,7 +234,7 @@ const fetchParams = async () => {
   }
 };
 async function getPages() {
-  
+
   try {
     const response = await axios.get(`/pages-select/${props.id}`);
     pagesOptions.value = response.data.map(pages => ({
@@ -259,7 +259,7 @@ const onSubmit = async () => {
         result.OrderNumber = "",
         result.BlogID = "",
         result.PageId = "",
-        result.WithFormula="",
+        result.WithFormula = "",
         await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
     } else {

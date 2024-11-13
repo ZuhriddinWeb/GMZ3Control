@@ -17,20 +17,23 @@
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1" :label="t('menu.structure')"
               :options="structureOptions" clearable />
-              <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
+            <VaSelect v-model="result.BlogID" value-by="value" class="mb-1" :label="t('menu.blogs')"
               :options="blogsOptions ?? []" clearable />
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaSelect v-model="result.SourceID" value-by="value" class="mb-1" :label="t('menu.sources')"
               :options="sourcesOptions" clearable />
+            <VaSelect v-model="result.WithFormula" value-by="value" class="mb-1" :label="t('menu.formula')"
+              :options="FormulaOptions" clearable />
           </div>
           <div class="flex gap-5 flex-wrap w-full mt-4">
             <VaDatePicker v-model="result.CurrentTime" stateful highlight-weekend />
-            <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend  />
+            <VaDatePicker v-model="result.EndingTime" stateful highlight-weekend />
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
             <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
-              :options="pagesOptions" searchable  /></div>
+              :options="pagesOptions" searchable />
+          </div>
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             :label="t('modals.ordernumber')" />
@@ -58,7 +61,9 @@ const graphicOptions = ref([]);
 const structureOptions = ref([]);
 const blogsOptions = ref([]);
 const sourcesOptions = ref([]);
-const pagesOptions =ref([]);
+const pagesOptions = ref([]);
+const FormulaOptions = ref([]);
+
 const result = reactive({
   ParametersID: "",
   FactoryStructureID: "",
@@ -68,21 +73,23 @@ const result = reactive({
   EndingTime: "",
   OrderNumber: "",
   BlogID: "",
-  PageId:"",
+  PageId: "",
+  WithFormula: "",
   id: props.params.data['id']
 });
 
 const fetchParams = async () => {
-  
+
   try {
-    const [resParam, resGraphic, resStruct, resBlogs, resSources,responsePages, response] = await Promise.all([
+    const [resParam, resGraphic, resStruct, resBlogs, resSources, responsePages, response, resFormula] = await Promise.all([
       axios.get('/param'),
       axios.get('/graphics'),
       axios.get('/structure'),
       axios.get('/blogs'),
       axios.get('/sources'),
       axios.get('/pages'),
-      axios.get(`get-params-for-id-edit/${props.params.data['id']}`,{ timeout: 10000 })
+      axios.get(`get-params-for-id-edit/${props.params.data['id']}`, { timeout: 10000 }),
+      axios.get('/formula'),
     ]);
 
     paramsOptions.value = resParam.data.map(param => ({
@@ -105,21 +112,28 @@ const fetchParams = async () => {
       value: source.id,
       text: source.Name
     }));
-    pagesOptions.value = responsePages.data.map(source => ({
-      value: source.id,
-      text: source.Name
+    pagesOptions.value = responsePages.data.map(page => ({
+      value: page.id,
+      text: page.Name
     }));
-    
+
+    FormulaOptions.value = resFormula.data.map(formula => ({
+      value: formula.id,
+      text: formula.Name
+    }));
+
     result.ParametersID = response.data[0]?.ParametersID || null;
     result.GrapicsID = +response.data[0]?.GrapicsID || null;
     result.FactoryStructureID = +response.data[0]?.Sid || null;
     result.SourceID = +response.data[0]?.SourceID || null;
+    result.WithFormula = response.data[0]?.WithFormula ?? null;
+
     result.OrderNumber = response.data[0]?.OrderNumber || null;
 
     result.CurrentTime = response.data[0]?.CurrentTime ? parseISO(response.data[0].CurrentTime) : null;
     result.EndingTime = response.data[0]?.EndingTime ? parseISO(response.data[0].EndingTime) : null;
-    // result.BlogID = +response.data[0].BlogsID;
-    // result.PageId = +response.data[0].PageId;
+    result.BlogID = +response.data[0].BlogsID ?? null;
+    result.PageId = response.data[0]?.PageId ?? null;
 
 
   } catch (error) {

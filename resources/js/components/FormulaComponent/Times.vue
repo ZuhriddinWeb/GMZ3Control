@@ -1,7 +1,7 @@
 <template>
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="functions" preset="primary" class="mt-1 w-" @click="() => { selectedDataEdit = true }"  />
-    <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+    <VaModal v-model="selectedDataEdit" :ok-text="null" :cancel-text="null" 
       @close="selectedDataEdit = false" close-button class="custom-modal " size="large">
       <h3 class="va-h3">
         {{ t('modals.addFormula') }}

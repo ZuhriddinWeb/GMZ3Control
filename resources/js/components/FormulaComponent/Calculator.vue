@@ -277,14 +277,11 @@ const onSubmit = async () => {
   try {
     const { data } = await axios.post("/calculator", result);
     if (data.status === 200) {
-      result.Calculate = '',
-        result.ParametersId = '';
+      init({ message: t('login.successMessage'), color: 'success' });
+      result.Calculate = '';
       result.Comment = '';
-      await fetchData();
-      init({ message: t('login.successMessage'), color: 'success' });
+      // await fetchData();
       selectedDataEdit.value = false;
-      init({ message: t('login.successMessage'), color: 'success' });
-
     } else {
       console.error('Error saving data:', data.message);
     }
@@ -296,6 +293,9 @@ const onSubmit = async () => {
 watch(() => result.StructureID, (newVal) => {
   // console.log('Selected StructureID:', newVal);
 });
+// watch(selectedDataEdit, (newVal) => {
+//   if (newVal) fetchData();
+// });
 </script>
 
 <style>

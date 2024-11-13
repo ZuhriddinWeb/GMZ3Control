@@ -328,10 +328,9 @@ const onSubmit = async () => {
       result.Calculate = '',
       result.ParametersId = '';
       result.Comment = '';
-      await fetchData();
+      // await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
       selectedDataEdit.value = false;
-      init({ message: t('login.successMessage'), color: 'success' });
 
     } else {
       console.error('Error saving data:', data.message);

@@ -4,7 +4,7 @@
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button class="custom-modal " size="large">
       <h3 class="va-h3">
-        {{ t('modals.addFormula') }}{{ props.params.data['Gid'] }}
+        {{ t('modals.addFormula') }}
       </h3>
       <div class="flex justify-between">
         <main class="h-full w-full">
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide, computed } from 'vue';
+import { ref, reactive, onMounted, provide, computed,watch  } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 // import EditGraphicTimesModal from '../components/GraphicTimesComponent/EditGraphicTimesModal.vue';
@@ -167,14 +167,19 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-
-onMounted(() => {
-  const savedLocale = localStorage.getItem('locale');
-  if (savedLocale) {
-    locale.value = savedLocale;
+// selectedDataEdit qiymatini kuzatish
+watch(selectedDataEdit, (newValue) => {
+  if (newValue) {
+    fetchData();
   }
-  fetchData();
-  // fetchGraphics();
 });
+// onMounted(() => {
+//   const savedLocale = localStorage.getItem('locale');
+//   if (savedLocale) {
+//     locale.value = savedLocale;
+//   }
+//   fetchData();
+//   // fetchGraphics();
+// });
 
 </script>

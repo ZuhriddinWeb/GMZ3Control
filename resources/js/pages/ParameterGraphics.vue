@@ -46,10 +46,10 @@
               <va-date-picker v-model="result.EndingTime" :label="t('modals.startTime')" class="w-1/2" />
             </div>
           </div> -->
-          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+          <!-- <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
             <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
               :options="pagesOptions" clearable />
-          </div>
+          </div> -->
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             :label="t('modals.ordernumber')" />
@@ -80,9 +80,9 @@ import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'v
 const { init } = useToast();
 const { t } = useI18n();
 import { format } from 'date-fns';
-const props = defineProps({
-  id: Number
-})
+const props = defineProps(['id', 'page']);
+// console.log(props['page']);
+
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
@@ -94,7 +94,7 @@ const BlogsOptions = ref([]);
 const SourceOptions = ref([]);
 const FormulaOptions = ref([]);
 
-
+// console.log(props)
 const result = reactive({
   ParametersID: "",
   FactoryStructureID: props.id,
@@ -104,7 +104,7 @@ const result = reactive({
   EndingTime: "",
   OrderNumber: "",
   BlogID: "",
-  PageId: "",
+  PageId: props.page,
   WithFormula: null,
 });
 
@@ -122,9 +122,9 @@ provide('onupdated', onupdated)
 
 const columnDefs = computed(() => [
   { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
-  // { headerName: "Sahifa nomi", field: "NumName", flex: 1 },
   { headerName: "Parametr nomi", field: "PName", flex: 1 },
   { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
+  { headerName: "Sahifa nomi", field: "NName", flex: 1 },
   { headerName: "Grafik", field: "GName" },
 
   {
@@ -187,7 +187,7 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get(`/withCardId/${props.id}`);
+    const response = await axios.get(`/withCardId/${props['id']}/${props['page']}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
     // console.log(rowData.value);
 
@@ -233,19 +233,19 @@ const fetchParams = async () => {
     console.error('Error fetching graphics data:', error);
   }
 };
-async function getPages() {
+// async function getPages() {
 
-  try {
-    const response = await axios.get(`/pages-select/${props.id}`);
-    pagesOptions.value = response.data.map(pages => ({
-      value: pages.id,
-      text: pages.Name
-    }));
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-}
-getPages()
+//   try {
+//     const response = await axios.get(`/pages-select/${props.id}`);
+//     pagesOptions.value = response.data.map(pages => ({
+//       value: pages.NumberPage,
+//       text: pages.Name
+//     }));
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//   }
+// }
+// getPages()
 const onSubmit = async () => {
   try {
     const { data } = await axios.post("/paramsgraph", result);

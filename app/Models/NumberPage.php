@@ -15,4 +15,7 @@ class NumberPage extends Model
         'Comment',
         'NumberPage'
     ];
+    protected $casts = [
+        'NumberPage' => 'integer',
+    ];
 }

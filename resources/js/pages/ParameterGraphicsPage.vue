@@ -10,7 +10,7 @@
           The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to Naviglio where you can
           enjoy the main nightlife in Barcelona.
         </p>
-        <button @click="goToCardDetail(card.id)"
+        <button @click="goToCardDetail(card.NumberPage)"
           class="bg-[#154EC1] py-2 px-4 mt-6 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
           type="button">
           {{ t('modals.addParamsGrafTitle') }}
@@ -33,7 +33,11 @@
   const { init } = useToast();
   const { locale, t } = useI18n();
   import { useRouter } from 'vue-router'
+  import { defineProps } from 'vue'
 
+  const props = defineProps({
+    id: Number
+  })
   const router = useRouter()
   const rowData = ref([]);
   const gridApi = ref(null);
@@ -46,9 +50,13 @@
     ShortNameRus: "",
     Comment: ""
   });
-  function goToCardDetail(cardId) {
-    router.push({ name: 'CardDetailPage', params: { id: cardId } })
+
+  function goToCardDetail(pageId) {
+    router.push({ name: 'CardDetail', params: { id: props.id, page: pageId } });
   }
+
+
+
   function ondeleted(selectedData) {
     gridApi.value.applyTransaction({ remove: [selectedData] });
   }
@@ -72,7 +80,7 @@
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('/structure');
+      const response = await axios.get(`/pages-select/${props.id}`);
       rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -89,7 +97,7 @@
     }
     (async () => {
       try {
-        const response = await axios.get('/structure');
+        const response = await axios.get(`/pages-select/${props.id}`);
         rowData.value = response.data;
       } catch (error) {
         console.error('Error fetching data:', error);

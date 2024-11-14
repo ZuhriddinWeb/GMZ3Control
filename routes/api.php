@@ -96,7 +96,7 @@ Route::get('/time/{id}',  [GraphicTimesController::class, 'time']);
 
 
 Route::get('/getForFormuleTimes/{GParamID}',  [GraphicTimesController::class, 'getRowFormuleTimes']);
-Route::get('/withCardId/{id}',  [ParamsGraphController::class, 'withCardId']);
+Route::get('/withCardId/{id}/{pageId}',  [ParamsGraphController::class, 'withCardId']);
 Route::get('/getRowBlog/{id}',  [BlogsController::class, 'getRowBlog']);
 Route::get('/getForFormuleId/{paramID}/{timeID}',  [CalculatorController::class, 'getForFormuleId']);
 

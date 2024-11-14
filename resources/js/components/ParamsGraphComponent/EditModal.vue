@@ -113,7 +113,7 @@ const fetchParams = async () => {
       text: source.Name
     }));
     pagesOptions.value = responsePages.data.map(page => ({
-      value: page.id,
+      value: page.NumberPage,
       text: page.Name
     }));
 

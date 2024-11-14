@@ -98,14 +98,28 @@ export default [
 		props: true,
 	},
 	{
-		path: '/card/:id',
-		name:'CardDetail',
-		component: () => import('../pages/ParameterGraphics.vue'),
+		path: '/cardPage/:id',
+		name:'CardDetailPage',
+		component: () => import('../pages/ParameterGraphicsPage.vue'),
 		meta: {
 			guard: 'auth',
 		},
 		props: true,
 	},
+	{
+		path: '/card/:id/:page',
+		name: 'CardDetail',
+		component: () => import('../pages/ParameterGraphics.vue'),
+		meta: {
+		  guard: 'auth',
+		},
+		props: route => ({
+		  id: route.params.id,
+		  page: route.params.page
+		})
+	  },
+	  
+	  
 	{
 		path: '/paramgraphics',
 		name:'paramgraphics',

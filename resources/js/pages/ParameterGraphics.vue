@@ -191,6 +191,9 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
+    store.state.structureID = props['id'];
+    // console.log(store.state.structureID);
+    
     const response = await axios.get(`/withCardId/${props['id']}/${props['page']}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
     // console.log(rowData.value);
@@ -255,14 +258,14 @@ const onSubmit = async () => {
     const { data } = await axios.post("/paramsgraph", result);
     if (data.status === 200) {
       result.ParametersID = "",
-        result.FactoryStructureID = "",
+        // result.FactoryStructureID = "",
         result.GrapicsID = "",
         result.SourceID = "",
         result.CurrentTime = "",
         result.EndingTime = "",
         result.OrderNumber = "",
         result.BlogID = "",
-        result.PageId = "",
+        // result.PageId = "",
         result.WithFormula = "",
         await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

@@ -125,7 +125,7 @@ const columnDefs = computed(() => [
   { headerName: "Parametr nomi", field: "PName", flex: 1 },
   { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
   { headerName: "Sahifa nomi", field: "NName", flex: 1 },
-  // { headerName: "Sahifadagi o'rni", field: "OrderNumber", flex: 1 },
+  { headerName: "Sahifadagi o'rni", field: "OrderNumber", flex: 1 },
   // { headerName: "Hisoblanishi", field: "ForName", flex: 1 },
 
 

@@ -47,13 +47,13 @@ class ParamsGraphController extends Controller
     {
         $Gparams = GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->join('factory_structures', 'graphics_paramenters.FactoryStructureID', '=', 'factory_structures.id')
-            ->leftJoin('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.id')
+            // ->leftJoin('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.id')
             // ->leftJoin('formulas', 'graphics_paramenters.WithFormula', '=', 'number_pages.id')
 
             ->join('graphics', 'graphics_paramenters.GrapicsID', '=', 'graphics.id')
             ->where('graphics_paramenters.FactoryStructureID',$id)
             ->where('graphics_paramenters.PageId',$pageId)
-            ->select('number_pages.NumberPage','number_pages.Name as NName','graphics.id as Gid', 'graphics.name as GName', 'parameters.id as Puuid', 'parameters.name as PName', 'parameters.name as PNameRus', 'factory_structures.id as Fid', 'factory_structures.name as FName', 'graphics_paramenters.*')
+            ->select('graphics.id as Gid', 'graphics.name as GName', 'parameters.id as Puuid', 'parameters.name as PName', 'parameters.name as PNameRus', 'factory_structures.id as Fid', 'factory_structures.name as FName', 'graphics_paramenters.*')
             ->get();
             // dd($Gparams);
         return response()->json($Gparams);

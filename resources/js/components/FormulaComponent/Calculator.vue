@@ -42,9 +42,10 @@
             </div>
             <div class="parameter-list-container h-full">
               <div v-if="parameters.length" class="ml-2">
-                <VaButton v-for="(parameter, index) in parameters" :key="parameter.id" preset="primary"
-                  class="mr-2 mb-2" border-color="primary" round :style="{ borderRadius: '0' }"
-                  @click="append(parameter)">
+                <VaButton
+                  v-for="(parameter, index) in parameters.filter(param => param !== null && param !== undefined)"
+                  :key="parameter.id" preset="primary" class="mr-2 mb-2" border-color="primary" round
+                  :style="{ borderRadius: '0' }" @click="append(parameter)">
                   {{ parameter.Name }}
                 </VaButton>
               </div>
@@ -245,17 +246,19 @@ const fetchGraphics = async () => {
     const response = await axios.get(`getForFormule/${props.params.data['GPid']}`);
     const formulas = response.data;
 
-    // Formulalar tartiblanmoqda
-    const sortedData = formulas.sort((a, b) => {
-      const orderA = a.formula.OrderNumber ?? Infinity;
-      const orderB = b.formula.OrderNumber ?? Infinity;
-      return orderA - orderB;
-    });
+    const sortedData = formulas
+      .filter(entry => entry.parameters !== null && entry.parameters !== undefined)
+      .sort((a, b) => {
+        const orderA = a.formula.OrderNumber ?? Infinity;
+        const orderB = b.formula.OrderNumber ?? Infinity;
+        return orderA - orderB;
+      });
 
-    parameters.value = sortedData.map(entry => entry.parameters);
+    parameters.value = sortedData
+      .map(entry => entry.parameters)
+      .filter(param => param !== null && param !== undefined);
 
-    // console.log(sortedData);
-    // console.log("Tartiblangan parametrlari:", parameters.value);
+    console.log("Tartiblangan parametrlari:", parameters.value);
     const responseTimes = await axios.get(`getForFormuleTimes/${props.params.data['GraphicsID']}`);
     timesG.value = responseTimes.data.map(time => ({
       ...time,

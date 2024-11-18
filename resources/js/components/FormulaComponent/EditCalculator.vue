@@ -303,10 +303,20 @@ const fetchGraphics = async () => {
     const response = await axios.get(`getForFormule/${props.params.data['GPid']}`);
 
     const formulas = response.data;
-    const allParameters = formulas.map(entry => entry.parameters);
-    getButton.value = response.data.formula; // Contains the formula details
-    parameters.value = allParameters.flat();// Contains the associated parameters
 
+    const sortedData = formulas
+      .filter(entry => entry.parameters !== null && entry.parameters !== undefined)
+      .sort((a, b) => {
+        const orderA = a.formula.OrderNumber ?? Infinity;
+        const orderB = b.formula.OrderNumber ?? Infinity;
+        return orderA - orderB;
+      });
+
+    parameters.value = sortedData
+      .map(entry => entry.parameters)
+      .filter(param => param !== null && param !== undefined);
+
+    console.log("Tartiblangan parametrlari:", parameters.value);
     const responseTimes = await axios.get(`getForFormuleTimes/${props.params.data['GraphicsID']}`);
     timesG.value = responseTimes.data.map(time => ({
       ...time,

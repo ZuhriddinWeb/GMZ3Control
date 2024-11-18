@@ -126,7 +126,15 @@ const columnDefs = computed(() => [
   { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
   { headerName: "Sahifa nomi", field: "NName", flex: 1 },
   { headerName: "Sahifadagi o'rni", field: "OrderNumber", flex: 1 },
-  // { headerName: "Hisoblanishi", field: "ForName", flex: 1 },
+  {
+    headerName: "Hisoblanishi",
+    field: "ForName",
+    flex: 1,
+    cellClassRules: {
+      'highlight-yellow': (params) => params.data?.ForId === "1", // ForId = 1 bo'lsa, highlight-yellow klassini qo'llash
+      'highlight-green': (params) => params.data?.ForId === "2",
+    },
+  },
 
 
   { headerName: "Grafik", field: "GName" },
@@ -296,4 +304,14 @@ onMounted(() => {
   white-space: nowrap;
   direction: ltr;
 }
+.ag-theme-material .ag-cell.highlight-yellow {
+  background-color: yellow !important;
+  color: black !important;
+}
+
+.ag-theme-material .ag-cell.highlight-green {
+  background-color: green !important;
+  color: white !important;
+}
+
 </style>

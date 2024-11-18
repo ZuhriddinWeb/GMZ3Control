@@ -169,7 +169,7 @@ const onSubmit = async () => {
     const { data } = await axios.post("/graphictimes", result);
     if (data.status === 200) {
       showModal.value = false;
-      result.GraphicId = '';
+      // result.GraphicId = '';
       result.ChangeId = '';
       result.Name = '';
       result.StartTime = '';

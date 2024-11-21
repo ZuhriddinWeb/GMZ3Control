@@ -44,19 +44,17 @@ class ParametrValueController extends Controller
     }
     public function getByBlog($factoryId,$current)
     {
-        // dd($factoryId);
+        $current = Carbon::parse($current)->toDateString();
+
+        // FactoryStructureID'ni arrayga o'zgartirish
         $idArray = explode(',', $factoryId);
-        // $query = ValuesParameters::whereIn('FactoryStructureID', $factoryId);
-        
-        // if (!is_null($factoryId)) {
-        //     $query->where('BlogID', $idArray); // Replace 'SomeField' with the actual field
-        // }
-        // return $query->get();
-        return ValuesParameters::where('FactoryStructureID', $factoryId)
-        ->where(function ($q) use ($current) {
-            $q->whereDate('created_at', $current)
-              ->orWhereDate('updated_at', $current);
-        })->get();
+    
+        // Query yaratish
+        return ValuesParameters::whereIn('FactoryStructureID', $idArray)
+            ->where(function ($query) use ($current) {
+                $query->whereRaw("CAST(created_at AS DATE) = ?", [$current])
+                      ->orWhereRaw("CAST(updated_at AS DATE) = ?", [$current]);
+            })->get();
     }
     
     public function create(Request $request)

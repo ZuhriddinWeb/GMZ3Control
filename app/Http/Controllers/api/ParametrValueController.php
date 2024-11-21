@@ -53,9 +53,10 @@ class ParametrValueController extends Controller
         // }
         // return $query->get();
         return ValuesParameters::where('FactoryStructureID', $factoryId)
-            // ->where('BlogID', $blogId)
-            ->whereDate('created_at', $current)
-            ->get();
+        ->where(function ($q) use ($current) {
+            $q->whereDate('created_at', $current)
+              ->orWhereDate('updated_at', $current);
+        })->get();
     }
     
     public function create(Request $request)

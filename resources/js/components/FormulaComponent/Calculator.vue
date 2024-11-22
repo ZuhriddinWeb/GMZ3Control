@@ -106,37 +106,48 @@ const result = reactive({
 
 });
 const append = (input) => {
-  console.log(input);
+  console.log("Input received:", input);
 
   if (operatorClicked.value) {
-    current.value = '';
+    current.value = ''; // Yangi qiymatni kiritishdan oldin o'chirish
     operatorClicked.value = false;
   }
-  // Check if input is a time object (with GName property)
+
+  // Agar input 'GName' bo'lsa (va bu yangi 'Tid')
   if (typeof input === 'object' && input !== null && input.GName) {
     animateNumber(`n${input.id}`);
-    result.Calculate.push(`Tid=${input.id}`); // Push "Tid=id" to the array
-    current.value += `[${input.Name}]`; // Display it as "[Tid=id]"
-  }
-  // Check if input is a number (string or number)
-  else if (typeof input === 'string') {
-    animateNumber(`n${input}`);
-    result.Calculate.push(input); // Push the number to the array
-    current.value += input; // Display the number on the screen
-  }
 
-  // Check if input is a parameter (object with 'Name' property)
+    // Oxirgi element 'Tid' massiv bo'lishini tekshirish
+    const lastElement = result.Calculate[result.Calculate.length - 1];
+    if (Array.isArray(lastElement) && lastElement[0].startsWith('Tid=')) {
+      // Agar oxirgi element 'Tid' massiv bo'lsa, yangi 'Tid' ni qo'shing
+      lastElement.push(`Tid=${input.id}`);
+    } else {
+      // Aks holda, yangi 'Tid' massivini boshlang
+      result.Calculate.push([`Tid=${input.id}`]);
+    }
+
+    // Ekranda ko'rsatish uchun '[GName]' ni qo'shing
+    current.value += `[${input.Name}]`;
+  }
+  // Agar input string yoki raqam bo'lsa
+  else if (typeof input === 'string' || typeof input === 'number') {
+    animateNumber(`n${input}`);
+    result.Calculate.push(input); // Oddiy qiymatni qo'shing
+    current.value += input;
+  }
+  // Agar input parametr bo'lsa ('Name' mavjud)
   else if (typeof input === 'object' && input !== null && input.Name) {
     animateNumber(`n${input.id}`);
-    result.Calculate.push(`Pid=${input.id}`);
-    current.value += `[${input.Name}]`; // Wrap the parameter's Name in brackets and display it
+    result.Calculate.push(`Pid=${input.id}`); // Parametr ID'sini qo'shing
+    current.value += `[${input.Name}]`;
+  } else {
+    console.warn("Unhandled input type:", input);
   }
-  else if (typeof input === 'object' && input !== null && input.GName) {
-    animateNumber(`n${input.id}`);
-    result.Calculate.push(`Tid=${input.id}`);
-    current.value += `[${input.GName}]`; // Wrap the GName in brackets and display it
-  }
+
+  console.log("Updated Calculate:", result.Calculate);
 };
+
 
 
 

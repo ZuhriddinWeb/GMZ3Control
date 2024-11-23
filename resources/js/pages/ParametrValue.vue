@@ -530,38 +530,44 @@ const currentChange = computed(() => determineChange());
 //   }
 // };
 async function getPages(newValue) {
-  store.state.newValue = newValue
+  store.state.newValue = newValue;
   const currentChange = result.Change;
   const currentTime = format(day.value, dateFormat);
   const currentHour = new Date().getHours();
-  const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
+  const change = currentHour >= 8 && currentHour < 20 ? 1 : 2;
+
   try {
-    axios.all([
+    const [paramsResponse, valuesResponse] = await axios.all([
       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${newValue}`),
       axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
-    ])
-      .then(axios.spread(({ data: params }, { data: values }) => {
-        params.forEach((parametr, index) => {
-          const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
-          if (select) {
-            params[index] = { ...parametr, ...select };
-          }
-        });
-        const parameterIds = values.map(param => param.ParametersID);
+    ]);
 
-        // const parameterQueries = parameterIds.map(id =>
-        // // console.log(parameterIds);
-        //   axios.get(`/calculator/${id}`)
-        // );
-        // console.log(parameterQueries);
+    const params = paramsResponse.data;
+    const values = valuesResponse.data;
 
-        // params.sort((a, b) => (a.Value ? 1 : -1));
-        rowData.value = params;
-      }));
+    // Agar `values` mavjud bo'lsa, `params` bilan birlashtiriladi
+    params.forEach((parametr, index) => {
+      const select = values.find(
+        (val) =>
+          val.TimeID == parametr.GTid &&
+          val.ParametersID == parametr.ParametersID
+      );
+      if (select) {
+        params[index] = { ...parametr, ...select };
+      }
+    });
+
+    rowData.value = params;
+    // Jadvalni yangilash
+    // rowData.value = [];
+    // setTimeout(() => {
+    // }, 100);
+
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error("Error fetching data:", error);
   }
 }
+
 const onCellValueChanged = async (event) => {
   const { data, colDef, newValue, oldValue } = event;
 

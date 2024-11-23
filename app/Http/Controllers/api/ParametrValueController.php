@@ -42,20 +42,25 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-    public function getByBlog($factoryId,$current)
+    public function getByBlog($factoryId, $current)
     {
         $current = Carbon::parse($current)->toDateString();
-
-        // FactoryStructureID'ni arrayga o'zgartirish
+    
+        // FactoryStructureID'ni arrayga aylantirish
         $idArray = explode(',', $factoryId);
     
         // Query yaratish
-        return ValuesParameters::whereIn('FactoryStructureID', $idArray)
+        $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
             ->where(function ($query) use ($current) {
                 $query->whereRaw("CAST(created_at AS DATE) = ?", [$current])
                       ->orWhereRaw("CAST(updated_at AS DATE) = ?", [$current]);
-            })->get();
+            })
+            ->orWhereRaw("CAST(updated_at AS DATE) >= ?", [$current]) // Qo'shimcha shart
+            ->get();
+    
+        return $result;
     }
+    
     
     public function create(Request $request)
     {

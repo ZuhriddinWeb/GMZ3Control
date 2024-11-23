@@ -268,7 +268,7 @@ class CalculatorController extends Controller
                     'Comment' => $request['Comment'], // Komment qiymati
                 ]);
             }
-        } else {
+        } elseif ($request['Comment'] === "2") {
             foreach ($integerTidValues as $key => $timeID) {
                 $newCalculate = []; // Har bir "Tid" uchun yangi Calculate massiv
                 foreach ($request['Calculate'] as $subItem) {
@@ -297,6 +297,42 @@ class CalculatorController extends Controller
             //     'Calculate' => $request->Calculate,
             //     'Comment' => $request->Comment,
             // ]);
+        } else {
+            $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
+            for ($i = 1; $i <= $totalTidCount; $i++) {
+                $formula = []; // Har bir sikl uchun yangi formula
+
+                if ($i === 1) {
+                    // First formula with proper parentheses
+                    $formula = [
+                        "(",
+                        $request['Calculate'][1], // Pid qiymati
+                        "{$tidValues[0]}",
+                        ")"
+                    ];
+                } else {
+                    // Start with an opening parenthesis for summation
+                    $formula[] = "(";
+                    for ($j = 0; $j < $i; $j++) {
+                        $formula[] = $request['Calculate'][1]; // Pid qiymati
+                        $formula[] = "{$tidValues[$j]}"; // Tid qiymati
+                        if ($j < $i - 1) {
+                            $formula[] = "+"; // "+" operator
+                        }
+                    }
+                    // Close parentheses after summation
+                    $formula[] = ")";
+                }
+
+                // Bazaga yozish
+                $unit = Calculator::create([
+                    'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i - 1]), // TimeID ni tozalash va intga o‘tkazish
+                    'ParametersID' => $request['id'], // Parametr ID qiymati
+                    'Calculate' => $formula, // JSON formatdagi formula
+                    'Comment' => $request['Comment'], // Komment qiymati
+                ]);
+            }
+
         }
         return response()->json([
             'status' => 200,

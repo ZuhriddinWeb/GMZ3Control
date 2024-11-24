@@ -55,7 +55,7 @@ class ParametrValueController extends Controller
                 $query->whereRaw("CAST(created_at AS DATE) = ?", [$current])
                       ->orWhereRaw("CAST(updated_at AS DATE) = ?", [$current]);
             })
-            ->orWhereRaw("CAST(updated_at AS DATE) >= ?", [$current]) // Qo'shimcha shart
+            ->orWhereRaw("CAST(created_at AS DATE) >= ?", [$current]) // Qo'shimcha shart
             ->get();
     
         return $result;

@@ -45,23 +45,27 @@ class ParametrValueController extends Controller
     public function getByBlog($factoryId, $current)
     {
         $current = Carbon::parse($current)->toDateString();
-    
+
         // FactoryStructureID'ni arrayga aylantirish
         $idArray = explode(',', $factoryId);
-    
+
         // Query yaratish
         $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
             ->where(function ($query) use ($current) {
                 $query->whereRaw("CAST(created_at AS DATE) = ?", [$current])
-                      ->orWhereRaw("CAST(updated_at AS DATE) = ?", [$current]);
+                    ->orWhereRaw("CAST(updated_at AS DATE) = ?", [$current]);
             })
-            ->orWhereRaw("CAST(created_at AS DATE) >= ?", [$current]) // Qo'shimcha shart
+            ->orWhere(function ($query) use ($current) {
+                $query->whereRaw("CAST(created_at AS DATE) >= ?", [$current])
+                    ->orWhereRaw("CAST(updated_at AS DATE) >= ?", [$current]);
+            })
             ->get();
-    
+
+
         return $result;
     }
-    
-    
+
+
     public function create(Request $request)
     {
         // dd($request);
@@ -73,7 +77,7 @@ class ParametrValueController extends Controller
                 'SourcesID' => $request->SourceID,
                 'TimeID' => $request->GTid
             ])->first();
-    
+
             // Agar yozuv mavjud bo'lmasa, yangi yozuv qo'shiladi
             if (!$existingRecord) {
                 ValuesParameters::create([
@@ -104,18 +108,18 @@ class ParametrValueController extends Controller
                 ]);
                 $uuidString = $existingRecord->id; // Mavjud yozuvning id-si saqlanadi
             }
-    
+
             $unit = ValuesParameters::where('id', $uuidString)->first();
-    
+
             return response()->json([
                 'status' => 200,
                 'message' => "Ma`lumot muvaffaqiyatli qo'shildi yoki yangilandi",
                 'unit' => $unit
             ]);
-    
+
         } catch (\Exception $e) {
             \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
-    
+
             return response()->json([
                 'status' => 500,
                 'message' => 'There was an error processing the request.',
@@ -123,8 +127,8 @@ class ParametrValueController extends Controller
             ]);
         }
     }
-    
-    
+
+
     // private function create(Request $request)
     // {
     //     // $parameters = [
@@ -217,7 +221,7 @@ class ParametrValueController extends Controller
             ->whereDate('values_parameters.created_at', Carbon::today()) // Filter for current day
             ->select('parameters.id as Pid', 'parameters.Min', 'parameters.Max', 'parameters.Name', 'parameters.NameRus', 'values_parameters.*')
             ->get();
-        
+
     }
     public function delete(Request $request, $id)
     {

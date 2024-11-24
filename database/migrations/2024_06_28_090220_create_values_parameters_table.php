@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('TimeID')->nullable();
             $table->integer('FactoryStructureID')->nullable();
             $table->integer('BlogID')->nullable();
+            $table->integer('ChangeID')->nullable();
             $table->double('Value')->nullable();
             $table->text('Comment')->nullable();
             $table->integer('GraphicsTimesID')->nullable();

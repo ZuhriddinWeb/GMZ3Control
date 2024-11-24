@@ -77,7 +77,7 @@ Route::get('get-params-for-id-edit/{param_id}' , [ParamsGraphController::class, 
 Route::get('get-params-for-user/{user_id}/{change_id}/{date}/{tabId}' , [ParamsGraphController::class, 'getParamsForUser']);
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
 Route::post('vparamsEdit' , [ParametrValueController::class, 'update']);
-Route::get('vparams-value/{factoryId}/{cuurent_date}' , [ParametrValueController::class, 'getByBlog']);
+Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}' , [ParametrValueController::class, 'getByBlog']);
 
 Route::get('restart-password/{user_id}' , [UserController::class, 'restart']);
 Route::get('/broadcast-time', [ParametrValueController::class, 'sendTimeUpdate']);

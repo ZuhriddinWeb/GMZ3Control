@@ -15,6 +15,7 @@ export default createStore({
       GParamID:null,
       GPid:null,
       GrapicsID:null,
+      ValueDay:null,
     };
   },
   mutations: {

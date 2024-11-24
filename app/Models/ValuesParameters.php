@@ -12,6 +12,7 @@ class ValuesParameters extends Model
         'id',
         'ParametersID',
         'SourcesID',
+        'ChangeID',
         'Value',
         'Comment',
         'TimeID',

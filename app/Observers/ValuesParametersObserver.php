@@ -15,6 +15,7 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
+        // dd($valuesParameters->ChangeID,$valuesParameters->Created);
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
             $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
@@ -48,6 +49,7 @@ class ValuesParametersObserver
                         $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
                             ValuesParameters::where('ParametersID', $parameterId)
                             ->where('TimeID', $timeId)
+                            ->where('Created',$valuesParameters->Created)
                             ->value('Value') ?? 0;
                     }
                 }
@@ -116,14 +118,16 @@ class ValuesParametersObserver
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
                         'FactoryStructureID' => (string) $param->FactoryStructureID,
+                        'ChangeID'=>$valuesParameters->ChangeID,
                         'created_at' => now(),
-                        'Created' => now(),
+                        'Created' => $valuesParameters->Created,
                     ];
                     $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                         [
                             'TimeID' => $data['GTid'],
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
+                            'Created' => $valuesParameters->Created,
                         ],
                         [
                             'id' => (string) Str::uuid(), // UUID ni qo'shish
@@ -131,6 +135,8 @@ class ValuesParametersObserver
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],
                             'FactoryStructureID' => $data['FactoryStructureID'],
+                            'ChangeID'=>$valuesParameters->ChangeID,
+                            'Created' => $valuesParameters->Created,
                             'updated_at' => now(),
                         ]
                     );

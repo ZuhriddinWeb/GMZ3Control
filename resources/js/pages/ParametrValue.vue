@@ -533,13 +533,14 @@ async function getPages(newValue) {
   store.state.newValue = newValue;
   const currentChange = result.Change;
   const currentTime = format(day.value, dateFormat);
+  store.state.ValueDay = currentTime;
   const currentHour = new Date().getHours();
   const change = currentHour >= 8 && currentHour < 20 ? 1 : 2;
 
   try {
     const [paramsResponse, valuesResponse] = await axios.all([
       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${newValue}`),
-      axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}`)
+      axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}/${currentChange}`)
     ]);
 
     const params = paramsResponse.data;
@@ -611,9 +612,12 @@ const onRowClicked = (event) => {
 };
 
 const saveDataToServer = async (data) => {
-  // console.log(data);
+  console.log( day.value);
+  const change = result.Change;
+  const daySelect = store.state.ValueDay;
+
   try {
-    const response = await axios.post('/vparams', { ...data, userId });
+    const response = await axios.post('/vparams', { ...data, userId,change,daySelect });
     removeFocusFromGrid();
     getPages(store.state.newValue)
     // focusOnMinColumn();

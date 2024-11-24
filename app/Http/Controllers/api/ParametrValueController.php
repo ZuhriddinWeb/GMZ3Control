@@ -42,8 +42,9 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-    public function getByBlog($factoryId, $current)
+    public function getByBlog($factoryId, $current,$ChangeID)
     {
+        // dd($current);
         $current = Carbon::parse($current)->toDateString();
 
         // FactoryStructureID'ni arrayga aylantirish
@@ -51,14 +52,15 @@ class ParametrValueController extends Controller
 
         // Query yaratish
         $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
+            ->where('ChangeID', $ChangeID)
             ->where(function ($query) use ($current) {
-                $query->whereRaw("CAST(created_at AS DATE) = ?", [$current])
-                    ->orWhereRaw("CAST(updated_at AS DATE) = ?", [$current]);
+                $query->whereRaw("CAST(Created AS DATE) = ?", [$current])
+                    ->orWhereRaw("CAST(Changed AS DATE) = ?", [$current]);
             })
-            ->orWhere(function ($query) use ($current) {
-                $query->whereRaw("CAST(created_at AS DATE) >= ?", [$current])
-                    ->orWhereRaw("CAST(updated_at AS DATE) >= ?", [$current]);
-            })
+            // ->orWhere(function ($query) use ($current) {
+            //     $query->whereRaw("CAST(Created AS DATE) >= ?", [$current])
+            //         ->orWhereRaw("CAST(Changed AS DATE) >= ?", [$current]);
+            // })
             ->get();
 
 
@@ -68,14 +70,17 @@ class ParametrValueController extends Controller
 
     public function create(Request $request)
     {
-        // dd($request);
+        // dd($request->daySelect);
         $uuidString = (string) Str::uuid();
         try {
             // Yangi yoki mavjud yozuvni topish
             $existingRecord = ValuesParameters::where([
                 'ParametersID' => $request->ParametersID,
                 'SourcesID' => $request->SourceID,
-                'TimeID' => $request->GTid
+                'TimeID' => $request->GTid,
+                'Created' => $request->daySelect,
+                // 'ChangeID' => $request->change,
+
             ])->first();
 
             // Agar yozuv mavjud bo'lmasa, yangi yozuv qo'shiladi
@@ -85,13 +90,14 @@ class ParametrValueController extends Controller
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
                     'TimeID' => $request->GTid,
+                    'ChangeID' => $request->change,
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
                     'BlogID' => $request->BlogsID,
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
                     'created_at' => now(),
-                    'Created' => now(),
+                    'Created' => $request->daySelect,
                     'Creator' => $request->userId,  // Yaratgan foydalanuvchini saqlash
                 ]);
             } else {
@@ -103,7 +109,7 @@ class ParametrValueController extends Controller
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
                     'updated_at' => now(),
-                    'Changed' => now(),
+                    'Changed' =>$request->daySelect,
                     'Changer' => $request->userId  // Faqat 'Updater' yangilanadi
                 ]);
                 $uuidString = $existingRecord->id; // Mavjud yozuvning id-si saqlanadi

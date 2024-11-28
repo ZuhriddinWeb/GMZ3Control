@@ -33,16 +33,8 @@ class DocumentsController extends Controller
         $units = Documents::all();
         return response()->json($units);
     }
-    public function generate($user_id, $start, $end)
+    public function generate($user_id, $start)
     {
-        // Foydalanuvchi ID, boshlang‘ich va tugash sanalarini tekshirish
-        if (!$start || !$end) {
-            return response()->json([
-                'status' => 400,
-                'message' => "Boshlang'ich va tugash sanalari kerak"
-            ]);
-        }
-    
         // Foydalanuvchiga tegishli `FactoryStructureID` va `ParametersID`larni olish
         $userData = Documents::where('user_id', $user_id)->first();
     
@@ -56,16 +48,16 @@ class DocumentsController extends Controller
         $factoryStructureIDs = $userData->FactoryStructureID;
         $parametersIDs = $userData->ParametersID;
     
-        // `FactoryStructureID`, `ParametersID` va vaqt oralig‘ini filtrlash
+        // `FactoryStructureID`, `ParametersID` va `created_at` sanasini filtrlash
         $query = DB::table('values_parameters')
-            ->join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id') // Join parameters jadvali
+            ->join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id') // `parameters` jadvali bilan join
             ->whereIn('values_parameters.FactoryStructureID', $factoryStructureIDs)
             ->where(function ($query) use ($parametersIDs) {
                 foreach ($parametersIDs as $params) {
                     $query->orWhereIn('values_parameters.ParametersID', $params);
                 }
             })
-            ->whereBetween('values_parameters.created_at', [$start, $end]) // Vaqt oralig‘i bilan cheklash
+            ->whereDate('values_parameters.created_at', '=', $start) // Tanlangan sanani filtrlash
             ->select(
                 'values_parameters.id',
                 'values_parameters.ParametersID',
@@ -92,6 +84,7 @@ class DocumentsController extends Controller
             'data' => $query
         ]);
     }
+    
     
     private function getRowUnit($user_id)
     {

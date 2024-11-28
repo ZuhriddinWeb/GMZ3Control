@@ -67,7 +67,7 @@ Route::match(['get', 'post', 'put', 'delete'], '/documents/{id?}', [DocumentsCon
 
 
 Route::get('/getUserData/{id}', [DocumentsController::class, 'getUserData']);
-Route::get('/document/{id}/{start}/{end}', [DocumentsController::class, 'generate']);
+Route::get('/document/{id}/{start}', [DocumentsController::class, 'generate']);
 
 
 Route::get('/tree', [TreeController::class, 'getTree']);

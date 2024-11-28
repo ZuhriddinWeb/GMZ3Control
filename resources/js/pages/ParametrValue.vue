@@ -336,9 +336,11 @@ function toggleFullScreen() {
   }
 }
 const fetchGraphics = async () => {
+  console.log(store.state.user.structure_id);
+  
   try {
     const responseChanges = await axios.get('/changes');
-    const responsePages = await axios.get('/pages');
+    const responsePages = await axios.get(`/pages/${store.state.user.structure_id}`);
     pagesValue.value = responsePages.data
 
     const responseParams = await axios.get(`/paramWithId/${structureID}`);

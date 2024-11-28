@@ -33,8 +33,69 @@ class DocumentsController extends Controller
         $units = Documents::all();
         return response()->json($units);
     }
+    public function generate($user_id, $start, $end)
+    {
+        // Foydalanuvchi ID, boshlang‘ich va tugash sanalarini tekshirish
+        if (!$start || !$end) {
+            return response()->json([
+                'status' => 400,
+                'message' => "Boshlang'ich va tugash sanalari kerak"
+            ]);
+        }
+    
+        // Foydalanuvchiga tegishli `FactoryStructureID` va `ParametersID`larni olish
+        $userData = Documents::where('user_id', $user_id)->first();
+    
+        if (!$userData) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Foydalanuvchi ma'lumotlari topilmadi"
+            ]);
+        }
+    
+        $factoryStructureIDs = $userData->FactoryStructureID;
+        $parametersIDs = $userData->ParametersID;
+    
+        // `FactoryStructureID`, `ParametersID` va vaqt oralig‘ini filtrlash
+        $query = DB::table('values_parameters')
+            ->join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id') // Join parameters jadvali
+            ->whereIn('values_parameters.FactoryStructureID', $factoryStructureIDs)
+            ->where(function ($query) use ($parametersIDs) {
+                foreach ($parametersIDs as $params) {
+                    $query->orWhereIn('values_parameters.ParametersID', $params);
+                }
+            })
+            ->whereBetween('values_parameters.created_at', [$start, $end]) // Vaqt oralig‘i bilan cheklash
+            ->select(
+                'values_parameters.id',
+                'values_parameters.ParametersID',
+                'parameters.Name as PName', // `parameters` jadvalidan `Name` ustuni
+                'values_parameters.SourcesID',
+                'values_parameters.TimeID',
+                'values_parameters.FactoryStructureID',
+                'values_parameters.BlogID',
+                'values_parameters.Value',
+                'values_parameters.Comment',
+                'values_parameters.GraphicsTimesID',
+                'values_parameters.Created',
+                'values_parameters.Creator',
+                'values_parameters.Changed',
+                'values_parameters.Changer',
+                'values_parameters.created_at',
+                'values_parameters.updated_at'
+            )
+            ->get();
+    
+        // Natijani JSON formatda qaytarish
+        return response()->json([
+            'status' => 200,
+            'data' => $query
+        ]);
+    }
+    
     private function getRowUnit($user_id)
     {
+        dd($user_id);
         // Foydalanuvchiga tegishli `FactoryStructureID` va `ParametersID`larni olish
         $userData = Documents::where('user_id', $user_id)->first();
     

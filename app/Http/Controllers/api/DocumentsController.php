@@ -51,6 +51,7 @@ class DocumentsController extends Controller
         // `FactoryStructureID`, `ParametersID` va `created_at` sanasini filtrlash
         $query = DB::table('values_parameters')
             ->join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id') // `parameters` jadvali bilan join
+            ->join('graphic_times', 'values_parameters.TimeID', '=', 'graphic_times.id') // `graphic_times` jadvali bilan join
             ->whereIn('values_parameters.FactoryStructureID', $factoryStructureIDs)
             ->where(function ($query) use ($parametersIDs) {
                 foreach ($parametersIDs as $params) {
@@ -66,6 +67,7 @@ class DocumentsController extends Controller
                 'values_parameters.TimeID',
                 'values_parameters.FactoryStructureID',
                 'values_parameters.BlogID',
+                'values_parameters.ChangeID',
                 'values_parameters.Value',
                 'values_parameters.Comment',
                 'values_parameters.GraphicsTimesID',
@@ -74,7 +76,8 @@ class DocumentsController extends Controller
                 'values_parameters.Changed',
                 'values_parameters.Changer',
                 'values_parameters.created_at',
-                'values_parameters.updated_at'
+                'values_parameters.updated_at',
+                'graphic_times.StartTime' // `graphic_times` jadvalidan `StartTime` ustuni
             )
             ->get();
     
@@ -84,6 +87,7 @@ class DocumentsController extends Controller
             'data' => $query
         ]);
     }
+    
     
     
     private function getRowUnit($user_id)

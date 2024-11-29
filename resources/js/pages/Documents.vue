@@ -18,7 +18,8 @@
         :pager="{ visible: true, showPageSizeSelector: true, allowedPageSizes: [5, 10, 20], showInfo: true }"
         keyExpr="id">
         <DxColumn dataField="FactoryStructureID" caption="Sex nomi" groupIndex="0" />
-        <DxColumn dataField="FactoryStructureID" caption="Factory ID" width="50" />
+        <DxColumn dataField="StartTime" caption="Vaqti" width="100" />
+        <DxColumn dataField="PName" caption="Nomlanishi" />
         <DxColumn dataField="PName" caption="Nomlanishi" />
         <DxColumn dataField="Value" caption="Qiymati" />
       </DxDataGrid>

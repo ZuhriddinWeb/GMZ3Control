@@ -340,7 +340,7 @@ const fetchGraphics = async () => {
   
   try {
     const responseChanges = await axios.get('/changes');
-    const responsePages = await axios.get('/pages');
+    const responsePages = await axios.get(`/pages-select/${store.state.user.structure_id}`);
     pagesValue.value = responsePages.data
 
     const responseParams = await axios.get(`/paramWithId/${structureID}`);

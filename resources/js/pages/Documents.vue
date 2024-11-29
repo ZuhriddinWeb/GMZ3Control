@@ -51,7 +51,7 @@ const fetchData = async () => {
   try {
     const response = await axios.get(`/document/${store.state.user.id}/${selectedDate.value}`);
     rowData.value = response.data.data;
-    console.log("Fetched data:", rowData.value);
+    // console.log("Fetched data:", rowData.value);
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -68,19 +68,70 @@ const exportToExcel = () => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Exported Data');
 
-  exportDataGrid({
-    component: dataGridRef.value.instance,
-    worksheet: worksheet,
-    autoFilterEnabled: true,
-  }).then(() => {
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      saveAs(
-        new Blob([buffer], { type: "application/octet-stream" }),
-        "ExportedData.xlsx"
-      );
+  // Ustunlarni qo'shish
+  worksheet.columns = [
+    { header: 'SOAT', key: 'hour', width: 10 },
+    { header: 'ZICHLIK', key: 'density', width: 15 },
+    { header: '+0,15', key: 'plus_015', width: 10 },
+    { header: '+0,074', key: 'plus_0074', width: 10 },
+    { header: 'Tayyor sinf', key: 'ready_class', width: 15 },
+  ];
+
+  // Ma'lumotlarni to'ldirish
+  rowData.value.forEach((row, index) => {
+    worksheet.addRow({
+      hour: index + 1, // Soatlar (masalan, 1, 2, 3...)
+      density: row.Value, // Zichlik
+      plus_015: Math.floor(Math.random() * 50 + 250), // Random ma'lumot
+      plus_0074: Math.floor(Math.random() * 50 + 80), // Random ma'lumot
+      ready_class: (Math.random() * 40 + 30).toFixed(2), // Tayyor sinf qiymati
     });
   });
+
+  // Stil va ranglarni sozlash
+  worksheet.eachRow((row, rowNumber) => {
+    row.eachCell((cell, colNumber) => {
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      if (rowNumber === 1) {
+        // Sarlavhalar uchun fon rangi
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFFF00' }, // Sariq
+        };
+        cell.font = { bold: true };
+      } else if (rowNumber === worksheet.rowCount) {
+        // "O'rtacha" qiymatlar uchun
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF0000' }, // Qizil
+        };
+        cell.font = { bold: true, color: { argb: 'FFFFFF' } }; // Oq shrift
+      }
+    });
+  });
+
+  // O'rtacha qiymatlarni qo'shish
+  const lastRow = worksheet.addRow({
+    hour: 'O‘rta',
+    density: (
+      rowData.value.reduce((sum, row) => sum + row.Value, 0) / rowData.value.length
+    ).toFixed(2),
+    plus_015: '---', // Bu yerda kerakli hisob-kitoblarni qo'shishingiz mumkin
+    plus_0074: '---',
+    ready_class: '---',
+  });
+
+  // Excel faylini saqlash
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    saveAs(
+      new Blob([buffer], { type: 'application/octet-stream' }),
+      'ExportedData.xlsx'
+    );
+  });
 };
+
 
 // Sahifa yuklanganda ma'lumotlarni yuklash
 onMounted(() => {

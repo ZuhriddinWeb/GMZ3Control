@@ -43,6 +43,7 @@ class NumberPageController extends Controller
     }
     private function getRowUnit($id)
     {
+        
         $unit = NumberPage::join('factory_structures','number_pages.StructureID','=','factory_structures.id')
         ->where('number_pages.id',$id)
         ->select('factory_structures.Name as SName','number_pages.*')->get();

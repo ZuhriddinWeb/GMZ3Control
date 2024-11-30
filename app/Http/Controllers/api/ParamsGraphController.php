@@ -112,16 +112,13 @@ class ParamsGraphController extends Controller
         return response()->json($allParameters);
     }
     
-    public function getParamsForUser($id, $change, $ChangeDay,$tabId)
+    public function getParamsForUser($id, $change, $ChangeDay, $tabId)
     {
-        // dd($id);
-        // Split the ID string into an array of integers
         $idArray = explode(',', $id);
-        $blogsIds = array_map('intval', $idArray); // Ensure IDs are integers
-        $blogsIdsString = implode(',', $blogsIds); // Create comma-separated string
-        
-        // Prepare the SQL query with parameter binding
-        $query = DB::select("SELECT * FROM 
+        $blogsIds = array_map('intval', $idArray); 
+        $blogsIdsString = implode(',', $blogsIds);
+        $query = DB::select("
+            SELECT * FROM 
             (
                 SELECT 
                     graphic_times.id AS GTid,
@@ -141,19 +138,19 @@ class ParamsGraphController extends Controller
                 FROM graphics_paramenters 
                 INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
                 INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
-                WHERE FactoryStructureID IN ($blogsIdsString)
-                    AND (Change = ? OR ? = 0) AND PageId=$tabId
+                WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
+                    AND (graphic_times.Change = ? OR ? = 0) 
+                    AND graphics_paramenters.PageId = $tabId
             ) p
             WHERE p.StartDateTime <= GETDATE()
             ORDER BY StartDateTime DESC, OrderNumber
         ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
-
-        // Optionally, you can dump the query result for debugging
-        // dd($query[0]->ETime);
+    
         // dd($query);
-
         return $query;
     }
+    
+    
     //dd($ChangeDay);
     //  $query = DB::select("select * from 
     //  (
@@ -208,28 +205,28 @@ class ParamsGraphController extends Controller
         // event();
         return response()->json(['status' => 'Yangilandi!']);
     }
-    public function getParamsForUserCount($id, $change_id)
-    {
-        $idArray = explode(',', $id);
+    // public function getParamsForUserCount($id, $change_id)
+    // {
+    //     $idArray = explode(',', $id);
 
-        $query = DB::table('graphics_paramenters')
-            ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
-            ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
-            ->whereIn('BlogsID', $idArray)
-            ->select('graphic_times.id as GTid', 'graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*');
+    //     $query = DB::table('graphics_paramenters')
+    //         ->join('graphic_times', 'graphics_paramenters.GrapicsID', '=', 'graphic_times.GraphicsID')
+    //         ->join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+    //         ->whereIn('BlogsID', $idArray)
+    //         ->select('graphic_times.id as GTid', 'graphic_times.Name as GTName', 'graphic_times.Change as Change', 'graphic_times.StartTime as STime', 'graphic_times.EndTime as ETime', 'parameters.Name as PName', 'parameters.Min as Min', 'parameters.Max as Max', 'graphics_paramenters.*');
 
-        if ($change_id == 1) {
-            $query->whereTime('graphic_times.StartTime', '>=', '08:00')
-                ->whereTime('graphic_times.EndTime', '<=', '20:00');
-        } elseif ($change_id == 2) {
-            $query->where(function ($query) {
-                $query->whereTime('graphic_times.StartTime', '<', '08:00')
-                    ->orWhereTime('graphic_times.EndTime', '>', '20:00');
-            });
-        }
-        $data = $query->count();
-        return $data;
-    }
+    //     if ($change_id == 1) {
+    //         $query->whereTime('graphic_times.StartTime', '>=', '08:00')
+    //             ->whereTime('graphic_times.EndTime', '<=', '20:00');
+    //     } elseif ($change_id == 2) {
+    //         $query->where(function ($query) {
+    //             $query->whereTime('graphic_times.StartTime', '<', '08:00')
+    //                 ->orWhereTime('graphic_times.EndTime', '>', '20:00');
+    //         });
+    //     }
+    //     $data = $query->count();
+    //     return $data;
+    // }
     private function create(Request $request)
     {
         $GParams = GraphicsParamenters::create([

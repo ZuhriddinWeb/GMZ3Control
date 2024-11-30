@@ -44,7 +44,7 @@ class ParametrValueController extends Controller
     }
     public function getByBlog($factoryId, $current,$ChangeID)
     {
-        // dd($current);
+        // dd($factoryId);
         $current = Carbon::parse($current)->toDateString();
 
         // FactoryStructureID'ni arrayga aylantirish

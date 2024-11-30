@@ -58,7 +58,7 @@
       <div ref="gridContainer" class="ag-grid-container h-full">
         <VaTabs v-model="selectedTab" stateful grow @keydown="handleTabKey" tabindex="0">
           <template #tabs>
-            <VaTab v-for="page in pagesValue" :key="page.id" :name="page.id">
+            <VaTab v-for="page in pagesValue" :key="page.NumberPage" :name="page.NumberPage">
               {{ page.Name }}
             </VaTab>
           </template>

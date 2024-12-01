@@ -192,8 +192,9 @@ class ParamsGraphController extends Controller
     // if()
     public function getRowParamID($id)
     {
+        $idsArray = explode(',', $id);
         return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
-            ->where('FactoryStructureID', $id)
+            ->whereIn('FactoryStructureID', $idsArray)
             ->select('parameters.id as Pid','parameters.Name as PName','graphics_paramenters.*')
             ->get();
     }

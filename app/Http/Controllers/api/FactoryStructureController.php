@@ -39,6 +39,13 @@ class FactoryStructureController extends Controller
         $unit = FactoryStructure::find($id);
         return response()->json($unit);
     }
+    public function getForUser($id)
+    {
+        // dd($id);
+        $idsArray = explode(',', $id);
+        $unit = FactoryStructure::whereIn('id', $idsArray)->get();
+        return response()->json($unit);
+    }
     private function create(Request $request)
     {
         // $request->validate([

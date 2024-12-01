@@ -87,7 +87,10 @@ import EditValue from '../components/ParameterValueComponent/EditValue.vue';
 import { useRouter } from 'vue-router';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs } from 'vuestic-ui';
 import store from '../store';
-
+import { defineProps } from 'vue'
+const props = defineProps({
+  id: Number
+})
 const router = useRouter();
 
 const { t, locale } = useI18n();
@@ -336,14 +339,12 @@ function toggleFullScreen() {
   }
 }
 const fetchGraphics = async () => {
-  console.log(store.state.user.structure_id);
-  
   try {
     const responseChanges = await axios.get('/changes');
-    const responsePages = await axios.get(`/pages-select/${store.state.user.structure_id}`);
+    const responsePages = await axios.get(`/pages-select/${props.id}`);
     pagesValue.value = responsePages.data
 
-    const responseParams = await axios.get(`/paramWithId/${structureID}`);
+    const responseParams = await axios.get(`/paramWithId/${props.id}`);
     changesOptions.value = responseChanges.data.map(change => ({
       value: change.Change,
       text: change.Change,

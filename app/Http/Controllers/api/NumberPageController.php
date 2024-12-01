@@ -50,8 +50,13 @@ class NumberPageController extends Controller
     }
     public function getRowPages($id)
     {
-        $unit = NumberPage::where('StructureID',$id)->get();
-        return response()->json($unit);
+        $idsArray = explode(',', $id);
+        // dd($idsArray);
+        $pages = NumberPage::whereIn('StructureID', $idsArray)
+        ->get();
+
+        // $unit = NumberPage::where('StructureID',$id)->get();
+        return response()->json($pages);
     }
     private function create(Request $request)
     {

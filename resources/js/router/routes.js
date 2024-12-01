@@ -194,9 +194,18 @@ export default [
 		},
 	},
 	{
+		path: '/vparam/:id',
+		name:'vparam',
+		component: () => import('../pages/ParametrValue.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
 		path: '/vparams',
 		name:'vparams',
-		component: () => import('../pages/ParametrValue.vue'),
+		component: () => import('../pages/ParametrValueCard.vue'),
 		meta: {
 			guard: 'auth',
 		},

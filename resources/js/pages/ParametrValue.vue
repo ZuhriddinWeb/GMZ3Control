@@ -542,7 +542,7 @@ async function getPages(newValue) {
 
   try {
     const [paramsResponse, valuesResponse] = await axios.all([
-      axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${newValue}`),
+      axios.get(`/get-params-for-user/${props.id}/${currentChange}/${currentTime}/${newValue}`),
       axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}/${currentChange}`)
     ]);
 

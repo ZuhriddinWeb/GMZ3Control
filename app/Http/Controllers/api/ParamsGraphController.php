@@ -47,7 +47,7 @@ class ParamsGraphController extends Controller
     {
         $Gparams = GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->join('factory_structures', 'graphics_paramenters.FactoryStructureID', '=', 'factory_structures.id')
-            ->leftJoin('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.id')
+            ->leftJoin('number_pages', 'graphics_paramenters.PageId', '=', 'number_pages.NumberPage')
             ->leftJoin('formulas', 'graphics_paramenters.WithFormula', '=', 'formulas.id')
 
             ->join('graphics', 'graphics_paramenters.GrapicsID', '=', 'graphics.id')

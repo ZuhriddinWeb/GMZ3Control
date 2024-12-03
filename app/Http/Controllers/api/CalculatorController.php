@@ -371,15 +371,24 @@ class CalculatorController extends Controller
     }
 
 
-    public function delete(Request $request, $id)
+    public function delete(Request $request, $parametersID)
     {
+       
         try {
-            $unit = Units::findOrFail($id);
-            $unit->delete();
-
-            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
+            // ParametersID bo'yicha barcha yozuvlarni topish
+            $records = Calculator::where('ParametersID', $parametersID)->get();
+    
+            // Agar hech narsa topilmasa, xato qaytarish
+            if ($records->isEmpty()) {
+                return response()->json(['status' => 404, 'message' => 'No records found for the given ParametersID']);
+            }
+    
+            // Yozuvlarni o'chirish
+            Calculator::where('ParametersID', $parametersID)->delete();
+    
+            return response()->json(['status' => 200, 'message' => 'Records deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
+            return response()->json(['status' => 500, 'message' => 'Error deleting records: ' . $e->getMessage()]);
         }
     }
 

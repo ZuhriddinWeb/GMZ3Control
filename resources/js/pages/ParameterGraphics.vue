@@ -72,6 +72,8 @@ import { useI18n } from 'vue-i18n';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import EditModal from '../components/ParamsGraphComponent/EditModal.vue';
 import DeleteModal from '../components/ParamsGraphComponent/DeleteModal.vue'
+import DeleteModalFormule from '../components/FormulaComponent/DeleteModalFormule.vue'
+
 import Calculator from '../components/FormulaComponent/Calculator.vue';
 import Times from '../components/FormulaComponent/Times.vue';
 import { defineProps } from 'vue'
@@ -167,6 +169,13 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: Times,
+  },
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
+    cellRenderer: DeleteModalFormule,
   },
   // {
   //   cellClass: ['px-0'],

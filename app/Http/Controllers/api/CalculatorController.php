@@ -227,9 +227,64 @@ class CalculatorController extends Controller
         }
     
         // Formulalarni yaratish va bazaga yozish
-        if ($request['Comment'] === "3") {
+        if ($request['Comment'] === "1") {
+            $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
+            for ($i = 1; $i <= $totalTidCount; $i++) {
+                $formula = []; // Har bir sikl uchun yangi formula
+    
+                // Birinchi element uchun formula
+                if ($i === 1) {
+                    $formula = [
+                        "(",
+                        $request['Calculate'][1], // Pid qiymati
+                        "{$tidValues[0]}",
+                        ")",
+                        "/",
+                        "1"
+                    ];
+                } else {
+                    $formula[] = "(";
+                    for ($j = 0; $j < $i; $j++) {
+                        $formula[] = $request['Calculate'][1]; // Pid qiymati
+                        $formula[] = "{$tidValues[$j]}"; // Tid qiymati
+                        if ($j < $i - 1) {
+                            $formula[] = "+"; // "+" operator
+                        }
+                    }
+                    $formula[] = ")";
+                    $formula[] = "/";
+                    $formula[] = (string) $i; // Division value
+                }
+    
+                // Bazaga yozish
+                Calculator::create([
+                    'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i - 1]), // TimeID ni tozalash va intga o‘tkazish
+                    'ParametersID' => $request['id'], // Parametr ID qiymati
+                    'Calculate' => $formula, // JSON formatdagi formula
+                    'Comment' => $request['Comment'], // Komment qiymati
+                ]);
+            }
+        } elseif ($request['Comment'] === "2") {
+            foreach ($integerTidValues as $key => $timeID) {
+                $newCalculate = []; // Har bir "Tid" uchun yangi Calculate massiv
+                foreach ($request['Calculate'] as $subItem) {
+                    if (is_array($subItem)) {
+                        $newCalculate[] = $tidValues[$key]; // Asl Tid qiymatini qo'shamiz
+                    } else {
+                        $newCalculate[] = $subItem; // Qolgan qismlar o'z holicha
+                    }
+                }
+    
+                Calculator::create([
+                    'TimeID' => $timeID,
+                    'ParametersID' => $request['id'],
+                    'Calculate' => $newCalculate,
+                    'Comment' => $request['Comment'],
+                ]);
+            }
+        } elseif ($request['Comment'] === "3") {
             $pid1 = $request['Calculate'][1]; // Birinchi parameter ID
-            $pid2 = $request['Calculate'][3]; // Ikkinchi parameter ID
+            $pid2 = $request['Calculate'][4]; // Ikkinchi parameter ID
             $totalTidCount = count($tidValues); // Tid qiymatlarining umumiy soni
     
             for ($i = 0; $i < $totalTidCount; $i++) {
@@ -253,59 +308,36 @@ class CalculatorController extends Controller
                     'Comment' => $request['Comment'], // Komment qiymati
                 ]);
             }
-        } elseif ($request['Comment'] === "1") {
-            // Comment = "1" uchun kod (o'zgarishsiz qoldirildi)
-            $totalTidCount = count($tidValues);
+        } else {
+            $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
             for ($i = 1; $i <= $totalTidCount; $i++) {
-                $formula = [];
+                $formula = []; // Har bir sikl uchun yangi formula
     
                 if ($i === 1) {
                     $formula = [
                         "(",
-                        $request['Calculate'][1],
+                        $request['Calculate'][1], // Pid qiymati
                         "{$tidValues[0]}",
-                        ")",
-                        "/",
-                        "1"
+                        ")"
                     ];
                 } else {
                     $formula[] = "(";
                     for ($j = 0; $j < $i; $j++) {
-                        $formula[] = $request['Calculate'][1];
-                        $formula[] = "{$tidValues[$j]}";
+                        $formula[] = $request['Calculate'][1]; // Pid qiymati
+                        $formula[] = "{$tidValues[$j]}"; // Tid qiymati
                         if ($j < $i - 1) {
-                            $formula[] = "+";
+                            $formula[] = "+"; // "+" operator
                         }
                     }
                     $formula[] = ")";
-                    $formula[] = "/";
-                    $formula[] = (string) $i;
                 }
     
+                // Bazaga yozish
                 Calculator::create([
-                    'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i - 1]),
-                    'ParametersID' => $request['id'],
-                    'Calculate' => $formula,
-                    'Comment' => $request['Comment'],
-                ]);
-            }
-        } elseif ($request['Comment'] === "2") {
-            // Comment = "2" uchun kod (o'zgarishsiz qoldirildi)
-            foreach ($integerTidValues as $key => $timeID) {
-                $newCalculate = [];
-                foreach ($request['Calculate'] as $subItem) {
-                    if (is_array($subItem)) {
-                        $newCalculate[] = $tidValues[$key];
-                    } else {
-                        $newCalculate[] = $subItem;
-                    }
-                }
-    
-                Calculator::create([
-                    'TimeID' => $timeID,
-                    'ParametersID' => $request['id'],
-                    'Calculate' => $newCalculate,
-                    'Comment' => $request['Comment'],
+                    'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i - 1]), // TimeID ni tozalash va intga o‘tkazish
+                    'ParametersID' => $request['id'], // Parametr ID qiymati
+                    'Calculate' => $formula, // JSON formatdagi formula
+                    'Comment' => $request['Comment'], // Komment qiymati
                 ]);
             }
         }
@@ -315,8 +347,6 @@ class CalculatorController extends Controller
             'message' => "Javob muvafaqiyatli qo'shildi",
         ]);
     }
-    
-    
     
 
     private function update(Request $request)

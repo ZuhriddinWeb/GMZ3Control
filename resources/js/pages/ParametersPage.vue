@@ -24,6 +24,9 @@
             <VaInput class="w-full" v-model="result.ShortNameRus"
               :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
               :label="t('form.shortNameRus')" />
+            <VaInput class="w-full" v-model="result.WinCC"
+              :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
+              :label="t('form.wincc')" />
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
               <VaInput class="w-full" v-model="result.Min"
                 :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.min')" />
@@ -74,6 +77,7 @@ const result = reactive({
   NameRus: "",
   ShortNameRus: "",
   ShortName: "",
+  WinCC: "",
   ParamsTypeID: "",
   UnitsID: "",
   Min: "",
@@ -160,9 +164,9 @@ const onSubmit = async () => {
       result.ShortName = '';
       result.ParamsTypeID = '';
       result.UnitsID = '',
-      result.Min = '',
-      result.Max = '',
-      result.Comment = '';
+        result.Min = '',
+        result.Max = '',
+        result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
 

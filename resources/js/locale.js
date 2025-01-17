@@ -104,6 +104,7 @@ export default {
       login: "Логин",
       tabel:"Табелный номер",
       password: "Пароль",
+      wincc:"WinCC"
     },
     validation: {
       requiredField: "Поле, обязательное для заполнения",
@@ -241,6 +242,7 @@ export default {
       login: "Login",
       tabel: "Tabel raqami",
       password: "Parol",
+      wincc:"WinCC"
     },
     validation: {
       requiredField: "To'ldirish majburiy bo'lgan maydon",

@@ -308,7 +308,32 @@ class CalculatorController extends Controller
                     'Comment' => $request['Comment'], // Komment qiymati
                 ]);
             }
-        } else {
+        } elseif ($request['Comment'] === "4") {
+            $pid1 = $request['Calculate'][1]; // Birinchi parameter ID
+            $pid2 = $request['Calculate'][4]; // Ikkinchi parameter ID
+            $totalTidCount = count($tidValues); // Tid qiymatlarining umumiy soni
+    
+            for ($i = 0; $i < $totalTidCount; $i++) {
+                $formula = [
+                    "(",
+                    $pid1,            // Birinchi parameter ID
+                    $tidValues[$i],   // Birinchi Tid
+                    "*",
+                    $pid2,            // Ikkinchi parameter ID
+                    $tidValues[$i],   // Ikkinchi Tid
+                    ")"
+                ];
+    
+                // Bazaga yozish
+                Calculator::create([
+                    'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i]), // TimeID ni tozalash va intga o‘tkazish
+                    'ParametersID' => $request['id'], // Parametr ID qiymati
+                    'Calculate' => $formula, // JSON formatdagi formula
+                    'Comment' => $request['Comment'], // Komment qiymati
+                ]);
+            }
+        }
+        else {
             $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
             for ($i = 1; $i <= $totalTidCount; $i++) {
                 $formula = []; // Har bir sikl uchun yangi formula

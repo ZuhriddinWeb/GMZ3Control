@@ -18,6 +18,9 @@
           <VaInput class="w-full" v-model="result.ShortNameRus"
             :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
             :label="t('form.shortNameRus')" />
+            <VaInput class="w-full" v-model="result.WinCC"
+            :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
+            :label="t('form.wincc')" />
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaInput class="w-full" v-model="result.Min"
               :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('table.min')" />
@@ -56,6 +59,7 @@ const result = reactive({
   NameRus: "",
   ShortNameRus: "",
   ShortName: "",
+  WinCC: "",
   ParamsTypeID: "",
   UnitsID: "",
   Min: "",
@@ -71,7 +75,8 @@ const fetchParams = async () => {
       axios.get('/units'),
       axios.get(`param/${props.params.data['Uuid']}`)
     ]);
-
+    console.log(paramResponse);
+    
     paramsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.id,
       text: graphic.Name
@@ -85,6 +90,7 @@ const fetchParams = async () => {
     result.NameRus = paramResponse.data.NameRus;
     result.ShortNameRus = paramResponse.data.ShortNameRus;
     result.ShortName = paramResponse.data.ShortName;
+    result.WinCC = paramResponse.data.WinCC;
     result.ParamsTypeID = +paramResponse.data.Pid;
     result.UnitsID = +paramResponse.data.Uid;
     result.Min = +paramResponse.data.Min;

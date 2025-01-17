@@ -1,18 +1,19 @@
 <template>
-  <div class="grid grid-rows-[55px,1fr]">
-    <!-- Add new Elements start -->
-    <main>
-      <div class="flex justify-between">
-        <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
-      </div>
-      <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit"
-        close-button>
+  <main class="h-full w-full text-center content-center">
+        <!-- <span class="flex w-full"></span> -->
+        <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
+        <!-- <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" /> -->
+      <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+      @close="selectedDataEdit = false" close-button>
         <h3 class="va-h3">
           {{ t('modals.addUserTitle') }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-2 items-end w-full">
+              <VaSelect v-model="result.StructureID" :label="t('form.structureName')" :options="factoryOptions"
+                multiple />
+            </div>
             <VaInput class="w-full" v-model="result.Name"
               :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
               :label="t('form.userName')" />
@@ -28,12 +29,6 @@
         </div>
       </VaModal>
     </main>
-    <!-- Add new Elements end -->
-    <main class="flex-grow">
-      <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" animateRows="true"
-        class="ag-theme-material h-full" @gridReady="(params) => gridApi = params.api"></ag-grid-vue>
-    </main>
-  </div>
 </template>
 
 
@@ -42,6 +37,7 @@ import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import { useI18n } from 'vue-i18n';
+import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 
 const { locale, t } = useI18n();
 
@@ -49,6 +45,7 @@ const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
 const factoryOptions = ref([]);
+const selectedDataEdit = ref(false);
 
 const result = reactive({
   Name: "",
@@ -57,19 +54,15 @@ const result = reactive({
   Password: "",
 });
 
-const defaultColDef = {
-  sortable: true,
-  filter: true,
-};
 
-const fetchData = async () => {
-  try {
-    const response = await axios.get('/users');
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
+// const fetchData = async () => {
+//   try {
+//     const response = await axios.get('/users');
+//     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//   }
+// };
 
 const fetchGraphics = async () => {
   try {
@@ -107,7 +100,7 @@ onMounted(() => {
   if (savedLocale) {
     locale.value = savedLocale;
   }
-  fetchData();
+  // fetchData();
   fetchGraphics();
 });
 

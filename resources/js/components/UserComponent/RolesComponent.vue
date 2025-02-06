@@ -2,9 +2,9 @@
   <main class="h-full w-full text-center content-center">
     <VaButton round icon="settings" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
     <VaModal max-width="45%" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
-      @close="selectedDataEdit = false" close-button>
+      @close="selectedDataEdit = false" close-button >
       <h3>
-       <span class="va-h3">{{ t('table.user') }} : {{ result.userName }}</span>  
+       <span class="va-h3"  @vue:mounted="fetchData">{{ t('table.user') }} : {{ result.userName }}</span>  
       </h3>
       <div>
         <div class="va-table-responsive">

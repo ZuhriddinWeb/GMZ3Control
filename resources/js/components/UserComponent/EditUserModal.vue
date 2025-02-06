@@ -5,7 +5,7 @@
         <!-- <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" /> -->
       <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
-        <h3 class="va-h3">
+        <h3 class="va-h3" @vue:mounted="fetchGraphics" >
           {{ t('modals.addUserTitle') }}
         </h3>
         <div>

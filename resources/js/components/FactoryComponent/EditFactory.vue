@@ -1,8 +1,9 @@
 <template>
   <main class="h-full w-full text-center content-center">
-    <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
-    <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
-      @close="selectedDataEdit = false" close-button>
+    <VaButton v-if="canUpdate" round icon="edit" preset="primary" class="mt-1"
+      @click="canUpdate ? (selectedDataEdit = true) : null" />
+    <VaModal v-if="canUpdate" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')"
+      @ok="onSubmit" @close="selectedDataEdit = false" close-button >
       <h3 class="va-h3">
         {{ t('modals.editFactory') }}
       </h3>
@@ -24,14 +25,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted,inject } from 'vue';
+import { ref, reactive, onMounted, inject } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
-const props = defineProps(["params"]);
+const props = defineProps({
+  params: Object,
+  canUpdate: Boolean
+});
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
+import { defineProps } from 'vue';
 
 const { t } = useI18n();
 
@@ -43,6 +48,7 @@ const result = reactive({
   Comment: "",
   id: props.params.data['id'],
 });
+
 
 onMounted(() => {
   axios.get(`factory/${props.params.data['id']}`)

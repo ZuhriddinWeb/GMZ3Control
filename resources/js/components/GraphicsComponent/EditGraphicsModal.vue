@@ -3,7 +3,7 @@
     <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button>
-      <h3 class="va-h3">{{ t('modals.editFactory') }}</h3>
+      <h3 class="va-h3" @vue:mounted="fetchParams">{{ t('modals.editFactory') }}</h3>
       <div>
         <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
           <VaInput class="w-full" v-model="result.Name" :rules="[(value) => !!value || t('validation.required')]"
@@ -35,8 +35,7 @@ const result = reactive({
   Comment: '',
   id: props.params.data['id'],
 });
-
-onMounted(() => {
+const fetchParams = async () => {
   axios
     .get(`graphics/${result.id}`)
     .then((res) => {
@@ -48,7 +47,21 @@ onMounted(() => {
     .catch((error) => {
       console.error('Error fetching data:', error);
     });
-});
+    
+  } 
+// onMounted(() => {
+//   axios
+//     .get(`graphics/${result.id}`)
+//     .then((res) => {
+//       result.Name = res.data.Name;
+//       result.NameRus = res.data.NameRus;
+
+//       result.Comment = res.data.Comment;
+//     })
+//     .catch((error) => {
+//       console.error('Error fetching data:', error);
+//     });
+// });
 
 const onSubmit = async () => {
   try {

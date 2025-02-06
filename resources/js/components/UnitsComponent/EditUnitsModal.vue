@@ -3,7 +3,7 @@
     <VaButton round icon="edit" preset="primary" class="mt-1" @click="selectedDataEdit = true" />
     <VaModal v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" 
       @ok="onSubmit" @close="selectedDataEdit = false" close-button>
-      <h3 class="va-h3">
+      <h3 class="va-h3" @vue:mounted="fetchParams">
         {{ t('modals.editFactory') }}
       </h3>
       <div>
@@ -43,9 +43,7 @@ const result = reactive({
   Comment: "",
   id: props.params.data['id'],
 });
-
-// Fetch unit data on mount
-onMounted(() => {
+const fetchParams = async () => {
   axios.get(`/units/${props.params.data['id']}`)
     .then((res) => {
       result.NameRus = res.data.NameRus;
@@ -58,7 +56,22 @@ onMounted(() => {
       console.error('Error fetching data:', error);
       // Optionally, you can show an error notification here.
     });
-});
+  } 
+// Fetch unit data on mount
+// onMounted(() => {
+//   axios.get(`/units/${props.params.data['id']}`)
+//     .then((res) => {
+//       result.NameRus = res.data.NameRus;
+//       result.Name = res.data.Name;
+//       result.ShortName = res.data.ShortName;
+//       result.ShortNameRus = res.data.ShortNameRus;
+//       result.Comment = res.data.Comment;
+//     })
+//     .catch((error) => {
+//       console.error('Error fetching data:', error);
+//       // Optionally, you can show an error notification here.
+//     });
+// });
 
 const onSubmit = async () => {
   try {

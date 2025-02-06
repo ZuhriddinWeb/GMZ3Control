@@ -9,7 +9,7 @@
       @close="selectedDataEdit = false" 
       close-button
     >
-      <h3 class="va-h3">
+      <h3 class="va-h3" @vue:mounted="fetchParams">
         {{ t('modals.editFactory') }}
       </h3>
       <div>
@@ -70,8 +70,7 @@ const result = reactive({
   Comment: "",
   id: props.params.data['id'],
 });
-
-onMounted(() => {
+const fetchParams = async () => {
   axios.get(`structure/${props.params.data['id']}`)
     .then((res) => {
       Object.assign(result, res.data);
@@ -79,7 +78,17 @@ onMounted(() => {
     .catch((error) => {
       console.error('Error fetching data:', error);
     });
-});
+    
+  } 
+// onMounted(() => {
+//   axios.get(`structure/${props.params.data['id']}`)
+//     .then((res) => {
+//       Object.assign(result, res.data);
+//     })
+//     .catch((error) => {
+//       console.error('Error fetching data:', error);
+//     });
+// });
 
 const onSubmit = async () => {
   try {

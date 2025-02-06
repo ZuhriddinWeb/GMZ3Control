@@ -4,11 +4,12 @@
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <!-- <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" /> -->
+        <VaButton v-if="canCreate" @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
         <h3 class="va-h3">
-          {{ t('modals.addStructureTitle') }}
+        {{ t('modals.addStructureTitle') }}{{  }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-1">
@@ -46,14 +47,24 @@ import EditStructure from '../components/StructureComponent/EditStructure.vue';
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
-
+import { useStore } from 'vuex';
 const { locale, t } = useI18n();
 
+const store = useStore();
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
 const factoryOptions = ref([]);
+console.log(store.state.user.roles[4]);
 
+const userRole = computed(() => store.state.user.roles[4]); // Faqat 4-chi indexni olish
+const hasPermission = (permission) => {
+  return userRole.value?.pivot?.[permission] === "1"; // Tekshirayotganda ? bilan mavjudligini tekshiramiz
+};
+
+const canCreate = computed(() => hasPermission("create"));
+const canUpdate = computed(() => hasPermission("update"));
+const canDelete = computed(() => hasPermission("delete"));
 const result = reactive({
   Name: "",
   NameRus: "",
@@ -83,6 +94,7 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: EditStructure,
+    cellRendererParams: { canUpdate: canUpdate.value },
   },
   {
     cellClass: ['px-0'],
@@ -90,6 +102,7 @@ const columnDefs = computed(() => [
     field: "",
     width: 70,
     cellRenderer: DeleteStructure,
+    cellRendererParams: { canDelete: canDelete.value },
   },
 ]);
 

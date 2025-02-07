@@ -55,7 +55,7 @@ const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
 const factoryOptions = ref([]);
-console.log(store.state.user.roles[4]);
+// console.log(store.state.user.roles[4]);
 
 const userRole = computed(() => store.state.user.roles[4]); // Faqat 4-chi indexni olish
 const hasPermission = (permission) => {

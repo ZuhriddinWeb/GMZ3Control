@@ -230,7 +230,7 @@ const columnDefs = ref([
     field: "Value",
     width: 150,
     editable: (params) => {
-      console.log('params.data:', params.data);
+      // console.log('params.data:', params.data);
       return params.data && params.data.WithFormula !== "1";
     },
 
@@ -353,16 +353,16 @@ const fetchGraphics = async () => {
       value: factory.Pid,
       text: factory.PName
     }));
-    const responseSources = await axios.get('/source');
-    SourceOptions.value = responseSources.data.map(factory => ({
-      value: factory.id,
-      text: factory.Name
-    }));
-    const responseTimes = await axios.get('/graphictimes');
-    TimesOptions.value = responseTimes.data.map(factory => ({
-      value: factory.id,
-      text: factory.GName
-    }));
+    // const responseSources = await axios.get('/source');
+    // SourceOptions.value = responseSources.data.map(factory => ({
+    //   value: factory.id,
+    //   text: factory.Name
+    // }));
+    // const responseTimes = await axios.get('/graphictimes');
+    // TimesOptions.value = responseTimes.data.map(factory => ({
+    //   value: factory.id,
+    //   text: factory.GName
+    // }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
   }
@@ -413,7 +413,7 @@ const gridOptions = {
 //   }
 // };
 const openEditModal = (params) => {
-  console.log(params);
+  // console.log(params);
 
   rowData.value = { ...params.data }; // Store the row data
   currentRowNode.value = params.node; // Store the row node
@@ -427,7 +427,7 @@ const openEditModal = (params) => {
 };
 const handleUpdate = (updatedData) => {
   // Process the updated data
-  console.log('Updated Data:', updatedData);
+  // console.log('Updated Data:', updatedData);
 };
 const getCurrentTimeInMinutes = () => {
   const now = new Date();
@@ -615,7 +615,7 @@ const onRowClicked = (event) => {
 };
 
 const saveDataToServer = async (data) => {
-  console.log( day.value);
+  // console.log( day.value);
   const change = result.Change;
   const daySelect = store.state.ValueDay;
 

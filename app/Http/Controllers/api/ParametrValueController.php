@@ -124,7 +124,7 @@ class ParametrValueController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
+            // \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
 
             return response()->json([
                 'status' => 500,

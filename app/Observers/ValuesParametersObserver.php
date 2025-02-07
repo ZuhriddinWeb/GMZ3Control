@@ -102,9 +102,9 @@ class ValuesParametersObserver
                 try {
                     // Ifodani hisoblash
                     $result = eval("return $calculateString;");
-                    logger()->info("Hisoblangan natija: $result"); // Natijani logga yozish
+                    // logger()->info("Hisoblangan natija: $result"); // Natijani logga yozish
                 } catch (\Exception $e) {
-                    logger()->error("Hisoblashda xato: " . $e->getMessage());
+                    // logger()->error("Hisoblashda xato: " . $e->getMessage());
                     continue;
                 }
 
@@ -142,7 +142,7 @@ class ValuesParametersObserver
                     );
 
                     // Tekshirish: Natija bazaga to'g'ri yozilganligini ko'rish uchun
-                    logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
+                    // logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
                     // dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
                 });
             }

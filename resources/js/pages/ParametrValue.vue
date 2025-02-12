@@ -613,6 +613,23 @@ const onRowClicked = (event) => {
   selectedRow.value = event.data;
   showModal.value = true;
 };
+// const saveDataToServer = async (dataArray) => {
+//   const change = result.Change;
+//   const daySelect = store.state.ValueDay;
+
+//   try {
+//     const response = await axios.post('/vparams', { 
+//       data: dataArray, userId, change, daySelect 
+//     });
+
+//     removeFocusFromGrid();
+//     getPages(store.state.newValue);
+//     return response;
+//   } catch (error) {
+//     console.error('Error saving data', error);
+//   }
+// };
+
 
 const saveDataToServer = async (data) => {
   // console.log( day.value);
@@ -630,6 +647,7 @@ const saveDataToServer = async (data) => {
     console.error('Error saving data', error);
   }
 };
+
 const removeFocusFromGrid = () => {
   if (gridApi.value) {
     gridApi.value.clearFocusedCell(); // Clear focus from all cells

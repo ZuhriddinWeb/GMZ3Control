@@ -6,10 +6,10 @@
           <span class="material-symbols-outlined w-1">circles_ext</span>
           <span class="flex-grow leading-none w-5/6">{{ locale === 'ru' ? card.NameRus : card.Name }}</span>
         </h5>
-        <p class="text-slate-600 leading-normal font-light">
+        <!-- <p class="text-slate-600 leading-normal font-light">
           The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to Naviglio where you can
           enjoy the main nightlife in Barcelona.
-        </p>
+        </p> -->
         <button @click="goToCardDetail(card.id)"
           class="bg-[#154EC1] py-2 px-4 mt-6 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
           type="button">

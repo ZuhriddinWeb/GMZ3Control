@@ -8,6 +8,7 @@ use App\Models\ValuesParameters;
 use DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\ProcessCalculatorJob;
 
 use App\Events\TimeUpdated;
 use Carbon\Carbon;
@@ -70,22 +71,17 @@ class ParametrValueController extends Controller
 
     public function create(Request $request)
     {
-        // dd($request->daySelect);
         $uuidString = (string) Str::uuid();
         try {
-            // Yangi yoki mavjud yozuvni topish
             $existingRecord = ValuesParameters::where([
                 'ParametersID' => $request->ParametersID,
                 'SourcesID' => $request->SourceID,
                 'TimeID' => $request->GTid,
                 'Created' => $request->daySelect,
-                // 'ChangeID' => $request->change,
-
             ])->first();
-
-            // Agar yozuv mavjud bo'lmasa, yangi yozuv qo'shiladi
+    
             if (!$existingRecord) {
-                ValuesParameters::create([
+                ValuesParameters::insert([
                     'id' => $uuidString,
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
@@ -98,10 +94,9 @@ class ParametrValueController extends Controller
                     'Comment' => $request->Comment,
                     'created_at' => now(),
                     'Created' => $request->daySelect,
-                    'Creator' => $request->userId,  // Yaratgan foydalanuvchini saqlash
+                    'Creator' => $request->userId,
                 ]);
             } else {
-                // Mavjud yozuv yangilansa, faqat 'updated_at' yangilanadi va 'Updater' yangilanadi
                 $existingRecord->update([
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
@@ -109,30 +104,30 @@ class ParametrValueController extends Controller
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
                     'updated_at' => now(),
-                    'Changed' =>$request->daySelect,
-                    'Changer' => $request->userId  // Faqat 'Updater' yangilanadi
+                    'Changed' => $request->daySelect,
+                    'Changer' => $request->userId
                 ]);
-                $uuidString = $existingRecord->id; // Mavjud yozuvning id-si saqlanadi
+                $uuidString = $existingRecord->id;
             }
-
-            $unit = ValuesParameters::where('id', $uuidString)->first();
-
+            // $valuesParameters = ValuesParameters::where('id', $uuidString)->first();
+            // dispatch(new ProcessCalculatorJob($valuesParameters));
+            // dispatch(new ProcessCalculatorJob($uuidString));
+    
             return response()->json([
                 'status' => 200,
-                'message' => "Ma`lumot muvaffaqiyatli qo'shildi yoki yangilandi",
-                'unit' => $unit
+                'message' => "Ma'lumot muvaffaqiyatli qo'shildi yoki yangilandi",
+                'unit' => ValuesParameters::where('id', $uuidString)->first()
             ]);
-
+    
         } catch (\Exception $e) {
-            // \Log::error('Error creating/updating unit:', ['error' => $e->getMessage()]);
-
             return response()->json([
                 'status' => 500,
-                'message' => 'There was an error processing the request.',
+                'message' => 'Xatolik yuz berdi',
                 'error' => $e->getMessage()
             ]);
         }
     }
+    
 
 
     // private function create(Request $request)
@@ -221,7 +216,7 @@ class ParametrValueController extends Controller
     public function vparamsGetValue($id)
     {
 
-        return ValuesParameters::join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id')
+        return DB::table('values_parameters')::join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id')
             ->where('BlogID', $id)
             ->where('TimeID', NULL)
             ->whereDate('values_parameters.created_at', Carbon::today()) // Filter for current day

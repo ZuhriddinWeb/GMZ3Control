@@ -15,11 +15,10 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
-        // dd($valuesParameters->ChangeID,$valuesParameters->Created);
+        
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
             $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
-
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 // Ushbu ParametersID uchun GraphicsParameter yozuvini olish
@@ -48,6 +47,7 @@ class ValuesParametersObserver
                         // Har bir unikal Tid uchun parametr qiymatini olish
                         $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
                             ValuesParameters::where('ParametersID', $parameterId)
+                            ->join('')
                             ->where('TimeID', $timeId)
                             ->where('Created',$valuesParameters->Created)
                             ->value('Value') ?? 0;

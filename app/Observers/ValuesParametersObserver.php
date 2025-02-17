@@ -19,6 +19,8 @@ class ValuesParametersObserver
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
             $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
+            dd($calculators);
+
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 // Ushbu ParametersID uchun GraphicsParameter yozuvini olish
@@ -29,7 +31,6 @@ class ValuesParametersObserver
 
                 // `Calculate` maydonini JSON stringdan massivga aylantirish, agar u string bo'lsa
                 $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
-                dd($calculateArray);
 
                 // O‘zgaruvchilarni ishga tushirish
                 $result = null;

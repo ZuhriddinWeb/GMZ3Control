@@ -50,7 +50,7 @@ class ValuesParametersObserver
                             ValuesParameters::where('ParametersID', $parameterId)
                             ->where('TimeID', $timeId)
                             ->where('Created',$valuesParameters->Created)
-                            ->value('Value') ?? 0;
+                            ->value('Value');
                     }
                 }
 

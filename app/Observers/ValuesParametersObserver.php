@@ -45,23 +45,27 @@ class ValuesParametersObserver
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
                 
-                        // LEFT JOIN bilan `graphic_times` jadvalidan `Name` ni olish
+                        // **1️⃣ `graphic_times` jadvalidan `TimeID` bo‘yicha `Name` ni olish**
                         $timeName = DB::table('graphic_times')
                             ->where('id', $timeId)
                             ->value('Name');
                 
-                        // Agar `graphic_times` jadvalidan `Name` topilmagan bo‘lsa, default qiymat
+                        // Agar `graphic_times` jadvalidan `Name` topilmagan bo‘lsa, logga yozamiz
                         if (!$timeName) {
+                            \Log::error("graphic_times dan `Name` topilmadi! TimeID: $timeId");
                             continue;
                         }
                 
-                        // ValuesParameters'ni `graphic_times` jadvali bilan LEFT JOIN qilish va `Value` ni olish
+                        // **2️⃣ `ValuesParameters` dan `graphic_times.Name` bo‘yicha `Value` ni olish**
                         $parameters[$parameterId][$timeId] = DB::table('values_parameters AS vp')
                             ->leftJoin('graphic_times AS gt', 'vp.TimeID', '=', 'gt.id')
                             ->where('vp.ParametersID', $parameterId)
                             ->where('gt.Name', $timeName) // `graphic_times` dan kelgan `Name` bo‘yicha filter
                             ->where('vp.Created', $valuesParameters->Created)
                             ->value('vp.Value') ?? 0;
+                
+                        // **Log qo‘shish (tekshirish uchun)**
+                        \Log::info("Graphic Timesdan topilgan Name: $timeName | ValuesParameters dagi Value: {$parameters[$parameterId][$timeId]}");
                     }
                 }
                 

@@ -134,6 +134,7 @@ class ValuesParametersObserver
                             'Created' => $valuesParameters->Created,
                         ],
                         [
+                            'id' => (string) Str::uuid(), // UUID ni qo'shish
                             'Value' => $data['Value'],
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],

@@ -20,7 +20,6 @@ class ValuesParametersObserver
             $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)
             // ->where('ParametersID', $valuesParameters->ParametersID)
             ->get();
-            dd($calculators);
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 // Ushbu ParametersID uchun GraphicsParameter yozuvini olish
@@ -29,6 +28,7 @@ class ValuesParametersObserver
                 if (!$param) {
                     continue; // Agar mos keluvchi GraphicsParameter topilmasa, keyingi siklga o'tish
                 }
+                dd($param);
 
                 // `Calculate` maydonini JSON stringdan massivga aylantirish, agar u string bo'lsa
                 $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;

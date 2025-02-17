@@ -15,16 +15,17 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
-        // dd($valuesParameters->ChangeID,$valuesParameters->Created);
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
-            $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
+            $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)
+            // ->where('ParametersID', $valuesParameters->ParametersID)
+            ->get();
             dd($calculators);
-
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 // Ushbu ParametersID uchun GraphicsParameter yozuvini olish
-                $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
+                $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)
+                ->first();
                 if (!$param) {
                     continue; // Agar mos keluvchi GraphicsParameter topilmasa, keyingi siklga o'tish
                 }
@@ -45,31 +46,15 @@ class ValuesParametersObserver
                         $parameterId = substr($item, 4);
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
-                
-                        // **1️⃣ `graphic_times` jadvalidan `TimeID` bo‘yicha `Name` ni olish**
-                        $timeName = DB::table('graphic_times')
-                            ->where('id', $timeId)
-                            ->value('Name');
-                
-                        // Agar `graphic_times` jadvalidan `Name` topilmagan bo‘lsa, logga yozamiz
-                        if (!$timeName) {
-                            \Log::error("graphic_times dan `Name` topilmadi! TimeID: $timeId");
-                            continue;
-                        }
-                
-                        // **2️⃣ `ValuesParameters` dan `graphic_times.Name` bo‘yicha `Value` ni olish**
-                        $parameters[$parameterId][$timeId] = DB::table('values_parameters AS vp')
-                            ->leftJoin('graphic_times AS gt', 'vp.TimeID', '=', 'gt.id')
-                            ->where('vp.ParametersID', $parameterId)
-                            ->where('gt.Name', $timeName) // `graphic_times` dan kelgan `Name` bo‘yicha filter
-                            ->where('vp.Created', $valuesParameters->Created)
-                            ->value('vp.Value') ?? 0;
-                
-                        // **Log qo‘shish (tekshirish uchun)**
-                        \Log::info("Graphic Timesdan topilgan Name: $timeName | ValuesParameters dagi Value: {$parameters[$parameterId][$timeId]}");
+
+                        // Har bir unikal Tid uchun parametr qiymatini olish
+                        $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
+                            ValuesParameters::where('ParametersID', $parameterId)
+                            ->where('TimeID', $timeId)
+                            ->where('Created',$valuesParameters->Created)
+                            ->value('Value') ?? 0;
                     }
                 }
-                
 
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish
                 foreach ($calculateArray as $item) {
@@ -112,16 +97,16 @@ class ValuesParametersObserver
                 if ($numberBuffer !== "") {
                     $values[] = $numberBuffer;
                 }
+
                 // Hisoblash ifodasini birlashtirish
                 $calculateString = implode(' ', $values);
-                dd($calculateString);
 
                 try {
                     // Ifodani hisoblash
                     $result = eval("return $calculateString;");
-                    logger()->info("Hisoblangan natija: $result"); // Natijani logga yozish
+                    // logger()->info("Hisoblangan natija: $result"); // Natijani logga yozish
                 } catch (\Exception $e) {
-                    logger()->error("Hisoblashda xato: " . $e->getMessage());
+                    // logger()->error("Hisoblashda xato: " . $e->getMessage());
                     continue;
                 }
 
@@ -159,7 +144,7 @@ class ValuesParametersObserver
                     );
 
                     // Tekshirish: Natija bazaga to'g'ri yozilganligini ko'rish uchun
-                    logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
+                    // logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
                     // dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
                 });
             }

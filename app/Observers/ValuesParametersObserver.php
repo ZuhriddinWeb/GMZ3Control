@@ -111,9 +111,9 @@ class ValuesParametersObserver
                 if ($numberBuffer !== "") {
                     $values[] = $numberBuffer;
                 }
-
                 // Hisoblash ifodasini birlashtirish
                 $calculateString = implode(' ', $values);
+                dd($calculateString);
 
                 try {
                     // Ifodani hisoblash

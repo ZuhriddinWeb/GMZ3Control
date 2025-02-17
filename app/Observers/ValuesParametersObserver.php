@@ -24,7 +24,7 @@ class ValuesParametersObserver
             foreach ($calculators as $calculator) {
                 // Ushbu ParametersID uchun GraphicsParameter yozuvini olish
                 $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)
-                ->first();
+                ->get();
                 if (!$param) {
                     continue; // Agar mos keluvchi GraphicsParameter topilmasa, keyingi siklga o'tish
                 }

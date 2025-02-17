@@ -109,42 +109,50 @@ class ValuesParametersObserver
                 }
 
                 // Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
-                ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
+                try {
+                    // Yangi ma'lumotlarni tayyorlash
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
-                        'SourceID' => (string) $param->SourceID,
-                        'GTid' => (string) $valuesParameters->TimeID,
-                        'Value' => round($result, 2),
+                        'SourcesID' => (string) $param->SourceID,
+                        'TimeID' => (string) $valuesParameters->TimeID,
+                        'Value' => is_numeric($result) ? round($result, 2) : null, // Agar qiymat son bo‘lsa, float qilib olish
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
                         'FactoryStructureID' => (string) $param->FactoryStructureID,
-                        'ChangeID'=>$valuesParameters->ChangeID,
-                        'created_at' => now(),
+                        'ChangeID' => $valuesParameters->ChangeID,
                         'Created' => $valuesParameters->Created,
+                        'updated_at' => now(),
+                        'created_at' => now(),
                     ];
+                
+                    // **Observerlarni bloklamasdan ma'lumotni qo'shish yoki yangilash**
                     $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                         [
-                            'TimeID' => $data['GTid'],
+                            'TimeID' => $data['TimeID'],
                             'ParametersID' => $data['ParametersID'],
-                            'SourcesID' => $data['SourceID'],
+                            'SourcesID' => $data['SourcesID'],
                             'Created' => $valuesParameters->Created,
                         ],
                         [
-                            'id' => (string) Str::uuid(), // UUID ni qo'shish
                             'Value' => $data['Value'],
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],
                             'FactoryStructureID' => $data['FactoryStructureID'],
-                            'ChangeID'=>$valuesParameters->ChangeID,
-                            'Created' => $valuesParameters->Created,
+                            'ChangeID' => $data['ChangeID'],
                             'updated_at' => now(),
                         ]
                     );
-
-                    // Tekshirish: Natija bazaga to'g'ri yozilganligini ko'rish uchun
-                    logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
-                    dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
-                });
+                
+                    // **Logga yozish (bazaga yozilganligini tekshirish)**
+                    \Log::info("Bazaga yozilgan yoki yangilangan yozuv: ", $newOrUpdateRecord->toArray());
+                
+                    // Debug maqsadida ekranga chiqarish (agar kerak bo'lsa)
+                    dd($newOrUpdateRecord);
+                
+                } catch (\Exception $e) {
+                    \Log::error("Bazaga yozishda xatolik: " . $e->getMessage());
+                }
+                
             }
         });
     }

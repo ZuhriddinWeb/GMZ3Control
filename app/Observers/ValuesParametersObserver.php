@@ -44,15 +44,27 @@ class ValuesParametersObserver
                         $parameterId = substr($item, 4);
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
-
-                        // Har bir unikal Tid uchun parametr qiymatini olish
-                        $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
-                            ValuesParameters::where('ParametersID', $parameterId)
-                            ->where('TimeID', $timeId)
-                            ->where('Created',$valuesParameters->Created)
-                            ->value('Value') ?? 0;
+                
+                        // LEFT JOIN bilan `graphic_times` jadvalidan `Name` ni olish
+                        $timeName = DB::table('graphic_times')
+                            ->where('id', $timeId)
+                            ->value('Name');
+                
+                        // Agar `graphic_times` jadvalidan `Name` topilmagan bo‘lsa, default qiymat
+                        if (!$timeName) {
+                            continue;
+                        }
+                
+                        // ValuesParameters'ni `graphic_times` jadvali bilan LEFT JOIN qilish va `Value` ni olish
+                        $parameters[$parameterId][$timeId] = DB::table('values_parameters AS vp')
+                            ->leftJoin('graphic_times AS gt', 'vp.TimeID', '=', 'gt.id')
+                            ->where('vp.ParametersID', $parameterId)
+                            ->where('gt.Name', $timeName) // `graphic_times` dan kelgan `Name` bo‘yicha filter
+                            ->where('vp.Created', $valuesParameters->Created)
+                            ->value('vp.Value') ?? 0;
                     }
                 }
+                
 
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish
                 foreach ($calculateArray as $item) {

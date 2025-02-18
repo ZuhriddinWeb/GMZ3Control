@@ -133,13 +133,13 @@ class ValuesParametersObserver
                 $calculateString = implode(' ', $values);
 
                 try {
-                    // Ifodani hisoblash
-                    $result = eval("return $calculateString");
-                    // logger()->info("Hisoblangan natija: $result"); // Natijani logga yozish
+                    dd($calculateString); // Natijani tekshirish uchun
+                    $result = eval("return $calculateString;");
                 } catch (\Exception $e) {
-                    // logger()->error("Hisoblashda xato: " . $e->getMessage());
+                    dd("Eval xatosi: ", $e->getMessage());
                     continue;
                 }
+                
 
                 // Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {

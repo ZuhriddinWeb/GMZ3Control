@@ -133,12 +133,23 @@ class ValuesParametersObserver
                 $calculateString = implode(' ', $values);
 
                 try {
-                    dd($calculateString); // Natijani tekshirish uchun
-                    $result = eval("return $calculateString;");
-                } catch (\Exception $e) {
-                    dd("Eval xatosi: ", $e->getMessage());
+                    if (empty($calculateString)) {
+                        throw new \Exception("Bo‘sh matematik ifoda!");
+                    }
+                
+                    // Debug: Ifoda qanday chiqayotganini tekshirish
+                    logger()->info("Hisoblash ifodasi: $calculateString");
+                
+                    $result = eval("return ($calculateString);");
+                
+                    if ($result === false) {
+                        throw new \Exception("Eval noto‘g‘ri bajarildi: $calculateString");
+                    }
+                } catch (\Throwable $e) {
+                    logger()->error("Hisoblashda xato: " . $e->getMessage());
                     continue;
                 }
+                
                 
 
                 // Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish

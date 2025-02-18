@@ -23,16 +23,37 @@ class ValuesParametersObserver
             ->get();
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
-                // Ushbu ParametersID uchun GraphicsParameter yozuvini olish
-                $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)
-                ->get();
-                if (!$param) {
-                    continue; // Agar mos keluvchi GraphicsParameter topilmasa, keyingi siklga o'tish
+                $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
+                if (!$calculateArray) {
+                    continue; // Agar Calculate maydoni bo'sh bo'lsa, keyingi siklga o'tish
                 }
-                dd($param);
+                // **3️⃣ Calculate ichidagi barcha Pid larni olish**
+            $parameterIdsInCalculate = [];
+            foreach ($calculateArray as $item) {
+                if (strpos($item, 'Pid=') === 0) {
+                    $parameterIdsInCalculate[] = substr($item, 4); // `Pid=` ni olib tashlab, ID ni olish
+                }
+            }
+             // **4️⃣ Agar ValuesParameters->ParametersID shu Pid lar orasida bo'lsa, ushbu Calculator ni ishlatamiz**
+             if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate)) {
+                continue; // Agar ParametersID Calculate ichidagi Pid lar orasida bo'lmasa, keyingi siklga o'tish
+            }
+            // **5️⃣ GraphicsParameter yozuvini olish**
+            $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
+            if (!$param) {
+                continue; // Agar mos keluvchi GraphicsParameter topilmasa, keyingi siklga o'tish
+            }
+
+                 // **Test natijani ko'rish uchun**
+            dd([
+                'calculator_id' => $calculator->id,
+                'parameters_in_calculate' => $parameterIdsInCalculate,
+                'selected_parameters_id' => $valuesParameters->ParametersID,
+                'selected_param' => $param
+            ]);
 
                 // `Calculate` maydonini JSON stringdan massivga aylantirish, agar u string bo'lsa
-                $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
+                // $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
 
                 // O‘zgaruvchilarni ishga tushirish
                 $result = null;

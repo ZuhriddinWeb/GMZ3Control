@@ -24,37 +24,46 @@ class ValuesParametersObserver
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
+
+                // 🛑 **DEBUG: Agar Calculate maydoni bo‘sh bo‘lsa, tekshirish**
                 if (!$calculateArray) {
-                    continue; // Agar Calculate maydoni bo'sh bo'lsa, keyingi siklga o'tish
+                    // dd("ERROR: Calculate bo‘sh!", ['CalculatorID' => $calculator->id, 'Calculate' => $calculator->Calculate]);
+                    continue;
                 }
-                // **3️⃣ Calculate ichidagi barcha Pid larni olish**
-            $parameterIdsInCalculate = [];
-            foreach ($calculateArray as $item) {
-                if (strpos($item, 'Pid=') === 0) {
-                    $parameterIdsInCalculate[] = substr($item, 4); // `Pid=` ni olib tashlab, ID ni olish
+    
+                // **2️⃣ Calculate ichidagi barcha Pid larni olish**
+                $parameterIdsInCalculate = [];
+                foreach ($calculateArray as $item) {
+                    if (strpos($item, 'Pid=') === 0) {
+                        $parameterIdsInCalculate[] = substr($item, 4); // `Pid=` ni olib tashlab, ID ni olish
+                    }
                 }
-            }
-             // **4️⃣ Agar ValuesParameters->ParametersID shu Pid lar orasida bo'lsa, ushbu Calculator ni ishlatamiz**
-             if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate)) {
-                continue; // Agar ParametersID Calculate ichidagi Pid lar orasida bo'lmasa, keyingi siklga o'tish
-            }
-            // **5️⃣ GraphicsParameter yozuvini olish**
-            $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
-            if (!$param) {
-                continue; // Agar mos keluvchi GraphicsParameter topilmasa, keyingi siklga o'tish
-            }
-
-                 // **Test natijani ko'rish uchun**
-            dd([
-                'calculator_id' => $calculator->id,
-                'parameters_in_calculate' => $parameterIdsInCalculate,
-                'selected_parameters_id' => $valuesParameters->ParametersID,
-                'selected_param' => $param
-            ]);
-
-                // `Calculate` maydonini JSON stringdan massivga aylantirish, agar u string bo'lsa
-                // $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
-
+    
+                // 🛑 **DEBUG: Agar Pid lar bo‘sh bo‘lsa, tekshirish**
+                if (empty($parameterIdsInCalculate)) {
+                    // dd("ERROR: Calculate ichidan hech qanday Pid topilmadi!", ['CalculatorID' => $calculator->id, 'CalculateArray' => $calculateArray]);
+                    continue;
+                }
+    
+                // **3️⃣ Agar ValuesParameters->ParametersID shu Pid lar orasida bo'lsa, ushbu Calculator ni ishlatamiz**
+                if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate)) {
+                    continue; // Agar ParametersID Calculate ichidagi Pid lar orasida bo'lmasa, keyingi siklga o'tish
+                }
+    
+                // **4️⃣ GraphicsParameter yozuvini olish**
+                $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
+                if (!$param) {
+                    // dd("ERROR: GraphicsParameter topilmadi!", ['CalculatorID' => $calculator->id, 'ParametersID' => $calculator->ParametersID]);
+                    continue;
+                }
+    
+                // **✅ Test natijani ko'rish uchun**
+                // dd([
+                //     'calculator_id' => $calculator->id,
+                //     'parameters_in_calculate' => $parameterIdsInCalculate,
+                //     'selected_parameters_id' => $valuesParameters->ParametersID,
+                //     'selected_param' => $param
+                // ]);
                 // O‘zgaruvchilarni ishga tushirish
                 $result = null;
                 $numberBuffer = "";

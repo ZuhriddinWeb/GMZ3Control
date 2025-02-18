@@ -134,7 +134,7 @@ class ValuesParametersObserver
 
                 try {
                     // Ifodani hisoblash
-                    $result = eval("return $calculateString;");
+                    $result = eval("return $calculateString");
                     // logger()->info("Hisoblangan natija: $result"); // Natijani logga yozish
                 } catch (\Exception $e) {
                     // logger()->error("Hisoblashda xato: " . $e->getMessage());

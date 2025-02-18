@@ -15,6 +15,7 @@ class ValuesParametersObserver
      */
     public function saved(ValuesParameters $valuesParameters)
     {
+        dd($valuesParameters);
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
             $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)

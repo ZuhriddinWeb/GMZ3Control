@@ -107,15 +107,15 @@ const updateCurrentTime = () => {
   currentTime.value = now.toLocaleTimeString();
 };
 
-const fetchParameterCount = async () => {
-  try {
-    const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
-    const response = await axios.get(`/get-params-for-user-count/${store.state.user.structure_id}/${change}`);
-    paramCount.value = response.data;
-  } catch (error) {
-    console.error('Error fetching parameters count:', error);
-  }
-};
+// const fetchParameterCount = async () => {
+//   try {
+//     const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
+//     const response = await axios.get(`/get-params-for-user-count/${store.state.user.structure_id}/${change}`);
+//     paramCount.value = response.data;
+//   } catch (error) {
+//     console.error('Error fetching parameters count:', error);
+//   }
+// };
 
 const menu = ref([
   { title: 'menu.home', icon: 'home', path: '/' },
@@ -169,7 +169,7 @@ const generateUserMenu = computed(() => {
 });
 
 onMounted(() => {
-  fetchParameterCount();
+  // fetchParameterCount();
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;

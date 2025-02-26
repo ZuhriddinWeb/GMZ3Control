@@ -55,18 +55,32 @@ class ValuesParametersObserver
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
                         $parameterId = substr($item, 4);
-                        $values[] = $parameters[$parameterId][$valuesParameters->TimeID] ?? 0;
+                    } elseif (strpos($item, 'Tid=') === 0) {
+                        // ❌ Tid= elementlarini hisoblashdan olib tashlash
+                        continue;
                     } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
+                        if ($numberBuffer !== "") {
+                            $values[] = $numberBuffer;
+                            $numberBuffer = "";
+                        }
                         if ($item === '÷') {
                             $item = '/';
                         }
                         $values[] = $item;
                     } else {
-                        $values[] = $item;
+                        $numberBuffer .= $item;
                     }
                 }
 
+                if ($numberBuffer !== "") {
+                    $values[] = $numberBuffer;
+                }
+                
+                // Hisoblash ifodasini birlashtirish
                 $calculateString = implode(' ', $values);
+                
+                // **🔹 Agar `Tid=` so‘zlari hali ham qoldi deb o‘ylasangiz, ularni tozalash:**
+                $calculateString = preg_replace('/Tid=\d+/', '', $calculateString);
 
                 try {
                     if (empty($calculateString)) {

@@ -199,8 +199,7 @@ class ValuesParametersObserver
                         if ($item === "Pid={$param->ParametersID}") {
                             $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
                                 ->where('TimeID', $valuesParameters->TimeID)
-                                ->where('Created',$valuesParameters->Created)
-                                ->value('Value') ?? 0;
+                                ->first();
                             if ($dependentValuesParameters) {
                                 $this->saved($dependentValuesParameters);
                             }

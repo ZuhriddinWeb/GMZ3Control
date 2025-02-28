@@ -131,28 +131,34 @@ class ValuesParametersObserver
 
     private function recalculateDependentFormulas($parametersID, $timeID, $created)
     {
-        $dependentCalculators = Calculator::where('TimeID', $timeID)->get();
+        $dependentCalculators = Calculator::all();
 
         foreach ($dependentCalculators as $depCalculator) {
             $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
             if (!$depCalculateArray) continue;
 
-            foreach ($depCalculateArray as $item) {
-                $cleanItem = trim($item, ' ,');
-                if (strpos($cleanItem, "Pid=") === 0) {
-                    $pid = substr($cleanItem, 4);
-                    if ($pid === $parametersID) {
-                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $depCalculator->ParametersID)
-                            ->where('TimeID', $timeID)
-                            ->where('Created', $created)
-                            ->first();
+            $found = false;
+            for ($i = 0; $i < count($depCalculateArray) - 1; $i++) {
+                if (strpos($depCalculateArray[$i], 'Pid=') === 0 && strpos($depCalculateArray[$i + 1], 'Tid=') === 0) {
+                    $pid = substr(trim($depCalculateArray[$i]), 4);
+                    $tid = substr(trim($depCalculateArray[$i + 1]), 4);
 
-                        if ($dependentValuesParameters) {
-                            $this->saved($dependentValuesParameters);
-                            $this->recalculateDependentFormulas($depCalculator->ParametersID, $timeID, $created);
-                        }
+                    if ($pid === $parametersID && $tid == $timeID) {
+                        $found = true;
                         break;
                     }
+                }
+            }
+
+            if ($found) {
+                $dependentValuesParameters = ValuesParameters::where('ParametersID', $depCalculator->ParametersID)
+                    ->where('TimeID', $depCalculator->TimeID)
+                    ->where('Created', $created)
+                    ->first();
+
+                if ($dependentValuesParameters) {
+                    $this->saved($dependentValuesParameters);
+                    $this->recalculateDependentFormulas($depCalculator->ParametersID, $depCalculator->TimeID, $created);
                 }
             }
         }

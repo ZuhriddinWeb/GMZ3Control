@@ -196,14 +196,19 @@ class ValuesParametersObserver
                     if (!$depCalculateArray) continue;
 
                     foreach ($depCalculateArray as $item) {
-                        if ($item === "Pid={$param->ParametersID}") {
-                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->where('TimeID', $valuesParameters->TimeID)
-                                ->first();
-                            if ($dependentValuesParameters) {
-                                $this->saved($dependentValuesParameters);
+                        $cleanItem = trim($item, ' ,');
+                        if (strpos($cleanItem, "Pid=") === 0) {
+                            $pid = substr($cleanItem, 4);
+                            if ($pid === $param->ParametersID) {
+                                $dependentValuesParameters = ValuesParameters::where('ParametersID', $depCalculator->ParametersID)
+                                    ->where('TimeID', $valuesParameters->TimeID)
+                                    ->where('Created', $valuesParameters->Created)
+                                    ->first();
+                                if ($dependentValuesParameters) {
+                                    $this->saved($dependentValuesParameters);
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }

@@ -249,6 +249,7 @@ const columnDefs = ref([
         return params.data && params.data.WithFormula === "1";
       }
     },
+    
     cellStyle: (params) => {
       return {
         'font-size': '16px',

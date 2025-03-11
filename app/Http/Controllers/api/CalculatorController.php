@@ -333,7 +333,7 @@ class CalculatorController extends Controller
                 ]);
             }
         }
-        else {
+        elseif($request['Comment']=='') {
             $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
             for ($i = 1; $i <= $totalTidCount; $i++) {
                 $formula = []; // Har bir sikl uchun yangi formula

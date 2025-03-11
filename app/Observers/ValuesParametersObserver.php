@@ -79,18 +79,20 @@ class ValuesParametersObserver
                         $timeId = substr($item, 4);
 
                         $graphicTimeName = DB::table('graphic_times')
-                            ->where('TimeID', $timeId)
+                            ->where('id', $timeId)
                             ->value('Name');
+
+                        $relatedTimeIds = DB::table('graphic_times')
+                            ->where('Name', $graphicTimeName)
+                            ->pluck('id');
 
                         $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
                             ValuesParameters::where('ParametersID', $parameterId)
-                                ->whereHas('graphicTimes', function ($query) use ($graphicTimeName) {
-                                    $query->where('Name', $graphicTimeName);
-                                })
+                                ->whereIn('TimeID', $relatedTimeIds)
+                                ->where('Created', $valuesParameters->Created)
                                 ->value('Value') ?? 0;
                     }
                 }
-
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {

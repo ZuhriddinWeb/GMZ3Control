@@ -78,12 +78,16 @@ class ValuesParametersObserver
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
 
-                        // Har bir unikal Tid uchun parametr qiymatini olish
+                        $graphicTimeName = DB::table('graphic_times')
+                            ->where('TimeID', $timeId)
+                            ->value('Name');
+
                         $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
                             ValuesParameters::where('ParametersID', $parameterId)
-                            ->where('TimeID', $timeId)
-                            ->where('Created',$valuesParameters->Created)
-                            ->value('Value') ?? 0;
+                                ->whereHas('graphicTimes', function ($query) use ($graphicTimeName) {
+                                    $query->where('Name', $graphicTimeName);
+                                })
+                                ->value('Value') ?? 0;
                     }
                 }
 

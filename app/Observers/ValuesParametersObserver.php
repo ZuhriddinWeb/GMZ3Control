@@ -35,7 +35,8 @@ class ValuesParametersObserver
                 }
             }
 
-            if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate)) {
+            // Agar mavjud `Pid` lar hali hisoblanmagan bo‘lsa, keyingi siklga o‘tish
+            if (!$this->areAllPidValuesCalculated($parameterIdsInCalculate, $valuesParameters->TimeID)) {
                 continue;
             }
 
@@ -134,55 +135,61 @@ class ValuesParametersObserver
             }
 
             ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
-                $data = [
-                    'ParametersID' => (string) $param->ParametersID,
-                    'SourceID' => (string) $param->SourceID,
-                    'GTid' => (string) $valuesParameters->TimeID,
-                    'Value' => round($result, 2),
-                    'GraphicsTimesID' => (string) $param->GrapicsID,
-                    'BlogID' => (string) $param->BlogsID,
-                    'FactoryStructureID' => (string) $param->FactoryStructureID,
-                    'ChangeID' => $valuesParameters->ChangeID,
-                    'created_at' => now(),
-                    'Created' => $valuesParameters->Created,
-                ];
-                $newOrUpdateRecord = ValuesParameters::updateOrCreate(
+                ValuesParameters::updateOrCreate(
                     [
-                        'TimeID' => $data['GTid'],
-                        'ParametersID' => $data['ParametersID'],
-                        'SourcesID' => $data['SourceID'],
+                        'TimeID' => $valuesParameters->TimeID,
+                        'ParametersID' => $param->ParametersID,
+                        'SourcesID' => $param->SourceID,
                         'Created' => $valuesParameters->Created,
                     ],
                     [
                         'id' => (string) Str::uuid(),
-                        'Value' => $data['Value'],
-                        'GraphicsTimesID' => $data['GraphicsTimesID'],
-                        'BlogID' => $data['BlogID'],
-                        'FactoryStructureID' => $data['FactoryStructureID'],
+                        'Value' => round($result, 2),
+                        'GraphicsTimesID' => (string) $param->GrapicsID,
+                        'BlogID' => (string) $param->BlogsID,
+                        'FactoryStructureID' => (string) $param->FactoryStructureID,
                         'ChangeID' => $valuesParameters->ChangeID,
                         'Created' => $valuesParameters->Created,
                         'updated_at' => now(),
                     ]
                 );
-
-                logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
             });
 
-            $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
-            foreach ($dependentCalculators as $depCalculator) {
-                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                if (!$depCalculateArray) continue;
+            $this->recalculateDependentFormulas($param->ParametersID, $valuesParameters->TimeID);
+        }
+    }
 
-                foreach ($depCalculateArray as $item) {
-                    if ($item === "Pid={$param->ParametersID}") {
-                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                            ->where('TimeID', $valuesParameters->TimeID)
-                            ->first();
-                        if ($dependentValuesParameters) {
-                            $this->calculateFormula($dependentValuesParameters);
-                        }
-                        break;
+    private function areAllPidValuesCalculated(array $parameterIds, $timeId)
+    {
+        foreach ($parameterIds as $pid) {
+            $value = ValuesParameters::where('ParametersID', $pid)
+                ->where('TimeID', $timeId)
+                ->value('Value');
+
+            if ($value === null || $value === 0) {
+                return false; 
+            }
+        }
+        return true;
+    }
+
+    private function recalculateDependentFormulas($parameterId, $timeId)
+    {
+        $dependentCalculators = Calculator::where('TimeID', $timeId)->get();
+
+        foreach ($dependentCalculators as $depCalculator) {
+            $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+            if (!$depCalculateArray) continue;
+
+            foreach ($depCalculateArray as $item) {
+                if ($item === "Pid={$parameterId}") {
+                    $dependentValuesParameters = ValuesParameters::where('ParametersID', $parameterId)
+                        ->where('TimeID', $timeId)
+                        ->first();
+                    if ($dependentValuesParameters) {
+                        $this->calculateFormula($dependentValuesParameters);
                     }
+                    break;
                 }
             }
         }

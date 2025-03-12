@@ -78,21 +78,18 @@ class ValuesParametersObserver
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
 
-                        $graphicTimeName = DB::table('graphic_times')
-                            ->where('id', $timeId)
-                            ->value('Name');
-
-                        $relatedTimeIds = DB::table('graphic_times')
-                            ->where('Name', $graphicTimeName)
-                            ->pluck('id');
-
+                        // $graphicTimeName = DB::table('graphic_times')->where('TimeID', $timeId)->value('Name');
+                        // dd($graphicTimeName);
+                        
+                        // Har bir unikal Tid uchun parametr qiymatini olish
                         $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
                             ValuesParameters::where('ParametersID', $parameterId)
-                                ->whereIn('TimeID', $relatedTimeIds)
-                                ->where('Created', $valuesParameters->Created)
-                                ->value('Value') ?? 0;
+                            ->where('TimeID', $timeId)
+                            ->where('Created',$valuesParameters->Created)
+                            ->value('Value') ?? 0;
                     }
                 }
+
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {

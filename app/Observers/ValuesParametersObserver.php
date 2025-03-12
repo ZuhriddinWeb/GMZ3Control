@@ -133,25 +133,36 @@ class ValuesParametersObserver
 
                 // ✅ **Bazaga yozish**
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
+                    $data = [
+                        'ParametersID' => (string) $param->ParametersID,
+                        'SourceID' => (string) $param->SourceID,
+                        'GTid' => (string) $valuesParameters->TimeID,
+                        'Value' => round($result, 2),
+                        'GraphicsTimesID' => (string) $param->GrapicsID,
+                        'BlogID' => (string) $param->BlogsID,
+                        'FactoryStructureID' => (string) $param->FactoryStructureID,
+                        'ChangeID' => $valuesParameters->ChangeID,
+                        'created_at' => now(),
+                        'Created' => $valuesParameters->Created,
+                    ];
                     $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                         [
-                            'TimeID' => $valuesParameters->TimeID,
-                            'ParametersID' => $param->ParametersID,
-                            'SourcesID' => $param->SourceID,
+                            'TimeID' => $data['GTid'],
+                            'ParametersID' => $data['ParametersID'],
+                            'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
                         ],
                         [
                             'id' => (string) Str::uuid(),
-                            'Value' => round($result, 2),
-                            'GraphicsTimesID' => $param->GrapicsID,
-                            'BlogID' => $param->BlogsID,
-                            'FactoryStructureID' => $param->FactoryStructureID,
+                            'Value' => $data['Value'],
+                            'GraphicsTimesID' => $data['GraphicsTimesID'],
+                            'BlogID' => $data['BlogID'],
+                            'FactoryStructureID' => $data['FactoryStructureID'],
                             'ChangeID' => $valuesParameters->ChangeID,
-                            'updated_at' => now(),
                             'Created' => $valuesParameters->Created,
+                            'updated_at' => now(),
                         ]
                     );
-
                     if ($newOrUpdateRecord) {
                         Log::info("✅ Bazaga yozildi:", $newOrUpdateRecord->toArray());
                     } else {

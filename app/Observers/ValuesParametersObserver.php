@@ -39,7 +39,7 @@ class ValuesParametersObserver
                 $operatorStack = [];
                 $parameters = [];
     
-                // ✅ **TID larni `graphic_times` bilan solishtirib, `values_parameters` dan qiymat olish**
+                // ✅ **TID larni `graphic_times` bilan solishtirib, `values_parameters` dan barcha mos keluvchi qiymatlarni olish**
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
                         $parameterId = substr($item, 4);
@@ -61,17 +61,19 @@ class ValuesParametersObserver
                             ->where('Name', $graphicTimeName)
                             ->pluck('id');
     
-                        // 🔹 `values_parameters` dan mos keluvchi `Value` ni olish
-                        $paramValue = ValuesParameters::where('ParametersID', $parameterId)
+                        // 🔹 `values_parameters` dan shu `ParametersID` bo‘yicha **barcha `Value` larni olish**
+                        $paramValues = ValuesParameters::where('ParametersID', $parameterId)
                             ->whereIn('TimeID', $relatedTimeIds)
                             ->where('Created', $valuesParameters->Created)
-                            ->value('Value');
+                            ->pluck('Value')
+                            ->toArray();
     
-                        if (is_null($paramValue)) {
+                        if (empty($paramValues)) {
                             $missingParameters = true;
                         }
     
-                        $parameters[$parameterId][$timeId] = $paramValue ?? 0;
+                        // ✅ **Agar bir nechta qiymat bo‘lsa, ularni yig‘indisini olish (yoki boshqa operator qo‘llash mumkin)**
+                        $parameters[$parameterId][$timeId] = array_sum($paramValues) ?? 0;
                     }
                 }
     
@@ -191,6 +193,7 @@ class ValuesParametersObserver
             }
         });
     }
+    
     
     
 }

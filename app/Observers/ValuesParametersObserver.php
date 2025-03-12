@@ -182,13 +182,13 @@ class ValuesParametersObserver
                     );
                 });
 
-                // **🔄 12️⃣ Rekursiv hisoblash**
-                $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
-                foreach ($dependentCalculators as $depCalculator) {
-                    if ($depCalculator->id != $calculator->id) {
-                        $this->saved($valuesParameters);
-                    }
-                }
+                // // **🔄 12️⃣ Rekursiv hisoblash**
+                // $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
+                // foreach ($dependentCalculators as $depCalculator) {
+                //     if ($depCalculator->id != $calculator->id) {
+                //         $this->saved($valuesParameters);
+                //     }
+                // }
             }
         });
     }

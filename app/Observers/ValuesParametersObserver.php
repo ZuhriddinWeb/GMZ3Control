@@ -50,6 +50,8 @@ class ValuesParametersObserver
             $operatorStack = [];
             $parameters = [];
 
+            $allPidsHaveValue = true; // **Flag: barcha Pid lar qiymatga ega bo‘lsa `true` bo‘ladi**
+
             foreach ($calculateArray as $item) {
                 if (strpos($item, 'Pid=') === 0) {
                     $parameterId = substr($item, 4);
@@ -69,22 +71,17 @@ class ValuesParametersObserver
                         ->where('Created', $valuesParameters->Created)
                         ->value('Value');
 
-                    if (is_null($parameters[$parameterId][$timeId])) {
-                        logger()->warning("❌ **Qiymat topilmadi!** ParameterID: $parameterId, TimeID: $timeId");
-                        // **Rekursiv hisoblashni chaqirish**
-                        $dependentValue = ValuesParameters::where('ParametersID', $parameterId)
-                            ->where('TimeID', $timeId)
-                            ->first();
-                        if ($dependentValue) {
-                            logger()->info("🔄 **Rekursiv hisoblashga o'tildi:** ParameterID: $parameterId, TimeID: $timeId");
-                            $this->calculateFormula($dependentValue);
-                        } else {
-                            logger()->error("❌ **Qiymat umuman topilmadi!** ParameterID: $parameterId, TimeID: $timeId");
-                        }
+                    if (is_null($parameters[$parameterId][$timeId]) || $parameters[$parameterId][$timeId] == 0) {
+                        $allPidsHaveValue = false;
+                        logger()->warning("❌ **Qiymat yo‘q yoki 0!** ParameterID: $parameterId, TimeID: $timeId");
                     }
-
-                    logger()->info("✔ TimeID: $timeId, Graphic Time Name: $graphicTimeName, Related TimeIDs: " . implode(',', $relatedTimeIds->toArray()));
                 }
+            }
+
+            // 🔄 **Agar barcha Pid lar 0 bo‘lmasa, hisoblashni boshlash**
+            if (!$allPidsHaveValue) {
+                logger()->info("⏳ **Kutish rejimi:** Formuladagi barcha Pid=XXX lar to‘g‘ri natija olmaguncha hisoblanmaydi.");
+                return;
             }
 
             foreach ($calculateArray as $item) {
@@ -93,11 +90,6 @@ class ValuesParametersObserver
                 } elseif (strpos($item, 'Tid=') === 0) {
                     $timeId = substr($item, 4);
                     $value = $parameters[$parameterId][$timeId] ?? 0;
-
-                    if ($value === 0) {
-                        logger()->warning("⚠ **Natija nol bo‘ldi!** ParameterID: $parameterId, TimeID: $timeId");
-                    }
-
                     $numberBuffer .= (string) $value;
                 } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
                     if ($numberBuffer !== "") {
@@ -149,7 +141,7 @@ class ValuesParametersObserver
                 }
             } catch (\Throwable $e) {
                 logger()->error("❌ **Hisoblashda xato:** " . $e->getMessage());
-                continue;
+                return;
             }
 
             ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
@@ -175,6 +167,26 @@ class ValuesParametersObserver
                     $data
                 );
             });
+
+            // 🔄 **Agar natija hisoblangan bo‘lsa, rekursiv ravishda boshqa bog‘liq formulalarni qayta hisoblash**
+            $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
+            foreach ($dependentCalculators as $depCalculator) {
+                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+                if (!$depCalculateArray) continue;
+
+                foreach ($depCalculateArray as $item) {
+                    if ($item === "Pid={$param->ParametersID}") {
+                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                            ->where('TimeID', $valuesParameters->TimeID)
+                            ->first();
+                        if ($dependentValuesParameters) {
+                            logger()->info("🔄 **Rekursiv hisoblash:** ParameterID: {$param->ParametersID}");
+                            $this->calculateFormula($dependentValuesParameters);
+                        }
+                        break;
+                    }
+                }
+            }
         }
     }
 }

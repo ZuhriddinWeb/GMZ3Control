@@ -79,12 +79,12 @@ class ValuesParametersObserver
                         $timeId = substr($item, 4);
 
                         $graphicTimeName = DB::table('graphic_times')
-                            ->where('TimeID', $timeId)
+                            ->where('id', $timeId)
                             ->value('Name');
 
                         $relatedTimeIds = DB::table('graphic_times')
                             ->where('Name', $graphicTimeName)
-                            ->pluck('TimeID');
+                            ->pluck('id');
 
                         $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ?? 
                             ValuesParameters::where('ParametersID', $parameterId)

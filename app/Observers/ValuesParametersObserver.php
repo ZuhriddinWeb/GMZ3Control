@@ -164,7 +164,16 @@ class ValuesParametersObserver
                         'SourcesID' => $data['SourceID'],
                         'Created' => $valuesParameters->Created,
                     ],
-                    $data
+                    [
+                        'id' => (string) Str::uuid(),
+                        'Value' => $data['Value'],
+                        'GraphicsTimesID' => $data['GraphicsTimesID'],
+                        'BlogID' => $data['BlogID'],
+                        'FactoryStructureID' => $data['FactoryStructureID'],
+                        'ChangeID' => $valuesParameters->ChangeID,
+                        'Created' => $valuesParameters->Created,
+                        'updated_at' => now(),
+                    ]
                 );
             });
 

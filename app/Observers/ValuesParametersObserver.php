@@ -72,6 +72,7 @@ class ValuesParametersObserver
                 $parameters = [];
 
                 // `Calculate` ichidagi har bir `ParametersID` va `TimeID` ni `ValuesParameters` jadvalidan olish
+                // `Calculate` ichidagi har bir `ParametersID` va `TimeID` ni `ValuesParameters` jadvalidan olish
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
                         $parameterId = substr($item, 4);
@@ -86,13 +87,16 @@ class ValuesParametersObserver
                             ->where('Name', $graphicTimeName)
                             ->pluck('id');
 
-                        $parameters[$parameterId][$timeId] = $parameters[$parameterId][$timeId] ??
-                            ValuesParameters::where('ParametersID', $parameterId)
-                                ->whereIn('TimeID', $relatedTimeIds)
-                                ->where('Created', $valuesParameters->Created)
-                                ->value('Value') ?? 0;
+                        // `ValuesParameters` jadvalidan qiymatni olish yoki 1 ga tenglash
+                        $value = ValuesParameters::where('ParametersID', $parameterId)
+                            ->whereIn('TimeID', $relatedTimeIds)
+                            ->where('Created', $valuesParameters->Created)
+                            ->value('Value') ?? 1;
+
+                        $parameters[$parameterId][$timeId] = $value;
                     }
                 }
+
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
@@ -196,35 +200,32 @@ class ValuesParametersObserver
                     // dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
                 });
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
+                // 🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash
                 $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
-                foreach ($dependentCalculators as $depCalculator) {
-                    $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                    if (!$depCalculateArray)
-                        continue;
+                foreach ($dependentCalculators as $dependentCalculator) {
+                    // Agar yangi qiymat mavjud bo'lsa, qayta hisoblash
+                    if (!empty($dependentCalculator->Calculate)) {
+                        $calculateArray = json_decode($dependentCalculator->Calculate, true);
+                        $newCalculateString = implode(' ', $calculateArray);
 
-                    foreach ($depCalculateArray as $item) {
-                        if ($item === "Pid={$param->ParametersID}") {
-                            // 🔎 Grafik vaqt nomi va bog‘liq vaqt IDlarini olish
-                            $graphicTimeName = DB::table('graphic_times')
-                                ->where('id', $valuesParameters->TimeID)
-                                ->value('Name');
-
-                            $relatedTimeIds = DB::table('graphic_times')
-                                ->where('Name', $graphicTimeName)
-                                ->pluck('id');
-
-                            // 🗃️ Bog‘liq parametrlarni olish
-                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->whereIn('TimeID', $relatedTimeIds)  // Vaqt IDlari ro‘yxatini tekshirish
-                                ->first();
-
-                            if ($dependentValuesParameters) {
-                                $this->saved($dependentValuesParameters);
+                        try {
+                            $newResult = eval ("return ($newCalculateString);");
+                            if ($newResult === false) {
+                                throw new \Exception("Qayta hisoblashda xato: $newCalculateString");
                             }
-                            break;
+
+                            // Yangi qiymatni saqlash
+                            ValuesParameters::withoutEvents(function () use ($valuesParameters, $newResult) {
+                                $valuesParameters->update(['Value' => round($newResult, 2)]);
+                            });
+
+                            logger()->info("Qayta hisoblash muvaffaqiyatli: $newResult");
+                        } catch (\Throwable $e) {
+                            logger()->error("Qayta hisoblashda xato: " . $e->getMessage());
                         }
                     }
                 }
+
 
             }
         });

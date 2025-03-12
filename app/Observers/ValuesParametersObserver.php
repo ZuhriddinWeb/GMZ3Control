@@ -105,18 +105,34 @@ class ValuesParametersObserver
                 }
 
                 // **🔢 10️⃣ Hisoblashni boshlash**
+                $numberBuffer = "";
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
                         $parameterId = substr($item, 4);
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
                         $values[] = $parameters[$parameterId][$timeId] ?? 0;
-                    } else {
+                    } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
+                        if ($item === '÷') {
+                            $item = '/';
+                        }
+                        if ($numberBuffer !== "") {
+                            $values[] = $numberBuffer;
+                            $numberBuffer = "";
+                        }
                         $values[] = $item;
+                    } else {
+                        $numberBuffer .= $item;
                     }
                 }
 
+                if ($numberBuffer !== "") {
+                    $values[] = $numberBuffer;
+                }
+
                 $calculateString = implode(' ', $values);
+                $calculateString = preg_replace('/\s+/', ' ', $calculateString);
+
                 try {
                     if (empty($calculateString)) {
                         throw new \Exception("Bo‘sh matematik ifoda!");
@@ -166,24 +182,11 @@ class ValuesParametersObserver
                     );
                 });
 
-                // **🔄 12️⃣ Rekursiv hisoblash - faqat to'liq hisoblangan qiymatlar uchun!**
+                // **🔄 12️⃣ Rekursiv hisoblash**
                 $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
                 foreach ($dependentCalculators as $depCalculator) {
-                    $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                    if (!$depCalculateArray) continue;
-
-                    foreach ($depCalculateArray as $item) {
-                        if ($item === "Pid={$param->ParametersID}") {
-                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->whereIn('TimeID', $relatedTimeIds)
-                                ->whereNotNull('Value') // **Faqat hisoblangan qiymatlar uchun!**
-                                ->first();
-
-                            if ($dependentValuesParameters) {
-                                $this->saved($dependentValuesParameters);
-                            }
-                            break;
-                        }
+                    if ($depCalculator->id != $calculator->id) {
+                        $this->saved($valuesParameters);
                     }
                 }
             }

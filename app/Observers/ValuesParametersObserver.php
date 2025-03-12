@@ -76,10 +76,9 @@ class ValuesParametersObserver
                     }
                 }
 
-                // **Agar hisoblash uchun barcha parametrlar mavjud bo‘lmasa, bu formulani keyinroq qayta hisoblash kerak**
                 if ($missingParameters) {
-                    Log::warning("Formula hali to‘liq hisoblanmadi: $calculator->id. Qayta hisoblashga qo‘shilmoqda.");
-                    return; // Keyinchalik bu observer yana ishga tushadi
+                    Log::warning("Formula hali to‘liq hisoblanmadi: $calculator->id. Keyinchalik qayta hisoblanadi.");
+                    return;
                 }
 
                 foreach ($calculateArray as $item) {
@@ -142,19 +141,48 @@ class ValuesParametersObserver
                     continue;
                 }
 
-                ValuesParameters::updateOrCreate(
-                    [
-                        'TimeID' => $valuesParameters->TimeID,
-                        'ParametersID' => $param->ParametersID,
-                        'SourcesID' => $param->SourceID,
+                // ✅ **Bazaga yozish**
+                ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
+                    $data = [
+                        'ParametersID' => (string) $param->ParametersID,
+                        'SourceID' => (string) $param->SourceID,
+                        'GTid' => (string) $valuesParameters->TimeID,
+                        'Value' => round($result, 2),
+                        'GraphicsTimesID' => (string) $param->GrapicsID,
+                        'BlogID' => (string) $param->BlogsID,
+                        'FactoryStructureID' => (string) $param->FactoryStructureID,
+                        'ChangeID' => $valuesParameters->ChangeID,
+                        'created_at' => now(),
                         'Created' => $valuesParameters->Created,
-                    ],
-                    ['id' => (string) Str::uuid(), 'Value' => $data['Value'], 'GraphicsTimesID' => $data['GraphicsTimesID'], 'BlogID' => $data['BlogID'], 'FactoryStructureID' => $data['FactoryStructureID'], 'ChangeID' => $valuesParameters->ChangeID, 'Created' => $valuesParameters->Created, 'updated_at' => now(),]
-                );
+                    ];
 
-                Log::info("Bazaga yozilgan natija: " . round($result, 2));
+                    $newOrUpdateRecord = ValuesParameters::updateOrCreate(
+                        [
+                            'TimeID' => $data['GTid'],
+                            'ParametersID' => $data['ParametersID'],
+                            'SourcesID' => $data['SourceID'],
+                            'Created' => $valuesParameters->Created,
+                        ],
+                        [
+                            'id' => (string) Str::uuid(),
+                            'Value' => $data['Value'],
+                            'GraphicsTimesID' => $data['GraphicsTimesID'],
+                            'BlogID' => $data['BlogID'],
+                            'FactoryStructureID' => $data['FactoryStructureID'],
+                            'ChangeID' => $valuesParameters->ChangeID,
+                            'Created' => $valuesParameters->Created,
+                            'updated_at' => now(),
+                        ]
+                    );
 
-                // **🔄 Bog‘liq formulalarni qayta hisoblash (REKURSIYA)**
+                    if ($newOrUpdateRecord) {
+                        Log::info("✅ Bazaga yozildi:", $newOrUpdateRecord->toArray());
+                    } else {
+                        Log::error("❌ Bazaga yozilmadi!");
+                    }
+                });
+
+                // 🔄 **Bog‘liq formulalarni qayta hisoblash (REKURSIYA)**
                 $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
                 foreach ($dependentCalculators as $depCalculator) {
                     $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
@@ -168,7 +196,7 @@ class ValuesParametersObserver
                                 ->first();
 
                             if ($dependentValuesParameters) {
-                                $this->saved($dependentValuesParameters); // **REKURSIYA: Agar yangi hisoblangan natija boshqa formulaga bog‘liq bo‘lsa, qayta hisoblash**
+                                $this->saved($dependentValuesParameters);
                             }
                             break;
                         }

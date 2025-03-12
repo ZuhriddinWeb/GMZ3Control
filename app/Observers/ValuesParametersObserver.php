@@ -10,19 +10,15 @@ use Illuminate\Support\Str;
 
 class ValuesParametersObserver
 {
-    /**
-     * Handle the ValuesParameters "saved" event.
-     */
     public function saved(ValuesParameters $valuesParameters)
     {
         DB::transaction(function () use ($valuesParameters) {
-            $this->processCalculators($valuesParameters);
+            $this->calculateFormula($valuesParameters);
         });
     }
 
-    private function processCalculators(ValuesParameters $valuesParameters)
+    private function calculateFormula(ValuesParameters $valuesParameters)
     {
-        // TimeID ga bog‘liq barcha Calculator larni olish
         $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
 
         foreach ($calculators as $calculator) {
@@ -32,7 +28,6 @@ class ValuesParametersObserver
                 continue;
             }
 
-            // `Calculate` ichidagi barcha `Pid` larni olish
             $parameterIdsInCalculate = [];
             foreach ($calculateArray as $item) {
                 if (strpos($item, 'Pid=') === 0) {
@@ -40,163 +35,154 @@ class ValuesParametersObserver
                 }
             }
 
-            // Agar mavjud `Pid` lar hali hisoblanmagan bo‘lsa, keyingi siklga o‘tish
-            if (!$this->areAllPidValuesCalculated($parameterIdsInCalculate, $valuesParameters->TimeID)) {
+            if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate)) {
                 continue;
             }
 
-            // GraphicsParameter ni olish
             $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
             if (!$param) {
                 continue;
             }
 
-            // Formulani hisoblash
-            $result = $this->calculateFormula($calculateArray, $valuesParameters->TimeID, $valuesParameters->Created);
+            $result = null;
+            $numberBuffer = "";
+            $values = [];
+            $operatorStack = [];
+            $parameters = [];
 
-            // Agar natija null bo‘lsa, qayta ishlash shart emas
-            if ($result === null) {
+            foreach ($calculateArray as $item) {
+                if (strpos($item, 'Pid=') === 0) {
+                    $parameterId = substr($item, 4);
+                } elseif (strpos($item, 'Tid=') === 0) {
+                    $timeId = substr($item, 4);
+
+                    $graphicTimeName = DB::table('graphic_times')
+                        ->where('id', $timeId)
+                        ->value('Name');
+
+                    $relatedTimeIds = DB::table('graphic_times')
+                        ->where('Name', $graphicTimeName)
+                        ->pluck('id');
+
+                    $parameters[$parameterId][$timeId] = ValuesParameters::where('ParametersID', $parameterId)
+                        ->whereIn('TimeID', $relatedTimeIds)
+                        ->where('Created', $valuesParameters->Created)
+                        ->value('Value') ?? 0;
+
+                    logger()->info("TimeID: $timeId, Graphic Time Name: $graphicTimeName, Related TimeIDs: " . implode(',', $relatedTimeIds->toArray()));
+                }
+            }
+
+            foreach ($calculateArray as $item) {
+                if (strpos($item, 'Pid=') === 0) {
+                    $parameterId = substr($item, 4);
+                } elseif (strpos($item, 'Tid=') === 0) {
+                    $timeId = substr($item, 4);
+                    $value = $parameters[$parameterId][$timeId] ?? 0;
+                    $numberBuffer .= (string) $value;
+                } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
+                    if ($numberBuffer !== "") {
+                        $values[] = $numberBuffer;
+                        $numberBuffer = "";
+                    }
+
+                    if ($item === '÷') {
+                        $item = '/';
+                    }
+
+                    if ($item === '=') {
+                        break;
+                    } elseif ($item === '(') {
+                        $values[] = $item;
+                    } elseif ($item === ')') {
+                        while (!empty($operatorStack) && end($operatorStack) !== '(') {
+                            $values[] = array_pop($operatorStack);
+                        }
+                        if (!empty($operatorStack) && end($operatorStack) === '(') {
+                            array_pop($operatorStack);
+                        }
+                        $values[] = $item;
+                    } else {
+                        $values[] = $item;
+                    }
+                } else {
+                    $numberBuffer .= $item;
+                }
+            }
+
+            if ($numberBuffer !== "") {
+                $values[] = $numberBuffer;
+            }
+
+            $calculateString = implode(' ', $values);
+
+            try {
+                if (empty($calculateString)) {
+                    throw new \Exception("Bo‘sh matematik ifoda!");
+                }
+
+                logger()->info("Hisoblash ifodasi: $calculateString");
+
+                $result = eval("return ($calculateString);");
+
+                if ($result === false) {
+                    throw new \Exception("Eval noto‘g‘ri bajarildi: $calculateString");
+                }
+            } catch (\Throwable $e) {
+                logger()->error("Hisoblashda xato: " . $e->getMessage());
                 continue;
             }
 
-            // Natijani saqlash
             ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
-                ValuesParameters::updateOrCreate(
+                $data = [
+                    'ParametersID' => (string) $param->ParametersID,
+                    'SourceID' => (string) $param->SourceID,
+                    'GTid' => (string) $valuesParameters->TimeID,
+                    'Value' => round($result, 2),
+                    'GraphicsTimesID' => (string) $param->GrapicsID,
+                    'BlogID' => (string) $param->BlogsID,
+                    'FactoryStructureID' => (string) $param->FactoryStructureID,
+                    'ChangeID' => $valuesParameters->ChangeID,
+                    'created_at' => now(),
+                    'Created' => $valuesParameters->Created,
+                ];
+                $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                     [
-                        'TimeID' => $valuesParameters->TimeID,
-                        'ParametersID' => $param->ParametersID,
-                        'SourcesID' => $param->SourceID,
+                        'TimeID' => $data['GTid'],
+                        'ParametersID' => $data['ParametersID'],
+                        'SourcesID' => $data['SourceID'],
                         'Created' => $valuesParameters->Created,
                     ],
                     [
                         'id' => (string) Str::uuid(),
-                        'Value' => round($result, 2),
-                        'GraphicsTimesID' => (string) $param->GrapicsID,
-                        'BlogID' => (string) $param->BlogsID,
-                        'FactoryStructureID' => (string) $param->FactoryStructureID,
+                        'Value' => $data['Value'],
+                        'GraphicsTimesID' => $data['GraphicsTimesID'],
+                        'BlogID' => $data['BlogID'],
+                        'FactoryStructureID' => $data['FactoryStructureID'],
                         'ChangeID' => $valuesParameters->ChangeID,
                         'Created' => $valuesParameters->Created,
                         'updated_at' => now(),
                     ]
                 );
+
+                logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
             });
 
-            // Agar natija hisoblangan bo‘lsa, unga bog‘liq formulalarni qayta hisoblash
-            $this->recalculateDependentFormulas($param->ParametersID, $valuesParameters->TimeID);
-        }
-    }
+            $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
+            foreach ($dependentCalculators as $depCalculator) {
+                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+                if (!$depCalculateArray) continue;
 
-    private function areAllPidValuesCalculated(array $parameterIds, $timeId)
-    {
-        foreach ($parameterIds as $pid) {
-            $value = ValuesParameters::where('ParametersID', $pid)
-                ->where('TimeID', $timeId)
-                ->value('Value');
-
-            if ($value === null || $value === 0) {
-                return false; // Agar bitta ham Pid hali hisoblanmagan bo‘lsa, false qaytarish
-            }
-        }
-        return true;
-    }
-
-    private function calculateFormula(array $calculateArray, $timeId, $created)
-    {
-        $numberBuffer = "";
-        $values = [];
-        $operatorStack = [];
-        $parameters = [];
-
-        foreach ($calculateArray as $item) {
-            if (strpos($item, 'Pid=') === 0) {
-                $parameterId = substr($item, 4);
-            } elseif (strpos($item, 'Tid=') === 0) {
-                $timeId = substr($item, 4);
-
-                $graphicTimeName = DB::table('graphic_times')->where('id', $timeId)->value('Name');
-
-                $relatedTimeIds = DB::table('graphic_times')
-                    ->where('Name', $graphicTimeName)
-                    ->pluck('id');
-
-                $parameters[$parameterId][$timeId] = ValuesParameters::where('ParametersID', $parameterId)
-                    ->whereIn('TimeID', $relatedTimeIds)
-                    ->where('Created', $created)
-                    ->value('Value') ?? 0;
-            }
-        }
-
-        foreach ($calculateArray as $item) {
-            if (strpos($item, 'Pid=') === 0) {
-                $parameterId = substr($item, 4);
-            } elseif (strpos($item, 'Tid=') === 0) {
-                $timeId = substr($item, 4);
-                $value = $parameters[$parameterId][$timeId] ?? 0;
-                $numberBuffer .= (string) $value;
-            } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
-                if ($numberBuffer !== "") {
-                    $values[] = $numberBuffer;
-                    $numberBuffer = "";
-                }
-
-                if ($item === '÷') {
-                    $item = '/';
-                }
-
-                if ($item === '=') {
-                    break;
-                } elseif ($item === '(') {
-                    $values[] = $item;
-                } elseif ($item === ')') {
-                    while (!empty($operatorStack) && end($operatorStack) !== '(') {
-                        $values[] = array_pop($operatorStack);
+                foreach ($depCalculateArray as $item) {
+                    if ($item === "Pid={$param->ParametersID}") {
+                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                            ->where('TimeID', $valuesParameters->TimeID)
+                            ->first();
+                        if ($dependentValuesParameters) {
+                            $this->calculateFormula($dependentValuesParameters);
+                        }
+                        break;
                     }
-                    if (!empty($operatorStack) && end($operatorStack) === '(') {
-                        array_pop($operatorStack);
-                    }
-                    $values[] = $item;
-                } else {
-                    $values[] = $item;
-                }
-            } else {
-                $numberBuffer .= $item;
-            }
-        }
-
-        if ($numberBuffer !== "") {
-            $values[] = $numberBuffer;
-        }
-
-        $calculateString = implode(' ', $values);
-
-        try {
-            if (empty($calculateString)) {
-                return null;
-            }
-
-            return eval("return ($calculateString);");
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    private function recalculateDependentFormulas($parameterId, $timeId)
-    {
-        $dependentCalculators = Calculator::where('TimeID', $timeId)->get();
-
-        foreach ($dependentCalculators as $depCalculator) {
-            $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-            if (!$depCalculateArray) continue;
-
-            foreach ($depCalculateArray as $item) {
-                if ($item === "Pid={$parameterId}") {
-                    $dependentValuesParameters = ValuesParameters::where('ParametersID', $parameterId)
-                        ->where('TimeID', $timeId)
-                        ->first();
-                    if ($dependentValuesParameters) {
-                        $this->processCalculators($dependentValuesParameters);
-                    }
-                    break;
                 }
             }
         }

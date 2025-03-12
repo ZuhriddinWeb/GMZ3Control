@@ -67,10 +67,20 @@ class ValuesParametersObserver
                     $parameters[$parameterId][$timeId] = ValuesParameters::where('ParametersID', $parameterId)
                         ->whereIn('TimeID', $relatedTimeIds)
                         ->where('Created', $valuesParameters->Created)
-                        ->value('Value') ?? null;
+                        ->value('Value');
 
                     if (is_null($parameters[$parameterId][$timeId])) {
                         logger()->warning("❌ **Qiymat topilmadi!** ParameterID: $parameterId, TimeID: $timeId");
+                        // **Rekursiv hisoblashni chaqirish**
+                        $dependentValue = ValuesParameters::where('ParametersID', $parameterId)
+                            ->where('TimeID', $timeId)
+                            ->first();
+                        if ($dependentValue) {
+                            logger()->info("🔄 **Rekursiv hisoblashga o'tildi:** ParameterID: $parameterId, TimeID: $timeId");
+                            $this->calculateFormula($dependentValue);
+                        } else {
+                            logger()->error("❌ **Qiymat umuman topilmadi!** ParameterID: $parameterId, TimeID: $timeId");
+                        }
                     }
 
                     logger()->info("✔ TimeID: $timeId, Graphic Time Name: $graphicTimeName, Related TimeIDs: " . implode(',', $relatedTimeIds->toArray()));
@@ -155,45 +165,16 @@ class ValuesParametersObserver
                     'created_at' => now(),
                     'Created' => $valuesParameters->Created,
                 ];
-                $newOrUpdateRecord = ValuesParameters::updateOrCreate(
+                ValuesParameters::updateOrCreate(
                     [
                         'TimeID' => $data['GTid'],
                         'ParametersID' => $data['ParametersID'],
                         'SourcesID' => $data['SourceID'],
                         'Created' => $valuesParameters->Created,
                     ],
-                    [
-                        'id' => (string) Str::uuid(),
-                        'Value' => $data['Value'],
-                        'GraphicsTimesID' => $data['GraphicsTimesID'],
-                        'BlogID' => $data['BlogID'],
-                        'FactoryStructureID' => $data['FactoryStructureID'],
-                        'ChangeID' => $valuesParameters->ChangeID,
-                        'Created' => $valuesParameters->Created,
-                        'updated_at' => now(),
-                    ]
+                    $data
                 );
-
-                logger()->info("✔ **Bazaga yozilgan yozuv:** ", $newOrUpdateRecord->toArray());
             });
-
-            $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
-            foreach ($dependentCalculators as $depCalculator) {
-                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                if (!$depCalculateArray) continue;
-
-                foreach ($depCalculateArray as $item) {
-                    if ($item === "Pid={$param->ParametersID}") {
-                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                            ->where('TimeID', $valuesParameters->TimeID)
-                            ->first();
-                        if ($dependentValuesParameters) {
-                            $this->calculateFormula($dependentValuesParameters);
-                        }
-                        break;
-                    }
-                }
-            }
         }
     }
 }

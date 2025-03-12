@@ -182,13 +182,26 @@ class ValuesParametersObserver
                     );
                 });
 
-                // // **🔄 12️⃣ Rekursiv hisoblash**
-                // $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
-                // foreach ($dependentCalculators as $depCalculator) {
-                //     if ($depCalculator->id != $calculator->id) {
-                //         $this->saved($valuesParameters);
-                //     }
-                // }
+                  // **🔄 12️⃣ Rekursiv hisoblash - faqat to'liq hisoblangan qiymatlar uchun!**
+                  $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
+                  foreach ($dependentCalculators as $depCalculator) {
+                      $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+                      if (!$depCalculateArray) continue;
+  
+                      foreach ($depCalculateArray as $item) {
+                          if ($item === "Pid={$param->ParametersID}") {
+                              $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                                  ->whereIn('TimeID', $relatedTimeIds)
+                                  ->whereNotNull('Value') // **Faqat hisoblangan qiymatlar uchun!**
+                                  ->first();
+  
+                              if ($dependentValuesParameters) {
+                                  $this->saved($dependentValuesParameters);
+                              }
+                              break;
+                          }
+                      }
+                  }
             }
         });
     }

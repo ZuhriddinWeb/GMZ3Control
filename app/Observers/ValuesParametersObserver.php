@@ -69,11 +69,12 @@ class ValuesParametersObserver
                             ->toArray();
     
                         if (empty($paramValues)) {
-                            $missingParameters = true;
+                            \Log::warning("Formula hali to‘liq hisoblanmadi: $calculator->id. Keyinchalik qayta hisoblanadi.");
+                            return;
                         }
     
-                        // ✅ **Agar bir nechta qiymat bo‘lsa, ularni yig‘indisini olish (yoki boshqa operator qo‘llash mumkin)**
-                        $parameters[$parameterId][$timeId] = array_sum($paramValues) ?? 0;
+                        // ✅ **Agar bir nechta qiymat bo‘lsa, ularning yig‘indisini olish**
+                        $parameters[$parameterId][$timeId] = array_sum($paramValues);
                     }
                 }
     
@@ -170,7 +171,6 @@ class ValuesParametersObserver
     
                     \Log::info("✅ Bazaga yozildi: " . json_encode($newOrUpdateRecord));
                 });
-    
                 // ✅ **Rekursiya: Bog‘liq formulalarni qayta hisoblash**
                 $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
                 foreach ($dependentCalculators as $depCalculator) {
@@ -193,6 +193,7 @@ class ValuesParametersObserver
             }
         });
     }
+    
     
     
     

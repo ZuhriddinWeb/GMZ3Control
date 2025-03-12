@@ -45,30 +45,42 @@ class ValuesParametersObserver
                         $parameterId = substr($item, 4);
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
-
+                
                         // TimeID ga mos keluvchi Name ni olish
                         $graphicTimeName = DB::table('graphic_times')
                             ->where('id', $timeId)
                             ->value('Name');
-
+                
                         // Shu Name bilan bog‘liq TimeID larni olish
                         $relatedTimeIds = DB::table('graphic_times')
                             ->where('Name', $graphicTimeName)
                             ->pluck('id');
-
+                
                         // **Bog‘liq qiymatni ValuesParameters dan olish**
                         $paramValue = ValuesParameters::where('ParametersID', $parameterId)
                             ->whereIn('TimeID', $relatedTimeIds)
                             ->where('Created', $valuesParameters->Created)
                             ->value('Value');
-
+                
                         if (is_null($paramValue)) {
                             $missingParameters = true;
+                            Log::warning("🚨 YETISHMAYOTGAN PARAMETR! Pid: $parameterId | Tid: $timeId | Name: $graphicTimeName | Value: NULL");
+                        } else {
+                            Log::info("✅ PARAMETR BOR! Pid: $parameterId | Tid: $timeId | Name: $graphicTimeName | Value: $paramValue");
                         }
-
+                
                         $parameters[$parameterId][$timeId] = $paramValue ?? 0;
                     }
                 }
+                
+                // **Agar barcha parametrlar mavjud bo‘lsa, hisoblash davom etishi kerak**
+                if (!$missingParameters) {
+                    Log::info("✅ FORMULA TO‘LIQ! Hisoblash davom etadi.");
+                } else {
+                    Log::warning("⚠️ FORMULA HALI TO‘LIQ EMAS! Keyinchalik qayta hisoblanadi.");
+                    return;
+                }
+                
 
                 // **Agar hisoblash uchun barcha parametrlar mavjud bo‘lmasa, bu formulani keyinroq qayta hisoblash kerak**
                 if ($missingParameters) {

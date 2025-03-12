@@ -50,7 +50,7 @@ class ValuesParametersObserver
             $operatorStack = [];
             $parameters = [];
 
-            $allPidsHaveValue = true; // **Flag: barcha Pid lar qiymatga ega bo‘lsa `true` bo‘ladi**
+            $allPidsHaveValue = true;
 
             foreach ($calculateArray as $item) {
                 if (strpos($item, 'Pid=') === 0) {
@@ -78,9 +78,8 @@ class ValuesParametersObserver
                 }
             }
 
-            // 🔄 **Agar barcha Pid lar 0 bo‘lmasa, hisoblashni boshlash**
             if (!$allPidsHaveValue) {
-                logger()->info("⏳ **Kutish rejimi:** Formuladagi barcha Pid=XXX lar to‘g‘ri natija olmaguncha hisoblanmaydi.");
+                logger()->info("⏳ **Kutish rejimi:** Formuladagi barcha Pid=XXX lar natija olmaguncha hisoblanmaydi.");
                 return;
             }
 
@@ -164,35 +163,25 @@ class ValuesParametersObserver
                         'SourcesID' => $data['SourceID'],
                         'Created' => $valuesParameters->Created,
                     ],
-                    [
-                        'id' => (string) Str::uuid(),
-                        'Value' => $data['Value'],
-                        'GraphicsTimesID' => $data['GraphicsTimesID'],
-                        'BlogID' => $data['BlogID'],
-                        'FactoryStructureID' => $data['FactoryStructureID'],
-                        'ChangeID' => $valuesParameters->ChangeID,
-                        'Created' => $valuesParameters->Created,
-                        'updated_at' => now(),
-                    ]
+                    [ 'id' => (string) Str::uuid(), 'Value' => $data['Value'], 'GraphicsTimesID' => $data['GraphicsTimesID'], 'BlogID' => $data['BlogID'], 'FactoryStructureID' => $data['FactoryStructureID'], 'ChangeID' => $valuesParameters->ChangeID, 'Created' => $valuesParameters->Created, 'updated_at' => now(), ]
                 );
             });
 
-            // 🔄 **Agar natija hisoblangan bo‘lsa, rekursiv ravishda boshqa bog‘liq formulalarni qayta hisoblash**
+            // 🔄 **Bog‘liq formulalar qayta hisoblanishi uchun rekursiv chaqirish**
             $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
             foreach ($dependentCalculators as $depCalculator) {
                 $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
                 if (!$depCalculateArray) continue;
 
                 foreach ($depCalculateArray as $item) {
-                    if ($item === "Pid={$param->ParametersID}") {
-                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                    if (strpos($item, 'Pid=') === 0 && in_array(substr($item, 4), $parameterIdsInCalculate)) {
+                        $dependentValuesParameters = ValuesParameters::where('ParametersID', substr($item, 4))
                             ->where('TimeID', $valuesParameters->TimeID)
                             ->first();
                         if ($dependentValuesParameters) {
-                            logger()->info("🔄 **Rekursiv hisoblash:** ParameterID: {$param->ParametersID}");
+                            logger()->info("🔄 **Rekursiv hisoblash:** ParameterID: " . substr($item, 4));
                             $this->calculateFormula($dependentValuesParameters);
                         }
-                        break;
                     }
                 }
             }

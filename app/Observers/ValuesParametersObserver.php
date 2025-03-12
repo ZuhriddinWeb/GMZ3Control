@@ -67,9 +67,13 @@ class ValuesParametersObserver
                     $parameters[$parameterId][$timeId] = ValuesParameters::where('ParametersID', $parameterId)
                         ->whereIn('TimeID', $relatedTimeIds)
                         ->where('Created', $valuesParameters->Created)
-                        ->value('Value') ?? 0;
+                        ->value('Value') ?? null;
 
-                    logger()->info("TimeID: $timeId, Graphic Time Name: $graphicTimeName, Related TimeIDs: " . implode(',', $relatedTimeIds->toArray()));
+                    if (is_null($parameters[$parameterId][$timeId])) {
+                        logger()->warning("❌ **Qiymat topilmadi!** ParameterID: $parameterId, TimeID: $timeId");
+                    }
+
+                    logger()->info("✔ TimeID: $timeId, Graphic Time Name: $graphicTimeName, Related TimeIDs: " . implode(',', $relatedTimeIds->toArray()));
                 }
             }
 
@@ -79,6 +83,11 @@ class ValuesParametersObserver
                 } elseif (strpos($item, 'Tid=') === 0) {
                     $timeId = substr($item, 4);
                     $value = $parameters[$parameterId][$timeId] ?? 0;
+
+                    if ($value === 0) {
+                        logger()->warning("⚠ **Natija nol bo‘ldi!** ParameterID: $parameterId, TimeID: $timeId");
+                    }
+
                     $numberBuffer .= (string) $value;
                 } elseif (in_array($item, ['+', '-', '*', '÷', '/', '=', '(', ')'])) {
                     if ($numberBuffer !== "") {
@@ -121,7 +130,7 @@ class ValuesParametersObserver
                     throw new \Exception("Bo‘sh matematik ifoda!");
                 }
 
-                logger()->info("Hisoblash ifodasi: $calculateString");
+                logger()->info("🧮 **Hisoblash ifodasi:** $calculateString");
 
                 $result = eval("return ($calculateString);");
 
@@ -129,7 +138,7 @@ class ValuesParametersObserver
                     throw new \Exception("Eval noto‘g‘ri bajarildi: $calculateString");
                 }
             } catch (\Throwable $e) {
-                logger()->error("Hisoblashda xato: " . $e->getMessage());
+                logger()->error("❌ **Hisoblashda xato:** " . $e->getMessage());
                 continue;
             }
 
@@ -165,7 +174,7 @@ class ValuesParametersObserver
                     ]
                 );
 
-                logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
+                logger()->info("✔ **Bazaga yozilgan yozuv:** ", $newOrUpdateRecord->toArray());
             });
 
             $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();

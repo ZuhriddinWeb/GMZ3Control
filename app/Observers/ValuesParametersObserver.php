@@ -140,8 +140,8 @@ class ValuesParametersObserver
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
                         'SourceID' => (string) $param->SourceID,
-                        'GTid' => (string) $valuesParameters->TimeID,
-                        'TimeStr' => $valuesParameters->TimeStr, 
+                        'GTid' => (string) $valuesParameters->TimeID, // Asosiy vaqt ID
+                        'TimeStr' => (string) DB::table('graphic_times')->where('id', $valuesParameters->TimeID)->value('Name'), // TimeStr bilan bog'lash
                         'Value' => round($result, 2),
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
@@ -150,13 +150,14 @@ class ValuesParametersObserver
                         'created_at' => now(),
                         'Created' => $valuesParameters->Created,
                     ];
+                
                     $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                         [
                             'TimeID' => $data['GTid'],
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $data['TimeStr'],
+                            'TimeStr' => $data['TimeStr'], // **TimeStr bilan bog'lash**
                         ],
                         [
                             'id' => (string) Str::uuid(),
@@ -169,10 +170,11 @@ class ValuesParametersObserver
                             'updated_at' => now(),
                         ]
                     );
-    
-                    \Log::info("✅ Bazaga yozildi: " . json_encode($newOrUpdateRecord));
+                
+                    // **✅ Yozilganini logga qo‘shish**
+                    \Log::info("✅ Bazaga yozildi: ", $newOrUpdateRecord->toArray());
                 });
-    
+                
                 // ✅ **Rekursiya: Bog‘liq formulalarni qayta hisoblash**
                 $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
                 foreach ($dependentCalculators as $depCalculator) {

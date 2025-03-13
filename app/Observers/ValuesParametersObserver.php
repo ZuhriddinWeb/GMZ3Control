@@ -172,7 +172,7 @@ class ValuesParametersObserver
                         'FactoryStructureID' => (string) $param->FactoryStructureID,
                         'ChangeID' => $valuesParameters->ChangeID,
                         'Created' => $valuesParameters->Created,
-                        'created_at' => now(),
+                        'updated_at' => now(),
                     ];
 
                     // 🔎 **Oldin ushbu TimeID bilan yozilgan bo‘lsa, shuni UPDATE qilish**
@@ -210,7 +210,7 @@ class ValuesParametersObserver
                             'FactoryStructureID' => $data['FactoryStructureID'],
                             'ChangeID' => $data['ChangeID'],
                             'Created' => $data['Created'],
-                            'updated_at' =>now(),
+                            'updated_at' => $data['updated_at'],
                         ]);
 
                         logger()->info("Bazaga yangi yozuv qo‘shildi: ", $newRecord->toArray());

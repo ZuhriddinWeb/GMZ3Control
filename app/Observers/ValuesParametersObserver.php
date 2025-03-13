@@ -165,7 +165,7 @@ class ValuesParametersObserver
                             'FactoryStructureID' => $data['FactoryStructureID'],
                             'ChangeID' => $valuesParameters->ChangeID,
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $data['TimeStr'], 
+                            'TimeStr' => $valuesParameters->GTName, 
                             'updated_at' => now(),
                         ]
                     );

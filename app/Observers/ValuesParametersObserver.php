@@ -223,34 +223,52 @@ class ValuesParametersObserver
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
                 // 🔹 Calculator dagi bog‘liq formulalarni olish
                 $dependentCalculators = DB::table('calculators')
-                    ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
-                    ->where('graphic_times.Name', $valuesParameters->TimeStr)
-                    ->select('calculators.*')
-                    ->get();
-
-                foreach ($dependentCalculators as $depCalculator) {
-                    $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                    if (!$depCalculateArray)
-                        continue;
-
-                    foreach ($depCalculateArray as $item) {
-                        if ($item === "Pid={$param->ParametersID}") {
-                            // 🔎 Asl Calculator dagi TimeID ni olish
-                            $calculatorTimeID = $depCalculator->TimeID;
-
-                            // 🗃️ Bog‘liq parametrlarni olish
-                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->where('TimeID', $calculatorTimeID) // 🔹 Faqat Calculator dagi TimeID ishlatiladi!
-                                ->where('Created', $valuesParameters->Created)
-                                ->first();
-
-                            if ($dependentValuesParameters) {
+                ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
+                ->where('graphic_times.Name', $valuesParameters->TimeStr)
+                ->select('calculators.*')
+                ->get();
+            
+            foreach ($dependentCalculators as $depCalculator) {
+                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+                if (!$depCalculateArray) {
+                    continue; // Agar formulasi bo‘sh bo‘lsa, keyingi iteratsiyaga o‘tish
+                }
+            
+                foreach ($depCalculateArray as $item) {
+                    if ($item === "Pid={$param->ParametersID}") {
+                        // 🔹 **Asl Calculator dagi TimeID ni olish**
+                        $calculatorTimeID = $depCalculator->TimeID;
+            
+                        // 🔹 **Foydalanilayotgan vaqtning `Name` ni olib, bog‘liq TimeID larni olish**
+                        $relatedTimeIds = DB::table('graphic_times')
+                            ->where('Name', $valuesParameters->TimeStr)
+                            ->pluck('id')
+                            ->toArray();
+            
+                        // 🗃️ **Bog‘liq parametrlarni olish**
+                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                            ->whereIn('TimeID', $relatedTimeIds) // ✅ **Bog‘liq vaqtlar**
+                            ->where('Created', $valuesParameters->Created)
+                            ->first();
+            
+                        // 🔄 **Rekursiyani nazorat qilish: faqat agar qiymat topilgan bo‘lsa, chaqirish**
+                        if ($dependentValuesParameters) {
+                            // **Oldin rekursiyani tekshirib, cheksiz aylanish oldini olish**
+                            static $processedParameters = [];
+                            $key = $dependentValuesParameters->ParametersID . "-" . $dependentValuesParameters->TimeID;
+                            
+                            if (!in_array($key, $processedParameters)) {
+                                $processedParameters[] = $key;
                                 $this->saved($dependentValuesParameters);
+                            } else {
+                                logger()->warning("Rekursiv hisoblash cheksiz aylanib qolishi mumkin: " . $key);
                             }
-                            break;
                         }
+                        break; // **Bir marta topilgandan keyin siklni to‘xtatish**
                     }
                 }
+            }
+            
 
 
             }

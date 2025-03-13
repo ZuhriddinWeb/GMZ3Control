@@ -156,6 +156,7 @@ class ValuesParametersObserver
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
+                            'TimeStr' => $data['TimeStr'],
                         ],
                         [
                             'id' => (string) Str::uuid(),
@@ -165,7 +166,6 @@ class ValuesParametersObserver
                             'FactoryStructureID' => $data['FactoryStructureID'],
                             'ChangeID' => $valuesParameters->ChangeID,
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $valuesParameters->TimeStr, 
                             'updated_at' => now(),
                         ]
                     );

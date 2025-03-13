@@ -18,48 +18,52 @@ class ValuesParametersObserver
             $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
             foreach ($calculators as $calculator) {
                 $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
-                if (!$calculateArray) continue;
-    
+                if (!$calculateArray)
+                    continue;
+
                 $parameterIdsInCalculate = [];
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
                         $parameterIdsInCalculate[] = substr($item, 4);
                     }
                 }
-                if (empty($parameterIdsInCalculate)) continue;
-                if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate)) continue;
-    
+                if (empty($parameterIdsInCalculate))
+                    continue;
+                if (!in_array($valuesParameters->ParametersID, $parameterIdsInCalculate))
+                    continue;
+
                 $param = GraphicsParamenters::where('ParametersID', $calculator->ParametersID)->first();
-                if (!$param) continue;
-    
+                if (!$param)
+                    continue;
+
                 $result = null;
                 $numberBuffer = "";
                 $values = [];
                 $operatorStack = [];
                 $parameters = [];
-    
+
                 // ✅ **TID larni `graphic_times` bilan solishtirib, `values_parameters` dan barcha mos keluvchi qiymatlarni olish**
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
                         $parameterId = substr($item, 4);
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
-    
+
                         // 🔹 `graphic_times` jadvalidan `Name` ni olish
                         $graphicTimeName = DB::table('graphic_times')
                             ->where('id', $timeId)
                             ->value('Name');
-    
+
                         if (!$graphicTimeName) {
                             \Log::error("graphic_times dagi `Name` topilmadi! TimeID: $timeId");
                             continue;
                         }
-    
+
                         // // 🔹 Shu `Name` ga mos keladigan barcha `TimeID` larni olish
                         // $relatedTimeIds = DB::table('graphic_times')
                         //     ->where('Name', $graphicTimeName)
                         //     ->pluck('id');
-    
+
                         // 🔹 `values_parameters` dan shu `ParametersID` bo‘yicha **barcha `Value` larni olish**
                         $paramValues = ValuesParameters::where('ParametersID', $parameterId)
                             // ->whereIn('TimeID', $relatedTimeIds)
@@ -67,16 +71,16 @@ class ValuesParametersObserver
                             ->where('Created', $valuesParameters->Created)
                             ->pluck('Value')
                             ->toArray();
-    
+
                         if (empty($paramValues)) {
                             $missingParameters = true;
                         }
-    
+
                         // ✅ **Agar bir nechta qiymat bo‘lsa, ularni yig‘indisini olish (yoki boshqa operator qo‘llash mumkin)**
                         $parameters[$parameterId][$timeId] = array_sum($paramValues) ?? 0;
                     }
                 }
-    
+
                 // ✅ **Hisoblash**
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
@@ -112,21 +116,21 @@ class ValuesParametersObserver
                         $numberBuffer .= $item;
                     }
                 }
-    
+
                 if ($numberBuffer !== "") {
                     $values[] = $numberBuffer;
                 }
-    
+
                 $calculateString = implode(' ', $values);
-    
+
                 try {
                     if (empty($calculateString)) {
                         throw new \Exception("Bo‘sh matematik ifoda!");
                     }
-    
+
                     \Log::info("Hisoblash ifodasi: $calculateString");
-                    $result = eval("return ($calculateString);");
-    
+                    $result = eval ("return ($calculateString);");
+
                     if ($result === false) {
                         throw new \Exception("Eval noto‘g‘ri bajarildi: $calculateString");
                     }
@@ -134,14 +138,14 @@ class ValuesParametersObserver
                     \Log::error("Hisoblashda xato: " . $e->getMessage());
                     continue;
                 }
-    
+
                 // ✅ **Bazaga yozish**
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
                         'SourceID' => (string) $param->SourceID,
-                        'GTid' => (string) $valuesParameters->TimeID, // Asosiy vaqt ID
-                        'TimeStr' => (string) DB::table('graphic_times')->where('id', $valuesParameters->TimeID)->value('Name'), // TimeStr bilan bog'lash
+                        'GTid' => (string) $valuesParameters->TimeID,
+                        'TimeStr' => $valuesParameters->TimeStr,
                         'Value' => round($result, 2),
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
@@ -150,14 +154,13 @@ class ValuesParametersObserver
                         'created_at' => now(),
                         'Created' => $valuesParameters->Created,
                     ];
-                
                     $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                         [
                             'TimeID' => $data['GTid'],
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $data['TimeStr'], // **TimeStr bilan bog'lash**
+                            'TimeStr' => $data['TimeStr'],
                         ],
                         [
                             'id' => (string) Str::uuid(),
@@ -170,49 +173,40 @@ class ValuesParametersObserver
                             'updated_at' => now(),
                         ]
                     );
-                
-                    // **✅ Yozilganini logga qo‘shish**
-                    \Log::info("✅ Bazaga yozildi: ", $newOrUpdateRecord->toArray());
+
+                    \Log::info("✅ Bazaga yozildi: " . json_encode($newOrUpdateRecord));
                 });
-                
+
                 // ✅ **Rekursiya: Bog‘liq formulalarni qayta hisoblash**
                 $dependentCalculators = Calculator::whereIn('TimeID', $relatedTimeIds)->get();
                 foreach ($dependentCalculators as $depCalculator) {
                     $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                    if (!$depCalculateArray) continue;
-                
+                    if (!$depCalculateArray)
+                        continue;
+
                     foreach ($depCalculateArray as $item) {
-                        if (strpos($item, 'Pid=') === 0) {
-                            $dependentParameterId = substr($item, 4);
-                
-                            // 🔹 `graphic_times` dan `Name` ni olish
-                            $dependentTimeStr = DB::table('graphic_times')
-                                ->where('id', $depCalculator->TimeID)
-                                ->value('Name');
-                
-                            if (!$dependentTimeStr) {
-                                \Log::error("graphic_times dagi `Name` topilmadi! TimeID: {$depCalculator->TimeID}");
-                                continue;
-                            }
-                
-                            // 🔹 `ValuesParameters` dan TimeStr orqali bog‘liq `Value` ni olish
-                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $dependentParameterId)
-                                ->where('TimeStr', $dependentTimeStr)
-                                ->whereNotNull('Value') // Faqat hisoblangan qiymatlar uchun!
+                        if ($item === "Pid={$param->ParametersID}") {
+                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                                ->whereIn('TimeID', $relatedTimeIds)
+                                ->whereNotNull('Value') // **Faqat mavjud qiymatlar uchun**
                                 ->first();
-                
+
                             if ($dependentValuesParameters) {
-                                $this->saved($dependentValuesParameters);
+                                // 🔄 **Oldini olish uchun rekursiv hisoblashni keyinga qoldirish**
+                                dispatch(function () use ($dependentValuesParameters) {
+                                    $this->saved($dependentValuesParameters);
+                                })->delay(now()->addSeconds(1));
                             }
                             break;
                         }
                     }
                 }
-                
+
+
             }
         });
     }
-    
-    
-    
+
+
+
 }

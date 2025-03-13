@@ -204,7 +204,7 @@ class ValuesParametersObserver
                     ->where('graphic_times.Name', $valuesParameters->TimeStr)
                     ->select('calculators.*')
                     ->get();
-
+                    
                 foreach ($dependentCalculators as $depCalculator) {
                     $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
                     if (!$depCalculateArray)

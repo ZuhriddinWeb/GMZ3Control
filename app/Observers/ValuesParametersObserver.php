@@ -158,7 +158,6 @@ class ValuesParametersObserver
 
 
 
-                // Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
                 // 🔄 Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
                     $data = [
@@ -175,7 +174,7 @@ class ValuesParametersObserver
                         'updated_at' => now(),
                     ];
 
-                    // 🔎 **Oldin ushbu TimeID bilan yozilgan bo‘lsa, shuni UPDATE qilish**
+                    // 🔎 **Avval shu TimeID bilan yozilgan bo‘lsa, update qilish**
                     $existingRecord = ValuesParameters::where([
                         'TimeID' => $data['TimeID'], // ✅ O‘zining TimeID sini ishlatish!
                         'ParametersID' => $data['ParametersID'],
@@ -185,26 +184,30 @@ class ValuesParametersObserver
                     ])->first();
 
                     if ($existingRecord) {
-                        // 🔄 **Agar yozuv mavjud bo‘lsa, mavjudini yangilash**
-                        $existingRecord->update([
-                            'Value' => $data['Value'],
-                            'GraphicsTimesID' => $data['GraphicsTimesID'],
-                            'BlogID' => $data['BlogID'],
-                            'FactoryStructureID' => $data['FactoryStructureID'],
-                            'ChangeID' => $valuesParameters->ChangeID,
-                            'updated_at' => now(),
-                        ]);
+                        // 🛑 **Agar mavjud yozuv bo‘lsa va `Value = 0` bo‘lsa, update qilamiz**
+                        if ($existingRecord->Value == 0) {
+                            $existingRecord->update([
+                                'Value' => $data['Value'],
+                                'GraphicsTimesID' => $data['GraphicsTimesID'],
+                                'BlogID' => $data['BlogID'],
+                                'FactoryStructureID' => $data['FactoryStructureID'],
+                                'ChangeID' => $valuesParameters->ChangeID,
+                                'updated_at' => now(),
+                            ]);
 
-                        logger()->info("Bazadagi mavjud yozuv yangilandi: ", $existingRecord->toArray());
+                            logger()->info("Bazadagi mavjud yozuv yangilandi (Value = 0 edi): ", $existingRecord->toArray());
+                        } else {
+                            logger()->info("Yozuv allaqachon mavjud va `Value` 0 emas, shuning uchun yangilanmadi: ", $existingRecord->toArray());
+                        }
                     } else {
-                        // 🆕 **Agar yozuv mavjud bo‘lmasa, yangi yozish**
+                        // 🆕 **Agar yozuv mavjud bo‘lmasa, yangi yozish (faqat `Value = 0` bo‘lsa)**
                         $newRecord = ValuesParameters::create([
                             'id' => (string) Str::uuid(), // ✅ UUID ni qo‘shish
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourcesID'],
                             'TimeID' => $data['TimeID'],
                             'TimeStr' => $data['TimeStr'],
-                            'Value' => $data['Value'],
+                            'Value' => 0, // ✅ Dastlab `Value = 0` qilib yozamiz
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],
                             'FactoryStructureID' => $data['FactoryStructureID'],
@@ -213,7 +216,7 @@ class ValuesParametersObserver
                             'updated_at' => $data['updated_at'],
                         ]);
 
-                        logger()->info("Bazaga yangi yozuv qo‘shildi: ", $newRecord->toArray());
+                        logger()->info("Bazaga yangi yozuv qo‘shildi (`Value = 0` bilan): ", $newRecord->toArray());
                     }
                 });
 

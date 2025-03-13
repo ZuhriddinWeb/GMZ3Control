@@ -200,34 +200,48 @@ class ValuesParametersObserver
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
                 // 🔹 Calculator dagi bog‘liq formulalarni olish
                 $dependentCalculators = DB::table('calculators')
-                    ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
-                    ->where('graphic_times.Name', $valuesParameters->TimeStr)
-                    ->select('calculators.*')
-                    ->get();
-                    
-                foreach ($dependentCalculators as $depCalculator) {
-                    $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                    if (!$depCalculateArray)
-                        continue;
-
-                    foreach ($depCalculateArray as $item) {
-                        if ($item === "Pid={$param->ParametersID}") {
-                            // 🔎 Asl Calculator dagi TimeID ni olish
-                            $calculatorTimeID = $depCalculator->TimeID;
-
-                            // 🗃️ Bog‘liq parametrlarni olish
-                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->where('TimeID', $calculatorTimeID) // 🔹 Faqat Calculator dagi TimeID ishlatiladi!
-                                ->where('Created', $valuesParameters->Created)
-                                ->first();
-
-                            if ($dependentValuesParameters) {
-                                $this->saved($dependentValuesParameters);
+                ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
+                ->where('graphic_times.Name', $valuesParameters->TimeStr) // 🎯 TimeStr bo‘yicha Calculator larni olish
+                ->select('calculators.*')
+                ->get();
+            
+            foreach ($dependentCalculators as $depCalculator) {
+                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+                if (!$depCalculateArray) {
+                    continue; // Formulasi bo‘sh bo‘lsa, keyingi iteratsiyaga o‘tish
+                }
+            
+                foreach ($depCalculateArray as $item) {
+                    if ($item === "Pid={$param->ParametersID}") {
+                        // ✅ Asl Calculator dagi TimeID ni olish
+                        $calculatorTimeID = $depCalculator->TimeID;
+            
+                        // ✅ Faqat `Calculator` dagi `TimeID` bilan bog‘liq qiymatni olish
+                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                            ->where('TimeID', $calculatorTimeID) // Faqat Calculator dagi TimeID ishlatiladi!
+                            ->where('Created', $valuesParameters->Created)
+                            ->first();
+            
+                        if ($dependentValuesParameters) {
+                            // 🛑 **Agar `Value=0` bo‘lsa, shunchaki `update` qilish**
+                            if ($dependentValuesParameters->Value == 0) {
+                                $dependentValuesParameters->update([
+                                    'Value' => round($result, 2), // Yangi hisoblangan qiymat
+                                    'updated_at' => now(),
+                                ]);
+            
+                                logger()->info("✅ `Value=0` bo‘lgan yozuv yangilandi: ", $dependentValuesParameters->toArray());
+                            } else {
+                                logger()->warning("⏩ `Value` allaqachon mavjud: ", $dependentValuesParameters->toArray());
                             }
-                            break;
+                        } else {
+                            logger()->error("❌ `ValuesParameters` topilmadi! `ParametersID = {$param->ParametersID}`, `TimeID = $calculatorTimeID`");
                         }
+                        break;
                     }
                 }
+            }
+            
 
 
             }

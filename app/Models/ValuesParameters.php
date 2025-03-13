@@ -16,6 +16,7 @@ class ValuesParameters extends Model
         'Value',
         'Comment',
         'TimeID',
+        'TimeStr',
         'FactoryStructureID',
         'BlogID',
         'GraphicsTimesID',
@@ -30,5 +31,6 @@ class ValuesParameters extends Model
         'id' => 'string',
         'ParametersID'=>'string',
         'Value' => 'float',
+        'TimeStr'=>'string'
     ];
 }

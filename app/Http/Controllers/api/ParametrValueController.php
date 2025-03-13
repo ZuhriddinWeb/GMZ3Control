@@ -70,7 +70,6 @@ class ParametrValueController extends Controller
 
     public function create(Request $request)
     {
-        // dd($request->daySelect);
         $uuidString = (string) Str::uuid();
         try {
             // Yangi yoki mavjud yozuvni topish
@@ -78,6 +77,7 @@ class ParametrValueController extends Controller
                 'ParametersID' => $request->ParametersID,
                 'SourcesID' => $request->SourceID,
                 'TimeID' => $request->GTid,
+                'TimeStr'=>$request->GTName,
                 'Created' => $request->daySelect,
                 // 'ChangeID' => $request->change,
 
@@ -90,6 +90,7 @@ class ParametrValueController extends Controller
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
                     'TimeID' => $request->GTid,
+                    'TimeStr'=>$request->GTName,
                     'ChangeID' => $request->change,
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,

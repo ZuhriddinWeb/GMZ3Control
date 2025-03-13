@@ -213,7 +213,7 @@ class ValuesParametersObserver
 
                             $relatedTimeIds = DB::table('graphic_times')
                                 ->where('Name', $graphicTimeName)
-                                ->pluck('id');
+                                ->value('id');
 
                             // 🗃️ Bog‘liq parametrlarni olish
                             $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)

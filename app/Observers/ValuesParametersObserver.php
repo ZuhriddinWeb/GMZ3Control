@@ -159,44 +159,64 @@ class ValuesParametersObserver
 
 
                 // Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
+                // 🔄 Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
-                        'SourceID' => (string) $param->SourceID,
-                        'GTid' => (string) $valuesParameters->TimeID,
+                        'SourcesID' => (string) $param->SourceID,
+                        'TimeID' => (string) $valuesParameters->TimeID, // ✅ O‘zining TimeID sini saqlash
                         'TimeStr' => $valuesParameters->TimeStr,
                         'Value' => round($result, 2),
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
                         'FactoryStructureID' => (string) $param->FactoryStructureID,
                         'ChangeID' => $valuesParameters->ChangeID,
-                        'created_at' => now(),
                         'Created' => $valuesParameters->Created,
+                        'created_at' => now(),
                     ];
-                    $newOrUpdateRecord = ValuesParameters::updateOrCreate(
-                        [
-                            'TimeID' => $data['GTid'],
-                            'ParametersID' => $data['ParametersID'],
-                            'SourcesID' => $data['SourceID'],
-                            'Created' => $valuesParameters->Created,
-                            'TimeStr' => $data['TimeStr'],
-                        ],
-                        [
-                            'id' => (string) Str::uuid(), // UUID ni qo'shish
+
+                    // 🔎 **Oldin ushbu TimeID bilan yozilgan bo‘lsa, shuni UPDATE qilish**
+                    $existingRecord = ValuesParameters::where([
+                        'TimeID' => $data['TimeID'], // ✅ O‘zining TimeID sini ishlatish!
+                        'ParametersID' => $data['ParametersID'],
+                        'SourcesID' => $data['SourcesID'],
+                        'Created' => $valuesParameters->Created,
+                        'TimeStr' => $data['TimeStr'],
+                    ])->first();
+
+                    if ($existingRecord) {
+                        // 🔄 **Agar yozuv mavjud bo‘lsa, mavjudini yangilash**
+                        $existingRecord->update([
                             'Value' => $data['Value'],
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],
                             'FactoryStructureID' => $data['FactoryStructureID'],
                             'ChangeID' => $valuesParameters->ChangeID,
-                            'Created' => $valuesParameters->Created,
                             'updated_at' => now(),
-                        ]
-                    );
+                        ]);
 
-                    // Tekshirish: Natija bazaga to'g'ri yozilganligini ko'rish uchun
-                    logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
-                    // dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
+                        logger()->info("Bazadagi mavjud yozuv yangilandi: ", $existingRecord->toArray());
+                    } else {
+                        // 🆕 **Agar yozuv mavjud bo‘lmasa, yangi yozish**
+                        $newRecord = ValuesParameters::create([
+                            'id' => (string) Str::uuid(), // ✅ UUID ni qo‘shish
+                            'ParametersID' => $data['ParametersID'],
+                            'SourcesID' => $data['SourcesID'],
+                            'TimeID' => $data['TimeID'],
+                            'TimeStr' => $data['TimeStr'],
+                            'Value' => $data['Value'],
+                            'GraphicsTimesID' => $data['GraphicsTimesID'],
+                            'BlogID' => $data['BlogID'],
+                            'FactoryStructureID' => $data['FactoryStructureID'],
+                            'ChangeID' => $data['ChangeID'],
+                            'Created' => $data['Created'],
+                            'updated_at' =>now(),
+                        ]);
+
+                        logger()->info("Bazaga yangi yozuv qo‘shildi: ", $newRecord->toArray());
+                    }
                 });
+
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
                 // 🔹 Calculator dagi bog‘liq formulalarni olish
                 $dependentCalculators = DB::table('calculators')

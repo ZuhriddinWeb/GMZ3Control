@@ -175,7 +175,7 @@ class ValuesParametersObserver
                     ];
                     $newOrUpdateRecord = ValuesParameters::updateOrCreate(
                         [
-                            'TimeID' => $data['GTid'],
+                            // 'TimeID' => $data['GTid'],
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
@@ -184,6 +184,7 @@ class ValuesParametersObserver
                         [
                             'id' => (string) Str::uuid(), // UUID ni qo'shish
                             'Value' => $data['Value'],
+                            'TimeID' => $data['GTid'],
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],
                             'FactoryStructureID' => $data['FactoryStructureID'],

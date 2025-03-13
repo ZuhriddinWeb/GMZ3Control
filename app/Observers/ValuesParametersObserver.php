@@ -156,7 +156,6 @@ class ValuesParametersObserver
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $valuesParameters->TimeStr, 
                         ],
                         [
                             'id' => (string) Str::uuid(),

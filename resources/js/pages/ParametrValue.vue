@@ -249,7 +249,7 @@ const columnDefs = ref([
         return params.data && params.data.WithFormula === "1";
       }
     },
-    
+
     cellStyle: (params) => {
       return {
         'font-size': '16px',
@@ -549,12 +549,15 @@ async function getPages(newValue) {
 
     const params = paramsResponse.data;
     const values = valuesResponse.data;
-
+    
+    // console.log(params);
     // Agar `values` mavjud bo'lsa, `params` bilan birlashtiriladi
     params.forEach((parametr, index) => {
+      // console.log(parametr);
+      
       const select = values.find(
         (val) =>
-          val.TimeID == parametr.GTid &&
+          val.TimeStr == parametr.GTName &&
           val.ParametersID == parametr.ParametersID
       );
       if (select) {

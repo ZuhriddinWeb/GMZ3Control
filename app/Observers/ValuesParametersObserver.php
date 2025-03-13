@@ -158,68 +158,45 @@ class ValuesParametersObserver
 
 
 
-                // 🔄 Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
+                // Ma'lumotlarni qo‘shish yoki yangilashni hodisalarsiz amalga oshirish
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
-                        'SourcesID' => (string) $param->SourceID,
-                        'TimeID' => (string) $valuesParameters->TimeID, // ✅ O‘zining TimeID sini saqlash
+                        'SourceID' => (string) $param->SourceID,
+                        'GTid' => (string) $valuesParameters->TimeID,
                         'TimeStr' => $valuesParameters->TimeStr,
                         'Value' => round($result, 2),
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
                         'FactoryStructureID' => (string) $param->FactoryStructureID,
                         'ChangeID' => $valuesParameters->ChangeID,
+                        'created_at' => now(),
                         'Created' => $valuesParameters->Created,
-                        'updated_at' => now(),
                     ];
-
-                    // 🔎 **Avval shu TimeID bilan yozilgan bo‘lsa, update qilish**
-                    $existingRecord = ValuesParameters::where([
-                        'TimeID' => $data['TimeID'], // ✅ O‘zining TimeID sini ishlatish!
-                        'ParametersID' => $data['ParametersID'],
-                        'SourcesID' => $data['SourcesID'],
-                        'Created' => $valuesParameters->Created,
-                        'TimeStr' => $data['TimeStr'],
-                    ])->first();
-
-                    if ($existingRecord) {
-                        // 🛑 **Agar mavjud yozuv bo‘lsa va `Value = 0` bo‘lsa, update qilamiz**
-                        if ($existingRecord->Value == 0) {
-                            $existingRecord->update([
-                                'Value' => $data['Value'],
-                                'GraphicsTimesID' => $data['GraphicsTimesID'],
-                                'BlogID' => $data['BlogID'],
-                                'FactoryStructureID' => $data['FactoryStructureID'],
-                                'ChangeID' => $valuesParameters->ChangeID,
-                                'updated_at' => now(),
-                            ]);
-
-                            logger()->info("Bazadagi mavjud yozuv yangilandi (Value = 0 edi): ", $existingRecord->toArray());
-                        } else {
-                            logger()->info("Yozuv allaqachon mavjud va `Value` 0 emas, shuning uchun yangilanmadi: ", $existingRecord->toArray());
-                        }
-                    } else {
-                        // 🆕 **Agar yozuv mavjud bo‘lmasa, yangi yozish (faqat `Value = 0` bo‘lsa)**
-                        $newRecord = ValuesParameters::create([
-                            'id' => (string) Str::uuid(), // ✅ UUID ni qo‘shish
+                    $newOrUpdateRecord = ValuesParameters::updateOrCreate(
+                        [
+                            'TimeID' => $data['GTid'],
                             'ParametersID' => $data['ParametersID'],
-                            'SourcesID' => $data['SourcesID'],
-                            'TimeID' => $data['TimeID'],
+                            'SourcesID' => $data['SourceID'],
+                            'Created' => $valuesParameters->Created,
                             'TimeStr' => $data['TimeStr'],
-                            'Value' => 0, // ✅ Dastlab `Value = 0` qilib yozamiz
+                        ],
+                        [
+                            'id' => (string) Str::uuid(), // UUID ni qo'shish
+                            'Value' => $data['Value'],
                             'GraphicsTimesID' => $data['GraphicsTimesID'],
                             'BlogID' => $data['BlogID'],
                             'FactoryStructureID' => $data['FactoryStructureID'],
-                            'ChangeID' => $data['ChangeID'],
-                            'Created' => $data['Created'],
-                            'updated_at' => $data['updated_at'],
-                        ]);
+                            'ChangeID' => $valuesParameters->ChangeID,
+                            'Created' => $valuesParameters->Created,
+                            'updated_at' => now(),
+                        ]
+                    );
 
-                        logger()->info("Bazaga yangi yozuv qo‘shildi (`Value = 0` bilan): ", $newRecord->toArray());
-                    }
+                    // Tekshirish: Natija bazaga to'g'ri yozilganligini ko'rish uchun
+                    logger()->info("Bazaga yozilgan yozuv: ", $newOrUpdateRecord->toArray());
+                    // dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
                 });
-
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
                 // 🔹 Calculator dagi bog‘liq formulalarni olish
                 $dependentCalculators = DB::table('calculators')
@@ -230,41 +207,27 @@ class ValuesParametersObserver
 
                 foreach ($dependentCalculators as $depCalculator) {
                     $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                    if (!$depCalculateArray) {
-                        continue; // Formulasi bo‘sh bo‘lsa, o‘tkazib yuborish
-                    }
+                    if (!$depCalculateArray)
+                        continue;
 
                     foreach ($depCalculateArray as $item) {
                         if ($item === "Pid={$param->ParametersID}") {
-                            // ✅ Asl Calculator dagi TimeID ni olish
+                            // 🔎 Asl Calculator dagi TimeID ni olish
                             $calculatorTimeID = $depCalculator->TimeID;
 
-                            // ✅ Asl TimeID bo‘yicha ValuesParameters ni olish
+                            // 🗃️ Bog‘liq parametrlarni olish
                             $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->where('TimeID', $calculatorTimeID) // Faqat Calculator dagi TimeID ishlatiladi
+                                ->where('TimeID', $calculatorTimeID) // 🔹 Faqat Calculator dagi TimeID ishlatiladi!
                                 ->where('Created', $valuesParameters->Created)
                                 ->first();
 
                             if ($dependentValuesParameters) {
-                                // 🔄 **Rekursiyani nazorat qilish**: Bir marta hisoblangan qiymatlarni qayta hisoblamaslik
-                                static $processedParameters = [];
-                                $key = $dependentValuesParameters->ParametersID . "-" . $dependentValuesParameters->TimeID;
-
-                                if (!in_array($key, $processedParameters)) {
-                                    $processedParameters[] = $key;
-                                    $this->saved($dependentValuesParameters);
-                                } else {
-                                    logger()->warning("Rekursiv hisoblash cheksiz aylanib qolishi mumkin: " . $key);
-                                }
-                            } else {
-                                // ❌ Agar `ValuesParameters` topilmasa, yangi yozuv yaratmaslik uchun log
-                                logger()->error("❌ Bog‘liq qiymat topilmadi: ParametersID = {$param->ParametersID}, TimeID = $calculatorTimeID");
+                                $this->saved($dependentValuesParameters);
                             }
-                            break; // Bir marta topilgandan keyin siklni to‘xtatish
+                            break;
                         }
                     }
                 }
-
 
 
             }

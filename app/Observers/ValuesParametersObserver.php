@@ -213,29 +213,30 @@ class ValuesParametersObserver
             
                 foreach ($depCalculateArray as $item) {
                     if ($item === "Pid={$param->ParametersID}") {
-                        // ✅ Asl Calculator dagi TimeID ni olish
+                        // ✅ `Calculator` dagi `TimeID` ni olish
                         $calculatorTimeID = $depCalculator->TimeID;
+                        logger()->info("📌 `Calculator` dagi `TimeID`: $calculatorTimeID");
             
-                        // ✅ Faqat `Calculator` dagi `TimeID` bilan bog‘liq qiymatni olish
+                        // ✅ `ValuesParameters` dagi mos yozuvni olish
                         $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                            ->where('TimeID', $calculatorTimeID) // Faqat Calculator dagi TimeID ishlatiladi!
+                            ->where('TimeID', $calculatorTimeID) // 🔹 Faqat `Calculator` dagi `TimeID` ishlatiladi!
                             ->where('Created', $valuesParameters->Created)
                             ->first();
             
                         if ($dependentValuesParameters) {
-                            // 🛑 **Agar `Value=0` bo‘lsa, shunchaki `update` qilish**
                             if ($dependentValuesParameters->Value == 0) {
+                                // 🔹 Agar `Value=0` bo‘lsa, yangi qiymat bilan `update` qilish
                                 $dependentValuesParameters->update([
-                                    'Value' => round($result, 2), // Yangi hisoblangan qiymat
+                                    'Value' => round($result, 2),
                                     'updated_at' => now(),
                                 ]);
-            
                                 logger()->info("✅ `Value=0` bo‘lgan yozuv yangilandi: ", $dependentValuesParameters->toArray());
                             } else {
-                                logger()->warning("⏩ `Value` allaqachon mavjud: ", $dependentValuesParameters->toArray());
+                                logger()->warning("⏩ `Value` allaqachon mavjud, o‘zgartirish kiritilmadi: ", $dependentValuesParameters->toArray());
                             }
                         } else {
                             logger()->error("❌ `ValuesParameters` topilmadi! `ParametersID = {$param->ParametersID}`, `TimeID = $calculatorTimeID`");
+                            continue; // 🔹 Agar topilmasa, keyingi iteratsiyaga o‘tish
                         }
                         break;
                     }

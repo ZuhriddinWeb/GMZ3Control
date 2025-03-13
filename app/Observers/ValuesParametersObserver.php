@@ -200,49 +200,34 @@ class ValuesParametersObserver
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
                 // 🔹 Calculator dagi bog‘liq formulalarni olish
                 $dependentCalculators = DB::table('calculators')
-                ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
-                ->where('graphic_times.Name', $valuesParameters->TimeStr) // 🎯 TimeStr bo‘yicha Calculator larni olish
-                ->select('calculators.*')
-                ->get();
-            
-            foreach ($dependentCalculators as $depCalculator) {
-                $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
-                if (!$depCalculateArray) {
-                    continue; // Formulasi bo‘sh bo‘lsa, keyingi iteratsiyaga o‘tish
-                }
-            
-                foreach ($depCalculateArray as $item) {
-                    if ($item === "Pid={$param->ParametersID}") {
-                        // ✅ `Calculator` dagi `TimeID` ni olish
-                        $calculatorTimeID = $depCalculator->TimeID;
-                        logger()->info("📌 `Calculator` dagi `TimeID`: $calculatorTimeID");
-            
-                        // ✅ `ValuesParameters` dagi mos yozuvni olish
-                        $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                            ->where('TimeID', $calculatorTimeID) // 🔹 Faqat `Calculator` dagi `TimeID` ishlatiladi!
-                            ->where('Created', $valuesParameters->Created)
-                            ->first();
-            
-                        if ($dependentValuesParameters) {
-                            if ($dependentValuesParameters->Value == 0) {
-                                // 🔹 Agar `Value=0` bo‘lsa, yangi qiymat bilan `update` qilish
-                                $dependentValuesParameters->update([
-                                    'Value' => round($result, 2),
-                                    'updated_at' => now(),
-                                ]);
-                                logger()->info("✅ `Value=0` bo‘lgan yozuv yangilandi: ", $dependentValuesParameters->toArray());
-                            } else {
-                                logger()->warning("⏩ `Value` allaqachon mavjud, o‘zgartirish kiritilmadi: ", $dependentValuesParameters->toArray());
+                    ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
+                    ->where('graphic_times.Name', $valuesParameters->TimeStr)
+                    ->select('calculators.*')
+                    ->get();
+                    
+                foreach ($dependentCalculators as $depCalculator) {
+                    $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
+                    if (!$depCalculateArray)
+                        continue;
+
+                    foreach ($depCalculateArray as $item) {
+                        if ($item === "Pid={$param->ParametersID}") {
+                            // 🔎 Asl Calculator dagi TimeID ni olish
+                            $calculatorTimeID = $depCalculator->TimeID;
+
+                            // 🗃️ Bog‘liq parametrlarni olish
+                            $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
+                                ->where('TimeID', $calculatorTimeID) // 🔹 Faqat Calculator dagi TimeID ishlatiladi!
+                                ->where('Created', $valuesParameters->Created)
+                                ->first();
+
+                            if ($dependentValuesParameters) {
+                                $this->saved($dependentValuesParameters);
                             }
-                        } else {
-                            logger()->error("❌ `ValuesParameters` topilmadi! `ParametersID = {$param->ParametersID}`, `TimeID = $calculatorTimeID`");
-                            continue; // 🔹 Agar topilmasa, keyingi iteratsiyaga o‘tish
+                            break;
                         }
-                        break;
                     }
                 }
-            }
-            
 
 
             }

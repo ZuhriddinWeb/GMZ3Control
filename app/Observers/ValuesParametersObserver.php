@@ -136,11 +136,12 @@ class ValuesParametersObserver
     
                 // ✅ **Bazaga yozish**
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
+                    dd($valuesParameters->TimeStr);
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
                         'SourceID' => (string) $param->SourceID,
                         'GTid' => (string) $valuesParameters->TimeID,
-                        'TimeStr' => $valuesParameters->GTName, 
+                        'TimeStr' => $valuesParameters->TimeStr, 
                         'Value' => round($result, 2),
                         'GraphicsTimesID' => (string) $param->GrapicsID,
                         'BlogID' => (string) $param->BlogsID,
@@ -155,7 +156,7 @@ class ValuesParametersObserver
                             'ParametersID' => $data['ParametersID'],
                             'SourcesID' => $data['SourceID'],
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $valuesParameters->GTName, 
+                            'TimeStr' => $valuesParameters->TimeStr, 
                         ],
                         [
                             'id' => (string) Str::uuid(),
@@ -165,7 +166,7 @@ class ValuesParametersObserver
                             'FactoryStructureID' => $data['FactoryStructureID'],
                             'ChangeID' => $valuesParameters->ChangeID,
                             'Created' => $valuesParameters->Created,
-                            'TimeStr' => $valuesParameters->GTName, 
+                            'TimeStr' => $valuesParameters->TimeStr, 
                             'updated_at' => now(),
                         ]
                     );

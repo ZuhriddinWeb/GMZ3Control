@@ -55,14 +55,15 @@ class ValuesParametersObserver
                             continue;
                         }
     
-                        // 🔹 Shu `Name` ga mos keladigan barcha `TimeID` larni olish
-                        $relatedTimeIds = DB::table('graphic_times')
-                            ->where('Name', $graphicTimeName)
-                            ->pluck('id');
+                        // // 🔹 Shu `Name` ga mos keladigan barcha `TimeID` larni olish
+                        // $relatedTimeIds = DB::table('graphic_times')
+                        //     ->where('Name', $graphicTimeName)
+                        //     ->pluck('id');
     
                         // 🔹 `values_parameters` dan shu `ParametersID` bo‘yicha **barcha `Value` larni olish**
                         $paramValues = ValuesParameters::where('ParametersID', $parameterId)
-                            ->whereIn('TimeID', $relatedTimeIds)
+                            // ->whereIn('TimeID', $relatedTimeIds)
+                            ->where('TimeStr', $graphicTimeName)
                             ->where('Created', $valuesParameters->Created)
                             ->pluck('Value')
                             ->toArray();

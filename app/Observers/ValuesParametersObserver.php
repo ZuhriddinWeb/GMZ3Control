@@ -136,7 +136,6 @@ class ValuesParametersObserver
     
                 // ✅ **Bazaga yozish**
                 ValuesParameters::withoutEvents(function () use ($valuesParameters, $param, $result) {
-                    dd($valuesParameters->TimeStr);
                     $data = [
                         'ParametersID' => (string) $param->ParametersID,
                         'SourceID' => (string) $param->SourceID,

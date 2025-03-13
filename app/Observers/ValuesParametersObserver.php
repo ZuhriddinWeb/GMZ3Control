@@ -18,9 +18,13 @@ class ValuesParametersObserver
         // dd($valuesParameters);
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
-            $calculators = Calculator::where('TimeID', $valuesParameters->TimeID)
-                // ->where('ParametersID', $valuesParameters->ParametersID)
-                ->get();
+            $calculators = DB::table('calculators')
+            ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
+            ->where('graphic_times.Name', $valuesParameters->TimeStr) // TimeStr bilan Name solishtirish
+            ->select('calculators.*')
+            ->get();
+        
+                // dd($calculators);
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;

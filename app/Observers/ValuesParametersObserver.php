@@ -19,12 +19,12 @@ class ValuesParametersObserver
         DB::transaction(function () use ($valuesParameters) {
             // TimeID bir xil bo‘lgan barcha mos calculator yozuvlarini olish
             $calculators = DB::table('calculators')
-            ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
-            ->where('graphic_times.Name', $valuesParameters->TimeStr) // TimeStr bilan Name solishtirish
-            ->select('calculators.*')
-            ->get();
-        
-                // dd($calculators);
+                ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
+                ->where('graphic_times.Name', $valuesParameters->TimeStr) // TimeStr bilan Name solishtirish
+                ->select('calculators.*')
+                ->get();
+
+            // dd($calculators);
             // Har bir calculator uchun ishga tushirish
             foreach ($calculators as $calculator) {
                 $calculateArray = is_string($calculator->Calculate) ? json_decode($calculator->Calculate, true) : $calculator->Calculate;
@@ -81,10 +81,10 @@ class ValuesParametersObserver
                         $parameterId = substr($item, 4);
                     } elseif (strpos($item, 'Tid=') === 0) {
                         $timeId = substr($item, 4);
-                
+
                         // 🔹 `graphic_times` dan `TimeStr` ni olish
                         $graphicTimeName = DB::table('graphic_times')->where('id', $timeId)->value('Name');
-                
+
                         // 🔹 `values_parameters` dan TimeStr orqali qiymatni olish
                         $parameters[$parameterId][$timeId] = ValuesParameters::where('ParametersID', $parameterId)
                             ->where('TimeStr', $graphicTimeName)
@@ -92,7 +92,7 @@ class ValuesParametersObserver
                             ->value('Value') ?? 0;
                     }
                 }
-                
+
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish
                 foreach ($calculateArray as $item) {
                     if (strpos($item, 'Pid=') === 0) {
@@ -198,7 +198,13 @@ class ValuesParametersObserver
                     // dd($newOrUpdateRecord); // Agar kerak bo'lsa, bu qator natijani tekshirish uchun ishlatilishi mumkin
                 });
                 // **🔄 Natija bog‘liq bo‘lgan boshqa formulalarda ishlatilsa, ularni ham qayta hisoblash**
-                $dependentCalculators = Calculator::where('TimeID', $valuesParameters->TimeID)->get();
+                // 🔹 Calculator dagi bog‘liq formulalarni olish
+                $dependentCalculators = DB::table('calculators')
+                    ->join('graphic_times', 'calculators.TimeID', '=', 'graphic_times.id')
+                    ->where('graphic_times.Name', $valuesParameters->TimeStr)
+                    ->select('calculators.*')
+                    ->get();
+
                 foreach ($dependentCalculators as $depCalculator) {
                     $depCalculateArray = is_string($depCalculator->Calculate) ? json_decode($depCalculator->Calculate, true) : $depCalculator->Calculate;
                     if (!$depCalculateArray)
@@ -206,19 +212,13 @@ class ValuesParametersObserver
 
                     foreach ($depCalculateArray as $item) {
                         if ($item === "Pid={$param->ParametersID}") {
-                            // 🔎 Grafik vaqt nomi va bog‘liq vaqt IDlarini olish
-                            $graphicTimeName = DB::table('graphic_times')
-                                ->where('id', $valuesParameters->TimeID)
-                                ->value('Name');
-
-                            $relatedTimeIds = DB::table('graphic_times')
-                                ->where('Name', $graphicTimeName)
-                                ->pluck('id')
-                                ->toArray(); 
+                            // 🔎 Asl Calculator dagi TimeID ni olish
+                            $calculatorTimeID = $depCalculator->TimeID;
 
                             // 🗃️ Bog‘liq parametrlarni olish
                             $dependentValuesParameters = ValuesParameters::where('ParametersID', $param->ParametersID)
-                                ->whereIn('TimeID', $relatedTimeIds)  // Vaqt IDlari ro‘yxatini tekshirish
+                                ->where('TimeID', $calculatorTimeID) // 🔹 Faqat Calculator dagi TimeID ishlatiladi!
+                                ->where('Created', $valuesParameters->Created)
                                 ->first();
 
                             if ($dependentValuesParameters) {
@@ -228,6 +228,7 @@ class ValuesParametersObserver
                         }
                     }
                 }
+
 
             }
         });

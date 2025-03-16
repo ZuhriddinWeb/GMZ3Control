@@ -211,9 +211,26 @@ export default [
 		},
 	},
 	{
-		path: '/createDoc',
+		path: '/vparam/:id',
+		name:'vparam',
+		component: () => import('../pages/ParametrValue.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
+		path: '/count',
+		name:'vparams',
+		component: () => import('../pages/ParametrValueCard.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
+		path: '/opercount',
 		name:'createDoc',
-		component: () => import('../pages/CreateDocument.vue'),
+		component: () => import('../pages/OperatorsCountInputValueCard.vue'),
 		meta: {
 			guard: 'auth',
 		},

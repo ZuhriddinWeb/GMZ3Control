@@ -79,16 +79,16 @@ const fetchUserData = async () => {
   }
 };
 
-// Umumiy ma'lumotlarni olish
-const fetchData = async () => {
-  try {
-    const response = await axios.get('/paramsgraph');
-    rowData.value = response.data;
-    // console.log("Olingan rowData:", rowData.value);
-  } catch (error) {
-    console.error('Ma’lumotlarni olishda xatolik:', error);
-  }
-};
+// // Umumiy ma'lumotlarni olish
+// const fetchData = async () => {
+//   try {
+//     const response = await axios.get('/paramsgraph');
+//     rowData.value = response.data;
+//     // console.log("Olingan rowData:", rowData.value);
+//   } catch (error) {
+//     console.error('Ma’lumotlarni olishda xatolik:', error);
+//   }
+// };
 
 // Tanlangan va guruhlangan qatorlarni bazaga saqlash
 const onSubmit = async () => {

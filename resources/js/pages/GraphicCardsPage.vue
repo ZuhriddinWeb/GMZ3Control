@@ -1,7 +1,7 @@
 <<template>
   <div class="grid grid-rows-[55px,1fr]">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4">
-      <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400">
+      <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400 " :style="{ backgroundImage: `url('/bgCard.png')`,backgroundSize: 'cover', backgroundPosition: 'center' }" >
         <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start">
           <span class="material-symbols-outlined w-1">circles_ext</span>
           <span class="flex-grow leading-none w-5/6">{{ locale === 'ru' ? card.NameRus : card.Name }}</span>

@@ -56,17 +56,19 @@
     align-items: center;
     cursor: pointer;
     padding: 1rem;
-    /* color: white;
-    transition: background-color 0.3s; */
+    border-bottom: 1px solid #ccc; /* Border qo'shildi */
+  transition: background-color 0.3s, border-color 0.3s; /* Silliq o'tish */
   }
   
   .menu-item.active {
     background-color: #154EC1; /* Highlight color for active item */
     color:white;
+    border-color: #154EC1; /* Active element border rangi */
   }
   
   .menu-item:hover {
     background-color: #333; /* Hover background color */
+    border-color: #222; /* Hover qilinganda border rangi */
   }
   
   .menu-item .icon {
@@ -75,6 +77,9 @@
   
   .sub-menu {
     padding-left: 1rem;
+    border-left: 2px solid #154EC1; /* Sub-menyular uchun chap border */
+  margin-left: 10px;
+  padding-top: 5px;
   }
   
   .toggle-icon {
@@ -85,16 +90,18 @@
     /* Default hover styles for items */
   }
   .hover-item:hover {
-    background-color: #154EC1; /* Highlight color for item hover */
-    color: white; /* Text color on hover */
+    background-color: #154EC1;
+  color: white;
+  border-color: #154EC1;
   }
   
   .hover-logout {
     /* Default styles for logout item */
   }
   .hover-logout:hover {
-    background-color: rgb(220, 38, 38); /* Highlight color for logout hover */
-    color: white; /* Text color on hover */
+    background-color: rgb(220, 38, 38);
+  color: white;
+  border-color: rgb(180, 30, 30);
   }
   </style>
   

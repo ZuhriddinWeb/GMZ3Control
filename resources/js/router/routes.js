@@ -221,7 +221,7 @@ export default [
 	},
 	{
 		path: '/count',
-		name:'vparams',
+		name:'createDoc',
 		component: () => import('../pages/ParametrValueCard.vue'),
 		meta: {
 			guard: 'auth',

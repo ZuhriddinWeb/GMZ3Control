@@ -162,12 +162,12 @@ const chartOptions = reactive({
   }
 });
 
-const steps = [
-  { label: 'Choose your product', icon: 'store' },
-  { label: 'Checkout', icon: 'local_shipping' },
-  { label: 'Review order', icon: 'done_all' },
-  { label: 'Confirm and pay', icon: 'payments' },
-];
+// const steps = [
+//   { label: 'Choose your product', icon: 'store' },
+//   { label: 'Checkout', icon: 'local_shipping' },
+//   { label: 'Review order', icon: 'done_all' },
+//   { label: 'Confirm and pay', icon: 'payments' },
+// ];
 onMounted(() => {
   router.push('/vparams');
 });

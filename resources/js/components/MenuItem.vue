@@ -58,6 +58,7 @@
     padding: 1rem;
     border-bottom: 1px solid #ccc; /* Border qo'shildi */
   transition: background-color 0.3s, border-color 0.3s; /* Silliq o'tish */
+  box-shadow: 1px 1px 1px rgba(83, 83, 83, 0.1); /* Yengil soyani qo'shish */
   }
   
   .menu-item.active {

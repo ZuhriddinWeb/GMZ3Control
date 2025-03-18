@@ -2,7 +2,7 @@
   <div class="grid grid-rows-[55px,1fr]">
     <!-- Agar rowData mavjud bo'lsa, kartalarni ko'rsat -->
     <div v-if="rowData.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4">
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4" :style="{ backgroundImage: `url('/bgCard.png')`,backgroundSize: 'cover', backgroundPosition: 'center' }">
       <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400">
         <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start">
           <span class="material-symbols-outlined w-1">circles_ext</span>

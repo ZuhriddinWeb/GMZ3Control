@@ -10,11 +10,14 @@
           The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to Naviglio where you can
           enjoy the main nightlife in Barcelona.
         </p> -->
-        <button @click="goToCardDetail(card.id)"
+        <VaButton @click="goToCardDetail(card.id)" preset="primary" class="mr-6  mt-8" round  border-color="primary">
+          {{ t('modals.addParamsGrafTitle') }}
+        </VaButton>
+        <!-- <button @click="goToCardDetail(card.id)"
           class="bg-[#154EC1] py-2 px-4 mt-6 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
           type="button">
           {{ t('modals.addParamsGrafTitle') }}
-        </button>
+        </button> -->
       </div>
     </div>
 

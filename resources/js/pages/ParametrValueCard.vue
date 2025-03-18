@@ -3,7 +3,8 @@
     <!-- Agar rowData mavjud bo'lsa, kartalarni ko'rsat -->
     <div v-if="rowData.length > 0"
       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4">
-      <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400" :style="{ backgroundImage: `url('/log.png')`,backgroundSize: 'cover', backgroundPosition: 'center' }">
+      <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400"
+        :style="{ backgroundImage: `url('/log.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }">
         <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start">
           <span class="material-symbols-outlined w-1">circles_ext</span>
           <span class="flex-grow leading-none w-5/6">
@@ -14,11 +15,14 @@
           The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to Naviglio where you can
           enjoy the main nightlife in Barcelona.
         </p> -->
-        <button @click="goToCardDetail(card.id)"
+        <VaButton @click="goToCardDetail(card.id)" preset="primary" class="mr-6  mt-8" round  border-color="primary">
+          {{ t('modals.viewPage') }}
+        </VaButton>
+        <!-- <button @click="goToCardDetail(card.id)"
           class="bg-[#154EC1] py-2 px-4 mt-6 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
           type="button">
           {{ t('modals.viewPage') }}
-        </button>
+        </button> -->
       </div>
     </div>
 

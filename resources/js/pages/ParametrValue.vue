@@ -45,15 +45,22 @@
     </main>
     <!-- Add new Elements end -->
     <main class="flex flex-col ">
-      <div class="m-2 flex">
-        <VaDateInput v-model="day" class="mr-2" label="Day" />
+      <div class="m-2 flex pt-3">
+        <VueShiftCalendar v-model="day" :with-slot="true">
+          <VaInput v-model="formatted" label="Smena" readonly/>
+        </VueShiftCalendar>
+
+        <!-- <VaDateInput v-model="day" class="mr-2" label="Day" />
         <VaSelect v-model="result.Change" value-by="value" :label="t('menu.changes')" :options="changesOptions"
-          clearable />
-        <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3"
+          clearable /> -->
+
+        <div class="flex justify-end">
+          <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
           icon="fullscreen" />
 
         <VaButton @click="goToRoute" class="btn btn-primary items-center justify-center mt-3 ml-3" icon="grade">
         </VaButton>
+        </div>
       </div>
       <div ref="gridContainer" class="ag-grid-container h-full">
         <VaTabs v-model="selectedTab" stateful grow @keydown="handleTabKey" tabindex="0">
@@ -65,7 +72,7 @@
         </VaTabs>
         <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef"
           :gridOptions="gridOptions" animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
-          @cellValueChanged="onCellValueChanged" @cellDoubleClicked="onCellDoubleClicked"></ag-grid-vue>
+          @cellValueChanged="onCellValueChanged" ></ag-grid-vue>
       </div>
       <!-- <ag-grid-vue :rowData="rowData" :columnDefs="columnDefs" :defaultColDef="defaultColDef" :gridOptions="gridOptions"
         animateRows="true" class="ag-theme-material h-full" @gridReady="onGridReady"
@@ -88,6 +95,7 @@ import { useRouter } from 'vue-router';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs } from 'vuestic-ui';
 import store from '../store';
 import { defineProps } from 'vue'
+import { VueShiftCalendar } from 'vue-shift-calendar';
 const props = defineProps({
   id: Number
 })
@@ -98,7 +106,14 @@ const rowData = ref([]);
 const gridApi = ref(null);
 const lastEnteredValues = ref({});
 const changesOptions = ref([]);
-const day = ref(new Date());
+const day = ref({
+  smena: null,
+  day: null
+});
+
+const formatted = computed(() => {
+  return day.value.day ? `${day.value.day} - ${day.value.smena}` : ''
+})
 const showModal = ref(null);
 const showModalEdit = ref(null);
 const currentRowNode = ref(null);
@@ -108,7 +123,7 @@ const selectedRow = ref(null);
 const editingTimeout = ref(null);
 const userId = store.state.user.id;
 const structureID = store.state.user.structure_id;
-const selectedTab = ref(null);
+const selectedTab = ref("1");
 const oldTableData = ref([])
 const ParamOptions = ref([]);
 const pagesValue = ref([]);
@@ -269,23 +284,33 @@ const columnDefs = ref([
     headerClass: 'header-center',
   }
 ]);
+
+watch(pagesValue, (newPages) => {
+  if (newPages.length > 0) {
+    selectedTab.value = newPages[0].NumberPage; // Birinchi sahifa avtomatik tanlanadi
+  }
+}, { immediate: true }); // Sahifa ochilganda darhol ishlaydi
+watch(day, (newDay) => {
+  console.log("Tanlangan sana yoki smena o'zgardi:", newDay);
+  getPages(selectedTab.value);
+});
 const handleTabKey = (event) => {
-  if (event.key === ' ') {
+  if (event.key === " ") {
     event.preventDefault(); // Prevent default space behavior like scrolling
 
     if (event.shiftKey) {
       // Shift + Space: move to the previous tab
-      if (selectedTab.value > 1) {
-        selectedTab.value -= 1;
+      if (parseInt(selectedTab.value) > 1) {
+        selectedTab.value = String(parseInt(selectedTab.value) - 1);
       } else {
-        selectedTab.value = pagesValue.value.length;
+        selectedTab.value = String(pagesValue.value.length);
       }
     } else {
       // Space: move to the next tab
-      if (selectedTab.value < pagesValue.value.length) {
-        selectedTab.value += 1;
+      if (parseInt(selectedTab.value) < pagesValue.value.length) {
+        selectedTab.value = String(parseInt(selectedTab.value) + 1);
       } else {
-        selectedTab.value = 1;
+        selectedTab.value = "1";
       }
     }
   }
@@ -533,17 +558,25 @@ const currentChange = computed(() => determineChange());
 //     console.error('Error fetching data:', error);
 //   }
 // };
-async function getPages(newValue) {
-  store.state.newValue = newValue;
-  const currentChange = result.Change;
-  const currentTime = format(day.value, dateFormat);
-  store.state.ValueDay = currentTime;
-  const currentHour = new Date().getHours();
-  const change = currentHour >= 8 && currentHour < 20 ? 1 : 2;
 
+// 🚀 Hozirgi vaqtga mos keladigan `smena` ni aniqlash
+const getCurrentShift = () => {
+  const currentHour = new Date().getHours();
+  return currentHour >= 8 && currentHour < 20 ? 1 : 2;
+};
+// const setDefaultSmena = () => {
+//   const currentHour = new Date().getHours();
+//   day.value.smena = currentHour >= 8 && currentHour < 20 ? 1 : 2;
+//   day.value.day = format(new Date(), "yyyy-MM-dd");
+// };
+// 🚀 API orqali ma'lumot olish (endilikda `selectedTab` orqali)
+async function getPages(newTab) {
   try {
+    const currentTime = format(new Date(), "yyyy-MM-dd");
+    const currentChange = day.value.smena; // Smena hali ham hozirgi vaqtga bog‘liq
+
     const [paramsResponse, valuesResponse] = await axios.all([
-      axios.get(`/get-params-for-user/${props.id}/${currentChange}/${currentTime}/${newValue}`),
+    axios.get(`/get-params-for-user/${props.id}/${currentChange}/${currentTime}/${newTab}`),
       axios.get(`/vparams-value/${store.state.user.structure_id}/${currentTime}/${currentChange}`)
     ]);
 
@@ -570,11 +603,11 @@ async function getPages(newValue) {
     // rowData.value = [];
     // setTimeout(() => {
     // }, 100);
-
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
+
 
 const onCellValueChanged = async (event) => {
   const { data, colDef, newValue, oldValue } = event;
@@ -636,9 +669,8 @@ const onRowClicked = (event) => {
 
 
 const saveDataToServer = async (data) => {
-  // console.log( day.value);
-  const change = result.Change;
-  const daySelect = store.state.ValueDay;
+  const change = day.value.smena;
+  const daySelect = day.value.day;
 
   try {
     const response = await axios.post('/vparams', { ...data, userId,change,daySelect });
@@ -789,6 +821,9 @@ watch(selectedTab, (newTab) => {
 });
 
 onMounted(() => {
+  day.value.day = format(new Date(), "yyyy-MM-dd"); // Hozirgi sana
+  day.value.smena = getCurrentShift(); // Hozirgi smena
+  getPages(selectedTab.value);
   // fetchData();
   fetchGraphics();
   startIntervals(); // Start intervals when component mounts

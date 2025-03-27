@@ -9,6 +9,10 @@ use DB;
 use Carbon\Carbon;
 use App\Http\Controllers\api\AppHelper;
 use App\Events\TimeUpdated;
+use App\Models\GraphicTimes;
+use App\Models\ValuesParameters;
+use App\Models\User;
+
 
 class ParamsGraphController extends Controller
 {
@@ -43,7 +47,7 @@ class ParamsGraphController extends Controller
             ->get();
         return response()->json($Gparams);
     }
-    public function withCardId($id,$pageId)
+    public function withCardId($id, $pageId)
     {
         $Gparams = GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->join('factory_structures', 'graphics_paramenters.FactoryStructureID', '=', 'factory_structures.id')
@@ -51,11 +55,11 @@ class ParamsGraphController extends Controller
             ->leftJoin('formulas', 'graphics_paramenters.WithFormula', '=', 'formulas.id')
 
             ->join('graphics', 'graphics_paramenters.GrapicsID', '=', 'graphics.id')
-            ->where('graphics_paramenters.FactoryStructureID',$id)
-            ->where('graphics_paramenters.PageId',$pageId)
-            ->select('formulas.id as ForId','formulas.Name as ForName','number_pages.NumberPage','number_pages.Name as NName','graphics.id as Gid', 'graphics.name as GName', 'parameters.id as Puuid', 'parameters.name as PName', 'parameters.name as PNameRus', 'factory_structures.id as Fid', 'factory_structures.name as FName', 'graphics_paramenters.*')
+            ->where('graphics_paramenters.FactoryStructureID', $id)
+            ->where('graphics_paramenters.PageId', $pageId)
+            ->select('formulas.id as ForId', 'formulas.Name as ForName', 'number_pages.NumberPage', 'number_pages.Name as NName', 'graphics.id as Gid', 'graphics.name as GName', 'parameters.id as Puuid', 'parameters.name as PName', 'parameters.name as PNameRus', 'factory_structures.id as Fid', 'factory_structures.name as FName', 'graphics_paramenters.*')
             ->get();
-            // dd($Gparams);
+        // dd($Gparams);
         return response()->json($Gparams);
     }
     private function getRowUnit($id)
@@ -78,44 +82,45 @@ class ParamsGraphController extends Controller
             ->get();
     }
 
-    public function getGraficWithParams($id){
+    public function getGraficWithParams($id)
+    {
         return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
-        ->where('FactoryStructureID',$id)
-        ->get();
+            ->where('FactoryStructureID', $id)
+            ->get();
     }
     public function getForFormule($id)
     {
         // Fetch the main graphic parameter record by its ID
         $data = GraphicsParamenters::find($id);
-        
+
         if (!$data) {
             return response()->json(['message' => 'Graphic parameter not found'], 404);
         }
         // Fetch all graphic parameters that share the same FactoryStructureID
         $units = GraphicsParamenters::where('FactoryStructureID', $data->FactoryStructureID)
-        ->where('PageId', $data->PageId)->get();
+            ->where('PageId', $data->PageId)->get();
         // dd($units);
-    
+
         $allParameters = [];
-        
+
         foreach ($units as $unit) {
             // Retrieve parameters using the relationship
             $parameters = $unit->parameters; // This should fetch the related Parameters record based on ParametersID
-    
-            
+
+
             $allParameters[] = [
                 'formula' => $unit,
                 'parameters' => $parameters ? $parameters : null, // Explicitly check if parameters exist
             ];
         }
-        
+
         return response()->json($allParameters);
     }
-    
+
     public function getParamsForUser($id, $change, $ChangeDay, $tabId)
     {
         $idArray = explode(',', $id);
-        $blogsIds = array_map('intval', $idArray); 
+        $blogsIds = array_map('intval', $idArray);
         $blogsIdsString = implode(',', $blogsIds);
         $query = DB::select("
             SELECT * FROM 
@@ -145,12 +150,12 @@ class ParamsGraphController extends Controller
             WHERE p.StartDateTime <= GETDATE()
             ORDER BY StartDateTime DESC, OrderNumber
         ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
-    
+
         // dd($query);
         return $query;
     }
-    
-    
+
+
     //dd($ChangeDay);
     //  $query = DB::select("select * from 
     //  (
@@ -195,7 +200,7 @@ class ParamsGraphController extends Controller
         $idsArray = explode(',', $id);
         return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->whereIn('FactoryStructureID', $idsArray)
-            ->select('parameters.id as Pid','parameters.Name as PName','graphics_paramenters.*')
+            ->select('parameters.id as Pid', 'parameters.Name as PName', 'graphics_paramenters.*')
             ->get();
     }
     public function sendTimeUpdate()
@@ -228,6 +233,76 @@ class ParamsGraphController extends Controller
     //     $data = $query->count();
     //     return $data;
     // }
+
+    public function getRowPageResult(Request $request, $id)
+    {
+        $day = $request->input('day');
+        $smena = $request->input('smena');
+
+        $graphicsParams = GraphicsParamenters::with(['NumberPage', 'factoryStructure'])
+            ->where('FactoryStructureID', $id)
+            ->get();
+
+        $groupedByPages = $graphicsParams->groupBy('PageId');
+
+        $result = $groupedByPages->map(function ($items, $pageId) use ($day, $smena) {
+            $parameterCount = $items->count();
+            $graphicsIDs = $items->pluck('GrapicsID')->unique()->toArray();
+
+            $graphicTimesQuery = GraphicTimes::whereIn('GraphicsID', $graphicsIDs);
+            if ($day) {
+                $graphicTimesQuery->where('Change', $smena);
+            }
+            $graphicTimesCount = $graphicTimesQuery->count();
+
+            $parameterIDs = $items->pluck('ParametersID')->toArray();
+
+            // Kiritilgan barcha qiymatlar (user yoki formula farq qilmaydi)
+            $enteredParamsAll = ValuesParameters::whereIn('ParametersID', $parameterIDs);
+
+            if ($day) {
+                $enteredParamsAll->whereDate('created_at', $day);
+            }
+
+            if ($smena) {
+                $enteredParamsAll->where('ChangeID', $smena);
+            }
+
+            $enteredData = $enteredParamsAll->get();
+            $enteredCount = $enteredData->count();
+
+            // Faqat user tomonidan kiritilganlardan Creator ni aniqlaymiz
+            $firstCreatorId = optional(
+                $enteredData->firstWhere('Creator', '!=', null)
+            )->Creator;
+
+            $creatorName = $firstCreatorId
+                ? optional(User::find($firstCreatorId))->name
+                : null;
+                $multipliedCount = $parameterCount * $graphicTimesCount;
+            return [
+                'page_id' => $pageId,
+                'page_name' => optional($items->first()->NumberPage)->Name,
+                'parameter_count' => $parameterCount,
+                'factory_structure_name' => optional($items->first()->factoryStructure)->Name,
+                'graphics_ids' => $graphicsIDs,
+                'graphic_times_count' => $graphicTimesCount,
+                'multiplied_parameter_count' => $parameterCount * $graphicTimesCount,
+                'kiritilgan' => $enteredCount,
+                'kiritgan_operator' => $creatorName,
+                'foiz' => $multipliedCount > 0 ? round(($enteredCount / $multipliedCount) * 100, 2) : 0,
+            ];
+        });
+
+        return response()->json($result->values());
+    }
+
+
+
+
+
+
+
     private function create(Request $request)
     {
         $GParams = GraphicsParamenters::create([
@@ -258,7 +333,7 @@ class ParamsGraphController extends Controller
         $unit->update([
             'OrderNumber' => $request->OrderNumber,
             'ParametersID' => $request->ParametersID,
-            'WithFormula'=>$request->WithFormula,
+            'WithFormula' => $request->WithFormula,
             'FactoryStructureID' => $request->FactoryStructureID,
             'BlogsID' => $request->BlogID,
             'GrapicsID' => $request->GrapicsID,

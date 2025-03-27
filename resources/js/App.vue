@@ -66,4 +66,5 @@ import Sidebar from "./components/Sidebar.vue";
 ::-webkit-scrollbar-thumb {
     background-color: #154EC1;
 }
+
 </style>

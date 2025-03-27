@@ -28,7 +28,11 @@ export default {
       input:"Включено",
       output:"Остаток",
       user:"Пользователь",
-      OrderNumber:"Порядковый номер"
+      OrderNumber:"Порядковый номер",
+      numberpage:"Порядковый номер",
+      want:"Для ввода",
+      be:"Количество записей",
+      operator:"Oператор"
     },
     menu: {
       home:"Главная страница",
@@ -53,7 +57,8 @@ export default {
       pages:"Страница",
       formula:"Формула",
       document:"Отчет",
-      create_document:"Создать oтчет"
+      create_document:"Создать oтчет",
+      operator_count:"Отчет оператора"
     },
     buttons: {
       save: "Сохранить",
@@ -168,7 +173,11 @@ export default {
       input:"Kiritlgan",
       output:"Qolgan",
       user:"Foydalanuvchi",
-      OrderNumber:"Tartib raqami"
+      OrderNumber:"Tartib raqami",
+      numberpage:"Tartib raqami",
+      want:"Soni",
+      be:"Kiritilgan",
+      operator:"Operator"
     },
     menu: {
       home:"Bosh sahifa",
@@ -193,7 +202,9 @@ export default {
       pages:"Sahifalar",
       formula:"Formula",
       document:"Hisobot",
-      create_document:"Hisobot yaratish"
+      create_document:"Hisobot yaratish",
+      operator_count:"Operator hisoboti"
+
     },
     buttons: {
       save: "Saqlash",

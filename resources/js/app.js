@@ -22,7 +22,7 @@ import InputMask from 'vue-input-mask';
 import 'material-symbols/outlined.css';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
-
+import HighchartsVue from 'highcharts-vue';
 axios.defaults.baseURL = "/api/";
 window.axios = axios;
 axios.defaults.withCredentials = true;
@@ -66,6 +66,7 @@ async function initApp() {
     .use(router)
     .use(i18n)
     .use(useToast)
+    .use(HighchartsVue)
     .mount("#app");
 }
 

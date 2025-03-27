@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 use App\Models\Parameters;
+use App\Models\NumberPage;
+use App\Models\FactoryStructure;
+
 class GraphicsParamenters extends Model
 {
     use HasFactory;
@@ -41,7 +44,18 @@ class GraphicsParamenters extends Model
 {
     return $this->belongsTo(Parameters::class, 'ParametersID', 'id');
 }
-    
-    
+public function numberPage()
+{
+    return $this->belongsTo(NumberPage::class, 'PageId', 'id');
+}
+public function factoryStructure()
+{
+    return $this->belongsTo(FactoryStructure::class, 'FactoryStructureID', 'id');
+}
+
+public function graphics()
+{
+    return $this->belongsTo(Graphics::class, 'GraphicsID', 'id'); // diqqat: ID emas, GraphicsID
+}
     
 }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\User;
 class ValuesParameters extends Model
 {
     use HasFactory;
@@ -33,4 +33,9 @@ class ValuesParameters extends Model
         'Value' => 'float',
         'TimeStr'=>'string'
     ];
+    public function creatorUser()
+{
+    return $this->belongsTo(User::class, 'Creator', 'id');
+}
+
 }

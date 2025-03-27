@@ -182,4 +182,15 @@ onMounted(() => {
   white-space: nowrap;
   direction: ltr;
 }
+.ag-theme-material .ag-cell {
+  border-right: 1px solid #d1d5db;
+}
+
+.ag-theme-material .ag-header-cell {
+  border-right: 1px solid #d1d5db;
+}
+
+.ag-theme-material .ag-row {
+  border-bottom: 1px solid #e5e7eb;
+}
 </style>

@@ -1,67 +1,54 @@
 <template>
   <div class="grid grid-rows-[55px,1fr]">
-    <!-- Agar rowData mavjud bo'lsa, kartalarni ko'rsat -->
-    <div v-if="rowData.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4" :style="{ backgroundImage: `url('/bgCard.png')`,backgroundSize: 'cover', backgroundPosition: 'center' }">
-      <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400">
-        <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start">
-          <span class="material-symbols-outlined w-1">circles_ext</span>
-          <span class="flex-grow leading-none w-5/6">
-            {{ locale === 'ru' ? card.NameRus : card.Name }}
-          </span>
-        </h5>
-        <!-- <p class="text-slate-600 leading-normal font-light">
-          The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to Naviglio where you can
-          enjoy the main nightlife in Barcelona.
-        </p> -->
-        <button @click="goToCardDetail(card.id)"
-          class="bg-[#154EC1] py-2 px-4 mt-6 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-          type="button">
-          {{ t('modals.viewPage') }}
-        </button>
+    <div class="flex justify-between">
+      <div class="w-4/6">
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4">
+          <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
+            class="p-4 border-2 bg-white shadow-lg border-slate-400 cursor-pointer"
+            :style="{ backgroundImage: `url('/log.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }">
+            <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start">
+              <span class="material-symbols-outlined w-1">circles_ext</span>
+              <span class="flex-grow leading-none w-5/6">{{ locale === 'ru' ? card.NameRus : card.Name }}</span>
+            </h5>
+            <VaButton @click="goToCardDetail(card.id)" preset="primary" class="mr-6  mt-8" round border-color="primary">
+              {{ t('modals.viewPage') }}
+            </VaButton>
+          </div>
+        </div>
       </div>
-    </div>
+      <!-- <div class="flex flex-col justify-between w-1/6 h-screen bg-neutral-200 mt-28">
+        <div id="container" class="w-full h-28 items-start"></div>
 
-    <!-- Agar rowData bo'sh bo'lsa, xabar -->
-    <div v-else class="text-center text-slate-500 mt-10">
-      <p>{{ t('No data available') }}</p>
+      </div> -->
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaCard } from 'vuestic-ui';
 const { init } = useToast();
 const { locale, t } = useI18n();
-import { useRouter } from 'vue-router'
 import store from '../store';
 
+import { useRouter } from 'vue-router'
 const router = useRouter()
 const rowData = ref([]);
 const gridApi = ref(null);
-const showModal = ref(false);
-
+const selectedCardId = ref(null);
 
 function goToCardDetail(cardId) {
-  router.push({ name: 'vparam', params: { id: cardId } })
+  router.push({ name: 'OperatorDetail', params: { id: cardId } });
 }
-function ondeleted(selectedData) {
-  gridApi.value.applyTransaction({ remove: [selectedData] });
-}
-
-function onupdated(rowNode, data) {
-  rowNode.setData(data);
+function handleCardClick(cardId) {
+  selectedCardId.value = cardId;
+  updateChart(); // Pie diagramma yangilansin
 }
 
-provide('ondeleted', ondeleted);
-provide('onupdated', onupdated);
 
 
 
@@ -73,19 +60,55 @@ const getFieldShortName = () => {
   return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
 };
 
-const fetchData = async () => {
-  try {
-    const response = await axios.get(`/structures/${store.state.user.structure_id}`);
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
-  } catch (error) {
-    console.error('Error fetching data:', error);
+
+
+
+async function updateChart() {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const hour = now.getHours();
+  const smena = hour >= 8 && hour < 20 ? 1 : 2;
+
+  if (selectedCardId.value) {
+    // Tanlangan sex bo‘yicha foiz statistikasi
+    const { data } = await axios.get(`/getRowPageResult/${selectedCardId.value}`, {
+      params: { day: today, smena }
+    });
+
+    const pageStats = data.reduce((acc, row) => {
+      acc.total += row.multiplied_parameter_count;
+      acc.filled += row.kiritilgan;
+      return acc;
+    }, { total: 0, filled: 0 });
+
+    const percentage = pageStats.total > 0
+      ? (pageStats.filled / pageStats.total) * 100
+      : 0;
+
+  } else {
+    // Barcha sexlar bo‘yicha statistikani olib kelish
+    const { data } = await axios.get('/structure'); // id lar uchun
+    const sexStats = [];
+
+    for (const sex of data) {
+      const res = await axios.get(`/getRowPageResult/${sex.id}`, {
+        params: { day: today, smena }
+      });
+
+      const total = res.data.reduce((sum, row) => sum + row.multiplied_parameter_count, 0);
+      const filled = res.data.reduce((sum, row) => sum + row.kiritilgan, 0);
+      const percent = total > 0 ? (filled / total) * 100 : 0;
+
+      sexStats.push({
+        name: locale.value === 'uz' ? sex.Name : sex.NameRus,
+        y: parseFloat(percent.toFixed(2))
+      });
+    }
   }
-};
-
-
+}
 
 onMounted(async () => {
-  // Foydalanuvchi tilini localStorage'dan yuklash
+  // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;
@@ -97,7 +120,7 @@ onMounted(async () => {
     if (Array.isArray(structureIds) && structureIds.length === 1) {
       // Agar faqat bitta qiymat bo'lsa, avtomatik yo'naltirish
       const singleStructureId = structureIds[0];
-      router.push({ name: 'vparam', params: { id: singleStructureId } });
+      router.push({ name: 'OperatorDetail', params: { id: singleStructureId } });
     } else if (Array.isArray(structureIds) && structureIds.length > 1) {
       // Agar bir nechta qiymat bo'lsa, ma'lumotlarni olish
       const response = await axios.get(`/structures/${structureIds.join(',')}`);
@@ -108,16 +131,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error fetching data:', error);
   }
+
 });
-
-
-const changeLanguage = () => {
-  locale.value = locale.value === 'uz' ? 'ru' : 'uz';
-  // Save language preference to localStorage
-  localStorage.setItem('locale', locale.value);
-  // Refresh grid data with the new language
-  fetchData();
-};
 
 const currentLanguageLabel = computed(() => {
   return locale.value === 'uz' ? 'Русский' : 'O‘zbek';

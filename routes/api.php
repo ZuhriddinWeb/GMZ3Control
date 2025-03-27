@@ -86,6 +86,7 @@ Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}' , [Paramet
 Route::get('restart-password/{user_id}' , [UserController::class, 'restart']);
 Route::get('/broadcast-time', [ParametrValueController::class, 'sendTimeUpdate']);
 Route::get('/vparamsGetValue/{id}', [ParametrValueController::class, 'vparamsGetValue']);
+Route::get('/getRowPageResult/{id}',  [ParamsGraphController::class, 'getRowPageResult']);
 
 // Route::get('/vparamsuser/{blog_id}/{change_id}/{date}', [ParametrValueController::class, 'getByBlog']);
 Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);

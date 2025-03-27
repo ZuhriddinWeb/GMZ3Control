@@ -38,8 +38,6 @@
 import { ref, reactive, onMounted, provide, computed } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
-import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
-import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaCard } from 'vuestic-ui';
 const { init } = useToast();
@@ -50,32 +48,11 @@ import store from '../store';
 const router = useRouter()
 const rowData = ref([]);
 const gridApi = ref(null);
-const showModal = ref(false);
 
 
 function goToCardDetail(cardId) {
   router.push({ name: 'vparam', params: { id: cardId } })
 }
-function ondeleted(selectedData) {
-  gridApi.value.applyTransaction({ remove: [selectedData] });
-}
-
-function onupdated(rowNode, data) {
-  rowNode.setData(data);
-}
-
-provide('ondeleted', ondeleted);
-provide('onupdated', onupdated);
-
-
-
-const getFieldName = () => {
-  return locale.value === 'uz' ? 'Name' : 'NameRus';
-};
-
-const getFieldShortName = () => {
-  return locale.value === 'uz' ? 'ShortName' : 'ShortNameRus';
-};
 
 const fetchData = async () => {
   try {

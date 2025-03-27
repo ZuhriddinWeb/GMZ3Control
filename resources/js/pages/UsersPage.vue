@@ -195,4 +195,5 @@ onMounted(() => {
   white-space: nowrap;
   direction: ltr;
 }
+
 </style>

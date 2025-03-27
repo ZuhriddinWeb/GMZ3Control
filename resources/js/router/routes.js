@@ -236,6 +236,15 @@ export default [
 		},
 	},
 	{
+		path: '/operDetail/:id',
+		name:'OperatorDetail',
+		component: () => import('../pages/OperatorResultPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
 		path: '/documents',
 		name:'documents',
 		component: () => import('../pages/Documents.vue'),

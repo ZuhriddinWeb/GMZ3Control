@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\GraphicTimes;
 
 class Graphics extends Model
 {
@@ -17,4 +18,9 @@ class Graphics extends Model
         'Changed',
         'Changer'
     ];
+
+    public function graphicTimes()
+{
+    return $this->hasMany(GraphicTimes::class, 'GraphicsID', 'id');
+}
 }

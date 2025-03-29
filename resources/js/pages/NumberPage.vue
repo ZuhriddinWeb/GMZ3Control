@@ -4,7 +4,7 @@
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true,fetchGraphics" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton v-if="canCreate" @click="showModal = true,fetchGraphics" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
         <h3 class="va-h3">
@@ -49,7 +49,8 @@ import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 import { defineProps } from 'vue'
-
+import { useStore } from 'vuex';
+const store = useStore();
 const { locale, t } = useI18n();
 const props = defineProps({
   id: Number
@@ -66,6 +67,12 @@ const result = reactive({
   NumberPage: "",
   Comment: ""
 });
+const userRole = computed(() => store.state.user.roles[17]);
+const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
+const canCreate = computed(() => hasPermission("create"));
+const canUpdate = computed(() => hasPermission("update"));
+const canDelete = computed(() => hasPermission("delete"));
+
 
 function ondeleted(selectedData) {
   gridApi.value.applyTransaction({ remove: [selectedData] });
@@ -78,28 +85,38 @@ function onupdated(rowNode, data) {
 provide('ondeleted', ondeleted);
 provide('onupdated', onupdated);
 
-const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
-  { headerName: t('table.structure'), field: getFielBlog(), flex: 1 },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
-  { headerName: t('table.numberpage'), field: 'NumberPage' },
-  { headerName: t('table.comment'), field: getFieldShortName() },
+const columnDefs = computed(() => {
+  const cols = [
+    { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
+    { headerName: t('table.structure'), field: getFielBlog(), flex: 1 },
+    { headerName: t('table.name'), field: getFieldName(), flex: 1 },
+    { headerName: t('table.numberpage'), field: 'NumberPage' },
+    { headerName: t('table.comment'), field: getFieldShortName() },
+  ];
 
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditBlog,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteBlog,
-  },
-]);
+  if (canUpdate.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: EditBlog,
+    });
+  }
+
+  if (canDelete.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: DeleteBlog,
+    });
+  }
+
+  return cols;
+});
+
 
 const defaultColDef = {
   sortable: true,

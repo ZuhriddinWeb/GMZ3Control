@@ -49,7 +49,9 @@ import DeleteUserModal from '../components/UserComponent/DeleteUserModal.vue';
 import EditUserModal from '../components/UserComponent/EditUserModal.vue';
 import RolesComponent from '../components/UserComponent/RolesComponent.vue';
 import RestartPassword from '../components/UserComponent/RestartPassword.vue';
-// import CreateDocument from './CreateDocument.vue';
+import CreateDocument from './CreateDocument.vue';
+const { init } = useToast();
+import {  useToast, VaValue, VaInput, VaButton, VaForm } from 'vuestic-ui';
 
 import { useI18n } from 'vue-i18n';
 
@@ -84,13 +86,13 @@ const columnDefs = computed(() => [
   { headerName: t('table.userName'), field: "name", flex: 1 },
   { headerName: t('table.login'), field: "login", flex: 1 },
   { headerName: t('table.phone'), field: "phone" },
-  // {
-  //   cellClass: ['px-0'],
-  //   headerName: "",
-  //   field: "",
-  //   width: 70,
-  //   cellRenderer: CreateDocument,
-  // },
+  {
+    cellClass: ['px-0'],
+    headerName: "",
+    field: "",
+    width: 70,
+    cellRenderer: CreateDocument,
+  },
   {
     cellClass: ['px-0'],
     headerName: "",
@@ -159,6 +161,7 @@ const onSubmit = async () => {
       result.Password = '';
       result.StructureID = [];
       await fetchData();
+      init({ message: t('login.successMessage'), color: 'success' });
     } else {
       console.error('Error saving data:', data.message);
     }

@@ -4,7 +4,7 @@
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton v-if="canCreate" @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
         close-button>
@@ -55,13 +55,14 @@
 
 
 <script setup>
-import { ref, reactive, onMounted, provide } from 'vue';
+import { ref, reactive, onMounted, provide,computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteParam from '../components/ParamsPageComponent/DeleteParam.vue';
 import EditParam from '../components/ParamsPageComponent/EditParam.vue'
-
+import { useStore } from 'vuex';
+const store = useStore();
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const { t } = useI18n();
@@ -84,7 +85,12 @@ const result = reactive({
   Max: "",
   Comment: ""
 });
+const userRole = computed(() => store.state.user.roles[10]);
+const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
 
+const canCreate = computed(() => hasPermission("create"));
+const canUpdate = computed(() => hasPermission("update"));
+const canDelete = computed(() => hasPermission("delete"));
 function ondeleted(selectedData) {
   gridApi.value.applyTransaction({ remove: [selectedData] })
 }
@@ -95,32 +101,42 @@ function onupdated(rowNode, data) {
 provide('ondeleted', ondeleted);
 provide('onupdated', onupdated);
 
-const columnDefs = reactive([
-  { headerName: t("table.headerRow"), valueGetter: "node.rowIndex + 1", width: 80 },
-  { headerName: t("table.id"), field: "Uuid", hide: true, flex: 1 },
-  { headerName: t("table.name"), field: "Name", flex: 1 },
-  { headerName: t("table.shortName"), field: "ShortName" },
-  { headerName: t("menu.paramtypes"), hide: true, field: "PName" },
-  { headerName: t("menu.units"), field: "UName" },
-  { headerName: t("table.min"), field: "Min" },
-  { headerName: t("table.max"), field: "Max" },
-  { headerName: t("table.comment"), field: "Comment", flex: 1 },
+const columnDefs = computed(() => {
+  const cols = [
+    { headerName: t("table.headerRow"), valueGetter: "node.rowIndex + 1", width: 80 },
+    { headerName: t("table.id"), field: "Uuid", hide: true, flex: 1 },
+    { headerName: t("table.name"), field: "Name", flex: 1 },
+    { headerName: t("table.shortName"), field: "ShortName" },
+    { headerName: t("menu.paramtypes"), hide: true, field: "PName" },
+    { headerName: t("menu.units"), field: "UName" },
+    { headerName: t("table.min"), field: "Min" },
+    { headerName: t("table.max"), field: "Max" },
+    { headerName: t("table.comment"), field: "Comment", flex: 1 },
+  ];
 
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditParam,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteParam,
-  },
-]);
+  if (canUpdate.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: EditParam,
+    });
+  }
+
+  if (canDelete.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: DeleteParam,
+    });
+  }
+
+  return cols;
+});
+
 
 const defaultColDef = {
   sortable: true,

@@ -4,7 +4,7 @@
     <VaModal max-width="45%" v-model="selectedDataEdit" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="selectedDataEdit = false" close-button >
       <h3>
-       <span class="va-h3"  @vue:mounted="fetchData">{{ t('table.user') }} : {{ result.userName }}</span>  
+       <span class="va-h3"  >{{ t('table.user') }} : {{ result.userName }}</span>  
       </h3>
       <div>
         <div class="va-table-responsive">
@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, inject, onMounted } from 'vue';
+import { ref, reactive, inject, onMounted,watch  } from 'vue';
 import axios from 'axios';
 
 const props = defineProps(['params']);
@@ -134,11 +134,16 @@ const onSubmit = async () => {
     console.error('Error saving data:', error);
   }
 };
-
-onMounted(async () => {
-  await fetchData();
-  getUserRole()
+watch(selectedDataEdit, async (val) => {
+  if (val) {
+    await fetchData();
+    getUserRole();
+  }
 });
+// onMounted(async () => {
+//   await fetchData();
+//   getUserRole()
+// });
 </script>
 
 <style>

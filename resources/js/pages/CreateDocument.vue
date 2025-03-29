@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,watch  } from 'vue';
 import axios from 'axios';
 import { DxDataGrid, DxColumn, DxSelection } from 'devextreme-vue/data-grid';
 import { useI18n } from 'vue-i18n';
@@ -147,7 +147,13 @@ onMounted(() => {
   if (savedLocale) {
     locale.value = savedLocale;
   }
-  fetchData();
+  // fetchData();
+});
+watch(selectedDataEdit, async (val) => {
+  if (val) {
+    await fetchData();        
+    await fetchUserData();   
+  }
 });
 </script>
 

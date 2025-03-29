@@ -4,7 +4,7 @@
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton v-if="canCreate" @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
         close-button>
@@ -84,6 +84,8 @@ const { t } = useI18n();
 import { format } from 'date-fns';
 const props = defineProps(['id', 'page']);
 // console.log(props['page']);
+import { useStore } from 'vuex';
+const store = useStore();
 
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -109,6 +111,12 @@ const result = reactive({
   PageId: props.page,
   WithFormula: null,
 });
+const userRole = computed(() => store.state.user.roles[13]);
+const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
+
+const canCreate = computed(() => hasPermission("create"));
+const canUpdate = computed(() => hasPermission("update"));
+const canDelete = computed(() => hasPermission("delete"));
 
 function ondeleted(selectedData) {
   gridApi.value.applyTransaction({ remove: [selectedData] })
@@ -122,83 +130,88 @@ function onupdated(rowNode, data) {
 provide('ondeleted', ondeleted)
 provide('onupdated', onupdated)
 
-const columnDefs = computed(() => [
-  { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
-  { headerName: "Parametr nomi", field: "PName", flex: 1 },
-  { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
-  { headerName: "Sahifa nomi", field: "NName", flex: 1 },
-  { headerName: "Sahifadagi o'rni", field: "OrderNumber", flex: 1 },
-  {
-    headerName: "Hisoblanishi",
-    field: "ForName",
-    flex: 1,
-    cellClassRules: {
-      'highlight-yellow': (params) => params.data?.ForId === "1", // ForId = 1 bo'lsa, highlight-yellow klassini qo'llash
-      'highlight-green': (params) => params.data?.ForId === "2",
+const columnDefs = computed(() => {
+  const cols = [
+    { headerName: "T/r", valueGetter: "node.rowIndex + 1", width: 80 },
+    { headerName: "Parametr nomi", field: "PName", flex: 1 },
+    { headerName: "GMZ tuzilmasi", field: "FName", flex: 1 },
+    { headerName: "Sahifa nomi", field: "NName", flex: 1 },
+    { headerName: "Sahifadagi o'rni", field: "OrderNumber", flex: 1 },
+    {
+      headerName: "Hisoblanishi",
+      field: "ForName",
+      flex: 1,
+      cellClassRules: {
+        'highlight-yellow': (params) => params.data?.ForId === "1",
+        'highlight-green': (params) => params.data?.ForId === "2",
+      },
     },
-  },
+    { headerName: "Grafik", field: "GName" },
+    {
+      headerName: "Joriy etish vaqti",
+      field: "CurrentTime",
+      valueFormatter: (params) => {
+        const [datePart] = params.value.split(' ');
+        const [year, month, day] = datePart.split('-');
+        const date = new Date(year, month - 1, day);
+        return format(date, 'dd/MM/yyyy');
+      },
+    },
+    {
+      headerName: "Tugatish vaqti",
+      field: "EndingTime",
+      valueFormatter: (params) => {
+        const [datePart] = params.value.split(' ');
+        const [year, month, day] = datePart.split('-');
+        const date = new Date(year, month - 1, day);
+        return format(date, 'dd/MM/yyyy');
+      },
+    },
 
 
-  { headerName: "Grafik", field: "GName" },
+  ];
+  if (canUpdate.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: Times,
+    });
+  }
 
-  {
-    headerName: "Joriy etish vaqti",
-    field: "CurrentTime",
-    valueFormatter: (params) => {
-      const [datePart, timePart] = params.value.split(' ');
-      const [year, month, day] = datePart.split('-');
-      const [hour, minute] = timePart.split(':');
-      const date = new Date(year, month - 1, day);
-      return format(date, 'dd/MM/yyyy');
-    },
-  },
-  {
-    headerName: "Tugatish vaqti",
-    field: "EndingTime",
-    valueFormatter: (params) => {
-      const [datePart, timePart] = params.value.split(' ');
-      const [year, month, day] = datePart.split('-');
-      const [hour, minute] = timePart.split(':');
-      const date = new Date(year, month - 1, day);
-      return format(date, 'dd/MM/yyyy');
-    },
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: Times,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteModalFormule,
-  },
-  // {
-  //   cellClass: ['px-0'],
-  //   headerName: "",
-  //   field: "",
-  //   width: 70,
-  //   cellRenderer: Calculator,
-  // },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditModal,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteModal,
-  },
-]);
+  if (canDelete.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: DeleteModalFormule,
+    })
+  }
+  if (canUpdate.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: EditModal,
+    });
+  }
+
+  if (canDelete.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: DeleteModal,
+    });
+  }
+
+  return cols;
+});
+
 
 
 const defaultColDef = {
@@ -210,7 +223,7 @@ const fetchData = async () => {
   try {
     store.state.structureID = props['id'];
     // console.log(store.state.structureID);
-    
+
     const response = await axios.get(`/withCardId/${props['id']}/${props['page']}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
     // console.log(rowData.value);
@@ -313,6 +326,7 @@ onMounted(() => {
   white-space: nowrap;
   direction: ltr;
 }
+
 .ag-theme-material .ag-cell.highlight-yellow {
   background-color: yellow !important;
   color: black !important;
@@ -322,6 +336,7 @@ onMounted(() => {
   background-color: green !important;
   color: white !important;
 }
+
 .ag-theme-material .ag-cell {
   border-right: 1px solid #d1d5db;
 }

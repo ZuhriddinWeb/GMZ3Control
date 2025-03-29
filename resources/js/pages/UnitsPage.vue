@@ -1,10 +1,10 @@
-<<template>
+<template>
   <div class="grid grid-rows-[55px,1fr]">
     <!-- Add new Elements start -->
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton v-if="canCreate" @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
         <h3 class="va-h3">
@@ -44,6 +44,10 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteUnitsModal from '../components/UnitsComponent/DeleteUnitsModal.vue';
 import EditUnitsModal from '../components/UnitsComponent/EditUnitsModal.vue';
 import { useI18n } from 'vue-i18n';
+
+import { useStore } from 'vuex';
+const store = useStore();
+
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const { locale, t } = useI18n();
@@ -51,6 +55,13 @@ const { locale, t } = useI18n();
 const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
+
+const userRole = computed(() => store.state.user.roles[6]);
+const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
+const canCreate = computed(() => hasPermission("create"));
+const canUpdate = computed(() => hasPermission("update"));
+const canDelete = computed(() => hasPermission("delete"));
+
 
 const result = reactive({
   Name: "",
@@ -71,26 +82,22 @@ function onupdated(rowNode, data) {
 provide('ondeleted', ondeleted);
 provide('onupdated', onupdated);
 
-const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
-  { headerName: t('table.shortName'), field: getFieldShortName() },
-  { headerName: t('table.comment'), field: 'Comment', flex: 1 },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditUnitsModal,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteUnitsModal,
-  },
-]);
+const columnDefs = computed(() => {
+  const cols = [
+    { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
+    { headerName: t('table.name'), field: getFieldName(), flex: 1 },
+    { headerName: t('table.shortName'), field: getFieldShortName() },
+    { headerName: t('table.comment'), field: 'Comment', flex: 1 },
+  ];
+
+  if (canUpdate.value) {
+    cols.push({ headerName: '', field: '', width: 70, cellClass: ['px-0'], cellRenderer: EditUnitsModal });
+  }
+  if (canDelete.value) {
+    cols.push({ headerName: '', field: '', width: 70, cellClass: ['px-0'], cellRenderer: DeleteUnitsModal });
+  }
+  return cols;
+});
 
 const defaultColDef = {
   sortable: true,

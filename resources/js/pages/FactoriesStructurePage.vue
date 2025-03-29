@@ -84,27 +84,36 @@ function onupdated(rowNode,data){
 provide('ondeleted', ondeleted)
 provide('onupdated', onupdated)
 
-const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
-  { headerName: t('table.shortName'), field: getFieldShortName() },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditStructure,
-    cellRendererParams: { canUpdate: canUpdate.value },
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteStructure,
-    cellRendererParams: { canDelete: canDelete.value },
-  },
-]);
+const columnDefs = computed(() => {
+  const cols = [
+    { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
+    { headerName: t('table.name'), field: getFieldName(), flex: 1 },
+    { headerName: t('table.shortName'), field: getFieldShortName() },
+  ];
+
+  if (canUpdate.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: EditStructure,
+    });
+  }
+
+  if (canDelete.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: DeleteStructure,
+    });
+  }
+
+  return cols;
+});
+
 
 const defaultColDef = {
   sortable: true,

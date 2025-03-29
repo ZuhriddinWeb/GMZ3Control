@@ -193,15 +193,15 @@ export default [
 			guard: 'auth',
 		},
 	},
-	{
-		path: '/vparam/:id',
-		name:'vparam',
-		component: () => import('../pages/ParametrValue.vue'),
-		meta: {
-			guard: 'auth',
-		},
-		props: true,
-	},
+	// {
+	// 	path: '/vparam/:id',
+	// 	name:'vparam',
+	// 	component: () => import('../pages/ParametrValue.vue'),
+	// 	meta: {
+	// 		guard: 'auth',
+	// 	},
+	// 	props: true,
+	// },
 	{
 		path: '/vparams',
 		name:'vparams',
@@ -219,14 +219,14 @@ export default [
 		},
 		props: true,
 	},
-	{
-		path: '/count',
-		name:'createDoc',
-		component: () => import('../pages/ParametrValueCard.vue'),
-		meta: {
-			guard: 'auth',
-		},
-	},
+	// {
+	// 	path: '/count',
+	// 	name:'createDoc',
+	// 	component: () => import('../pages/ParametrValueCard.vue'),
+	// 	meta: {
+	// 		guard: 'auth',
+	// 	},
+	// },
 	{
 		path: '/opercount',
 		name:'createDoc',

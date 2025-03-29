@@ -58,7 +58,10 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import EditValue from '../components/ParameterValueComponent/EditValue.vue';
 import { useRouter } from 'vue-router';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs } from 'vuestic-ui';
-import store from '../store';
+// import store from '../store';
+import { useStore } from 'vuex';
+const store = useStore();
+
 import { VueShiftCalendar } from 'vue-shift-calendar';
 const props = defineProps({
   id: Number
@@ -91,6 +94,7 @@ const selectedTab = ref("1");
 const oldTableData = ref([])
 const ParamOptions = ref([]);
 const pagesValue = ref([]);
+const userRole = ref({});
 
 const result = reactive({
   ParametersID: "",
@@ -104,148 +108,149 @@ const result = reactive({
   SourceID: "",
   userId: store.state.user.id
 });
+watch(
+  () => store.state.user.roles,
+  (roles) => {
+    if (Array.isArray(roles) && roles.length > 14) {
+      userRole.value = roles[14];
+    }
+  },
+  { immediate: true } // sahifa yuklanganda darhol tekshiradi
+);
+const hasPermission = (perm) => userRole.value?.pivot?.[perm] === "1";
+
+const canCreate = computed(() => hasPermission("create"));
+const canView = computed(() => hasPermission("view"));
 const resultEdit = reactive({
   id: "",
   Comment: "",
   Value: "",
   userId: store.state.user.id
 });
-const columnDefs = ref([
-  {
-    headerName: t('table.headerRow'),
-    valueGetter: "node.rowIndex + 1",
-    width: 80,
-    headerClass: 'header-center',
-    editable: false, // Not editable
-    suppressNavigable: true, // Prevent focus and navigation
-    cellClassRules: {
-      'cell-green': (params) => {
-        return params.data && params.data.Value === lastEnteredValues.value?.[params.data.id];
-      },
-      'cell-yellow': (params) => {
-        // This rule can be adjusted as needed, possibly removed or updated for clarity
-        return params.data && params.data.Value !== lastEnteredValues.value?.[params.data.id] && lastEnteredValues.value?.[params.data.id] === undefined && params.data.WithFormula !== "1";
-      },
-      'cell-pink': (params) => {
-        return params.data && params.data.WithFormula === "1";
-      }
-    },
-  },
-  {
-    headerName: t('table.change'),
-    field: "Change",
-    width: 80,
-    headerClass: 'header-center',
-    editable: false, // Not editable
-    suppressNavigable: true, // Prevent focus and navigation
-  },
-  {
-    headerName: t('table.OrderNumber'),
-    field: "OrderNumber",
-    width: 80,
-    headerClass: 'header-center',
-    editable: false, // Not editable
-    suppressNavigable: true, // Prevent focus and navigation
-  },
-  {
-    headerName: t('table.parameters'),
-    field: computed(() => locale.value === 'ru' ? 'PNameRus' : 'PName'),
-    flex: 1,
-    headerClass: 'header-center',
-    editable: false, // Not editable
-    suppressNavigable: true, // Prevent focus and navigation
-  },
-  {
-    headerName: t('table.graphictimes'),
-    headerClass: 'header-center',
-    children: [
-      {
-        headerName: t('table.startingTime'),
-        field: 'STime',
-        width: 120,
-        valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-        headerClass: 'header-center',
-        editable: false, // Not editable
-        suppressNavigable: true, // Prevent focus and navigation
-      },
-      {
-        headerName: t('table.endingTime'),
-        field: 'ETime',
-        width: 120,
-        valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-        headerClass: 'header-center',
-        editable: false, // Not editable
-        suppressNavigable: true, // Prevent focus and navigation
-      }
-    ]
-  },
-  {
-    headerName: t('table.interval'),
-    headerClass: 'header-center',
-    children: [
-      {
-        headerName: t('table.min'),
-        field: 'Min',
-        width: 100,
-        headerClass: 'header-center',
-        editable: false, // Not editable
-        suppressNavigable: true, // Prevent focus and navigation
-      },
-      {
-        headerName: t('table.max'),
-        field: 'Max',
-        width: 100,
-        headerClass: 'header-center',
-        editable: false, // Not editable
-        suppressNavigable: true, // Prevent focus and navigation
-      }
-    ]
-  },
-  {
-    headerName: t('table.value'),
-    field: "Value",
-    width: 150,
-    editable: (params) => {
-      // console.log('params.data:', params.data);
-      return params.data && params.data.WithFormula !== "1";
-    },
 
-    suppressNavigable: false, // Allow focus and navigation
-    cellEditor: "agNumberCellEditor",
-    cellEditorPopup: false, // ✅ Bu muhim
-    suppressNavigable: false,
-    cellClassRules: {
-      'cell-green': (params) => {
-        return params.data && params.data.Value === lastEnteredValues.value?.[params.data.id];
-      },
-      'cell-yellow': (params) => {
-        // This rule can be adjusted as needed, possibly removed or updated for clarity
-        return params.data && params.data.Value !== lastEnteredValues.value?.[params.data.id] && lastEnteredValues.value?.[params.data.id] === undefined && params.data.WithFormula !== "1";
-      },
-      'cell-pink': (params) => {
-        return params.data && params.data.WithFormula === "1";
-      }
-    },
 
-    cellStyle: (params) => {
-      return {
+const columnDefs = computed(() => {
+  const cols = [
+    {
+      headerName: t('table.headerRow'),
+      valueGetter: "node.rowIndex + 1",
+      width: 80,
+      headerClass: 'header-center',
+      editable: false,
+      suppressNavigable: true,
+      cellClassRules: {
+        'cell-green': (params) => params.data && params.data.Value === lastEnteredValues.value?.[params.data.id],
+        'cell-yellow': (params) => params.data && params.data.Value !== lastEnteredValues.value?.[params.data.id] && lastEnteredValues.value?.[params.data.id] === undefined && params.data.WithFormula !== "1",
+        'cell-pink': (params) => params.data && params.data.WithFormula === "1",
+      },
+    },
+    {
+      headerName: t('table.change'),
+      field: "Change",
+      width: 80,
+      headerClass: 'header-center',
+      editable: false,
+      suppressNavigable: true,
+    },
+    {
+      headerName: t('table.OrderNumber'),
+      field: "OrderNumber",
+      width: 80,
+      headerClass: 'header-center',
+      editable: false,
+      suppressNavigable: true,
+    },
+    {
+      headerName: t('table.parameters'),
+      field: locale.value === 'ru' ? 'PNameRus' : 'PName',
+      flex: 1,
+      headerClass: 'header-center',
+      editable: false,
+      suppressNavigable: true,
+    },
+    {
+      headerName: t('table.graphictimes'),
+      headerClass: 'header-center',
+      children: [
+        {
+          headerName: t('table.startingTime'),
+          field: 'STime',
+          width: 120,
+          valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
+          headerClass: 'header-center',
+          editable: false,
+          suppressNavigable: true,
+        },
+        {
+          headerName: t('table.endingTime'),
+          field: 'ETime',
+          width: 120,
+          valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
+          headerClass: 'header-center',
+          editable: false,
+          suppressNavigable: true,
+        }
+      ]
+    },
+    {
+      headerName: t('table.interval'),
+      headerClass: 'header-center',
+      children: [
+        {
+          headerName: t('table.min'),
+          field: 'Min',
+          width: 100,
+          headerClass: 'header-center',
+          editable: false,
+          suppressNavigable: true,
+        },
+        {
+          headerName: t('table.max'),
+          field: 'Max',
+          width: 100,
+          headerClass: 'header-center',
+          editable: false,
+          suppressNavigable: true,
+        }
+      ]
+    },
+    {
+      headerName: t('table.value'),
+      field: "Value",
+      width: 150,
+      editable: (params) => {
+        return canCreate.value && params.data.WithFormula !== "1";
+      },
+      suppressNavigable: false,
+      cellEditor: "agNumberCellEditor",
+      cellEditorPopup: false,
+      cellClassRules: {
+        'cell-green': (params) => params.data && params.data.Value === lastEnteredValues.value?.[params.data.id],
+        'cell-yellow': (params) => params.data && params.data.Value !== lastEnteredValues.value?.[params.data.id] && lastEnteredValues.value?.[params.data.id] === undefined && params.data.WithFormula !== "1",
+        'cell-pink': (params) => params.data && params.data.WithFormula === "1",
+      },
+      cellStyle: () => ({
         'font-size': '16px',
         'text-align': 'center',
-      };
+      }),
+      headerClass: 'header-center',
     },
-    headerClass: 'header-center',
-  },
-  {
-    headerName: t('table.comment'),
-    field: "Comment",
-    flex: 1,
-    editable: true, // Editable
-    suppressNavigable: false, // Allow focus and navigation
-    cellEditor: 'agLargeTextCellEditor',
-    cellEditorPopup: true,
-    headerClass: 'header-center',
-  }
-]);
+    {
+      headerName: t('table.comment'),
+      field: "Comment",
+      flex: 1,
+      editable: () => canCreate.value,
+      suppressNavigable: false,
+      cellEditor: 'agLargeTextCellEditor',
+      cellEditorPopup: true,
+      headerClass: 'header-center',
+    }
+  ];
+
+  return cols;
+});
+
+
 
 watch(pagesValue, (newPages) => {
   if (newPages.length > 0) {

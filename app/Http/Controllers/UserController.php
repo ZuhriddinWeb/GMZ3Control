@@ -120,29 +120,29 @@ class UserController extends Controller
             'unit' => $unit,
         ]);
     }
-    private function update(Request $request,$id)
+    public function update(Request $request)
     {
-        $request->validate([
-            'Name' => 'required|string|max:255',
-            'Phone' => 'required|string|max:255',
-            'Login' => 'required|string|max:255',
-            'Password' => 'required|min:6|max:255',
-        ]);
+        $user = User::find($request->id); // ✅ Shuni tekshir
         
-        $unit = User::find($id);
-        $unit->update([
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+    
+        $user->update([
             'name' => $request->Name,
             'phone' => $request->Phone,
             'login' => $request->Login,
-            'password' => Hash::make($request->Password),
-        ]);
+            // Parol bo‘sh bo‘lmasa yangilaymiz
+            'password' => $request->Password ? bcrypt($request->Password) : $user->password,
+            'structure_id' => $request->StructureID,
 
-        return response()->json([
-            'status' => 200,
-            'message' => "muvafaqiyatli yangilandi",
-            'unit' => $unit,
         ]);
+    
+        // Strukturani ham alohida sync qilamiz (agar aloqasi bo‘lsa)
+    
+        return response()->json(['status' => 200, 'message' => 'Foydalanuvchi yangilandi']);
     }
+    
     public function restart(Request $request,$id)
     {
         $unit = User::find($id);

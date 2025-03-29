@@ -4,7 +4,7 @@
     <main>
       <div class="flex justify-between">
         <span class="flex w-full"></span>
-        <VaButton @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        <VaButton v-if="canCreate" @click="showModal = true" class="w-14 h-12 mt-1 mr-1" icon="add" />
       </div>
       <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit"
         close-button>
@@ -56,7 +56,8 @@ import { useI18n } from 'vue-i18n';
 const { locale, t } = useI18n();
 import { format } from 'date-fns';
 import { defineProps } from 'vue'
-
+import { useStore } from 'vuex';
+const store = useStore();
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
 const props = defineProps({
@@ -67,6 +68,14 @@ const gridApi = ref(null);
 const showModal = ref(false);
 const graphicsOptions = ref([]);
 const changesOptions = ref([]);
+
+const userRole = computed(() => store.state.user.roles[8]);
+const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
+const canCreate = computed(() => hasPermission("create"));
+const canUpdate = computed(() => hasPermission("update"));
+const canDelete = computed(() => hasPermission("delete"));
+
+console.log(userRole);
 
 const result = reactive({
   GraphicId: props.id,
@@ -92,46 +101,60 @@ provide('onupdated', onupdated);
 //   console.log(result.Current);
 // };
 
-const columnDefs = computed(() => [
-  { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1", width: 80 },
-  { headerName: "ID", field: "id", width: 80 },
-  { headerName: t('table.change'), field: "Change", width: 120 },
-  { headerName: t('table.graphicName'), field: "GName", flex: 1 },
-  {
-    headerName: t('table.name'), field: "Name", flex: 1, valueFormatter: (params) => {
-      return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+const columnDefs = computed(() => {
+  const cols = [
+    { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1", width: 80 },
+    { headerName: "ID", field: "id", width: 80 },
+    { headerName: t('table.change'), field: "Change", width: 120 },
+    { headerName: t('table.graphicName'), field: "GName", flex: 1 },
+    {
+      headerName: t('table.name'),
+      field: "Name",
+      flex: 1,
+      valueFormatter: (params) => {
+        return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+      },
     },
-  },
-  {
-    headerName: t('table.startTime'),
-    field: "StartTime",
-    valueFormatter: (params) => {
-      return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+    {
+      headerName: t('table.startTime'),
+      field: "StartTime",
+      valueFormatter: (params) => {
+        return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+      },
     },
-  },
-  {
-    headerName: t('table.endTime'),
-    field: "EndTime",
-    valueFormatter: (params) => {
-      return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+    {
+      headerName: t('table.endTime'),
+      field: "EndTime",
+      valueFormatter: (params) => {
+        return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
+      },
     },
-  },
-  { headerName: t('table.comment'), field: "Comment", flex: 1 },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: EditGraphicTimesModal,
-  },
-  {
-    cellClass: ['px-0'],
-    headerName: "",
-    field: "",
-    width: 70,
-    cellRenderer: DeleteGraphicTimesModal,
-  },
-]);
+    { headerName: t('table.comment'), field: "Comment", flex: 1 },
+  ];
+
+  if (canUpdate.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: EditGraphicTimesModal,
+    });
+  }
+
+  if (canDelete.value) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: DeleteGraphicTimesModal,
+    });
+  }
+
+  return cols;
+});
+
 
 const defaultColDef = {
   sortable: true,

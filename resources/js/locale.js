@@ -3,6 +3,7 @@ export default {
     table: {
       headerRow: "№",
       id:"id",
+      page:"Cтраница",
       name: "Название",
       shortName: "Краткое название",
       structure: "Цех",
@@ -45,6 +46,7 @@ export default {
       graphictimes: "Время графиков",
       paramgraphics: "Параметры графиков",
       paramtypes: "Типы параметров",
+      servers: "Cерверы",
       params: "Параметры",
       sources: "Источники",
       changes: "Смена",
@@ -58,7 +60,8 @@ export default {
       formula:"Формула",
       document:"Отчет",
       create_document:"Создать oтчет",
-      operator_count:"Отчет оператора"
+      operator_count:"Отчет оператора",
+      groups:"Группы"
     },
     buttons: {
       save: "Сохранить",
@@ -68,6 +71,7 @@ export default {
       addUnitTitle: "Добавить единицу измерения",
       addFormula: "Создать новую формулу",
       addPageTitle: "Создать cтраница",
+      addPageGroup: "Yangi guruh yaratish",
       viewPage: "Просмотр данных",
       addStructureTitle: "Создать новый цех",
       addBlogTitle: "Создать новый участок",
@@ -145,6 +149,7 @@ export default {
   uz: {
     table: {
       id:"id",
+      page:"Sahifa",
       headerRow: "№",
       name: "Nomlanishi",
       shortName: "Qisqa nomi",
@@ -190,10 +195,12 @@ export default {
       graphictimes: "Grafik vaqtlari",
       paramgraphics: "Parametrlar grafiklari",
       paramtypes: "Parametr turlari",
+      servers: "Serverlar",
       params: "Parametrlar",
       sources: "Manbalar",
       changes: "Smena",
-      vparams: "Parametr qiymatlari",
+      vparams: "Parametr qiymatlari vertical",
+      vparamsHorizontal: "Parametr qiymatlari gorizontal",
       users: "Foydalanuvchilar",
       logout: "Chiqish",
       timer:"Vaqt",
@@ -203,8 +210,8 @@ export default {
       formula:"Formula",
       document:"Hisobot",
       create_document:"Hisobot yaratish",
-      operator_count:"Operator hisoboti"
-
+      operator_count:"Operator hisoboti",
+      groups:"Guruhlar"
     },
     buttons: {
       save: "Saqlash",
@@ -214,6 +221,7 @@ export default {
       addUnitTitle: "O'lchov birliklarini kiritish",
       addFormula:"Yangi formula yaratish",
       addPageTitle: "Yangi sahifa yaratish",
+      addPageGroup: "Yangi guruh yaratish",
       viewPage:"Ko‘rish",
       addStructureTitle: "Yangi sex yaratish",
       addBlogTitle: "Yangi bo'linma yaratish",

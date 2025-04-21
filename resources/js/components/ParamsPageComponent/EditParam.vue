@@ -21,6 +21,8 @@
             <VaInput class="w-full" v-model="result.WinCC"
             :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]"
             :label="t('form.wincc')" />
+            <VaSelect v-model="result.ServerId" value-by="value" class="w-full" :label="t('menu.servers')"
+                :options="serversOptions" clearable />
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaInput class="w-full" v-model="result.Min"
               :rules="[(value) => (value && value.length > 0) || t('form.requiredField')]" :label="t('table.min')" />
@@ -53,6 +55,8 @@ const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
 const paramsOptions = ref([]);
 const unitsOptions = ref([]);
+const serversOptions = ref([]);
+
 
 const result = reactive({
   Name: "",
@@ -60,6 +64,7 @@ const result = reactive({
   ShortNameRus: "",
   ShortName: "",
   WinCC: "",
+  ServerId:"",
   ParamsTypeID: "",
   UnitsID: "",
   Min: "",
@@ -70,12 +75,12 @@ const result = reactive({
 
 const fetchParams = async () => {
   try {
-    const [responseGraphics, responseChanges, paramResponse] = await Promise.all([
+    const [responseGraphics, responseChanges,serversResponse, paramResponse] = await Promise.all([
       axios.get('/paramtypes'),
       axios.get('/units'),
+      axios.get('/servers'),
       axios.get(`param/${props.params.data['Uuid']}`)
     ]);
-    console.log(paramResponse);
     
     paramsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.id,
@@ -85,12 +90,17 @@ const fetchParams = async () => {
       value: change.id,
       text: change.Name
     }));
-    
+    serversOptions.value = serversResponse.data.map(server => ({
+      value: server.id,
+      text: server.name
+    }));
+
     result.Name = paramResponse.data.Name;
     result.NameRus = paramResponse.data.NameRus;
     result.ShortNameRus = paramResponse.data.ShortNameRus;
     result.ShortName = paramResponse.data.ShortName;
     result.WinCC = paramResponse.data.WinCC;
+    result.ServerId = +paramResponse.data.Ipid;
     result.ParamsTypeID = +paramResponse.data.Pid;
     result.UnitsID = +paramResponse.data.Uid;
     result.Min = +paramResponse.data.Min;
@@ -118,6 +128,5 @@ const onSubmit = async () => {
   }
 };
 
-onMounted(() => {
-});
+
 </script>

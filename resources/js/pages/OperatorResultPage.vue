@@ -38,8 +38,6 @@ const props = defineProps({
 })
 const rowData = ref([]);
 const gridApi = ref(null);
-const showModal = ref(false);
-const factoryOptions = ref([]);
 const day = ref({
   smena: null,
   day: null
@@ -88,17 +86,17 @@ const fetchData = async () => {
 };
 
 
-const fetchGraphics = async () => {
-  try {
-    const responseGraphics = await axios.get('/structure');
-    factoryOptions.value = responseGraphics.data.map(factory => ({
-      value: factory.id,
-      text: locale.value === 'uz' ? factory.Name : factory.NameRus
-    }));
-  } catch (error) {
-    console.error('Error fetching graphics data:', error);
-  }
-};
+// const fetchGraphics = async () => {
+//   try {
+//     const responseGraphics = await axios.get('/structure');
+//     factoryOptions.value = responseGraphics.data.map(factory => ({
+//       value: factory.id,
+//       text: locale.value === 'uz' ? factory.Name : factory.NameRus
+//     }));
+//   } catch (error) {
+//     console.error('Error fetching graphics data:', error);
+//   }
+// };
 watch(() => day.value, () => {
   fetchData();
 }, { deep: true });
@@ -131,8 +129,8 @@ onMounted(() => {
     }
   }
 
-  fetchData();
-  fetchGraphics();
+  // fetchData();
+  // fetchGraphics();
 
   // ⏱ 10 daqiqalik avtomatik yangilanish (600_000 ms)
   refreshInterval = setInterval(() => {

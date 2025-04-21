@@ -20,6 +20,7 @@ class GraphicsParamenters extends Model
         'WithFormula',
         'BlogsID',
         'PageId',
+        'GroupID',
         'SourceID',
         'CurrentTime',
         'EndingTime',
@@ -37,8 +38,8 @@ class GraphicsParamenters extends Model
         'PageId' => 'integer',
         'SourceID' => 'integer',
         'ParametersID' => 'string',
-        'WithFormula'=>'integer'
-
+        'WithFormula'=>'integer',
+        'GroupID'=>'integer'
     ];
     public function parameters()
 {

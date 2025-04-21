@@ -14,6 +14,9 @@
             <VaSelect v-model="result.GrapicsID" value-by="value" class="mb-1" :label="t('menu.graphictimes')"
               :options="graphicOptions" clearable />
           </div>
+          <VaInput class="w-full" v-model="result.ShortName"
+            :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
+            :label="t('form.shortName')" />
           <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
             <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1" :label="t('menu.structure')"
               :options="structureOptions" clearable />
@@ -33,6 +36,8 @@
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
             <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
               :options="pagesOptions" searchable />
+            <VaSelect v-model="result.GroupID" value-by="value" class="mb-1" :label="t('menu.groups')"
+              :options="GroupsOptions" searchable />
           </div>
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
@@ -44,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, inject, onMounted } from 'vue';
+import { ref, reactive, inject, onMounted,watch } from 'vue';
 import { useI18n } from 'vue-i18n'; // Import useI18n from vue-i18n
 import axios from 'axios';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
@@ -63,7 +68,8 @@ const blogsOptions = ref([]);
 const sourcesOptions = ref([]);
 const pagesOptions = ref([]);
 const FormulaOptions = ref([]);
-
+const GroupsOptions = ref([]);
+const paramsRawData = ref([]);
 const result = reactive({
   ParametersID: "",
   FactoryStructureID: "",
@@ -72,8 +78,10 @@ const result = reactive({
   CurrentTime: "",
   EndingTime: "",
   OrderNumber: "",
+  ShortName: "",
   BlogID: "",
   PageId: "",
+  GroupID: "",
   WithFormula: "",
   id: props.params.data['id']
 });
@@ -81,7 +89,7 @@ const result = reactive({
 const fetchParams = async () => {
 
   try {
-    const [resParam, resGraphic, resStruct, resBlogs, resSources, responsePages, response, resFormula] = await Promise.all([
+    const [resParam, resGraphic, resStruct, resBlogs, resSources, responsePages, response, resFormula, resGroups] = await Promise.all([
       axios.get('/param'),
       axios.get('/graphics'),
       axios.get('/structure'),
@@ -90,8 +98,9 @@ const fetchParams = async () => {
       axios.get('/pages'),
       axios.get(`get-params-for-id-edit/${props.params.data['id']}`, { timeout: 10000 }),
       axios.get('/formula'),
+      axios.get('/groups'),
     ]);
-
+    paramsRawData.value = resParam.data;
     paramsOptions.value = resParam.data.map(param => ({
       value: param.Uuid,
       text: param.Name
@@ -122,6 +131,10 @@ const fetchParams = async () => {
       text: formula.Name
     }));
 
+    GroupsOptions.value = resGroups.data.map(group => ({
+      value: group.id,
+      text: group.Name
+    }));
     result.ParametersID = response.data[0]?.ParametersID || null;
     result.GrapicsID = +response.data[0]?.GrapicsID || null;
     result.FactoryStructureID = +response.data[0]?.Sid || null;
@@ -134,12 +147,24 @@ const fetchParams = async () => {
     result.EndingTime = response.data[0]?.EndingTime ? parseISO(response.data[0].EndingTime) : null;
     result.BlogID = +response.data[0].BlogsID ?? null;
     result.PageId = response.data[0]?.PageId ?? null;
-
+    result.GroupID = response.data[0]?.GroupID ?? null;
+    
+    const matchedParam = resParam.data.find(param => param.Uuid === result.ParametersID);
+    if (matchedParam) {
+      
+      result.ShortName = matchedParam.ShortName;
+    }
 
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
+watch(() => result.ParametersID, (newVal) => {
+  const matchedParam = paramsRawData.value.find(p => p.Uuid === newVal);
+  if (matchedParam) {
+    result.ShortName = matchedParam.ShortName || '';
+  }
+});
 
 const onSubmit = async () => {
   try {

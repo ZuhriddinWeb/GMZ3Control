@@ -12,6 +12,7 @@ use App\Events\TimeUpdated;
 use App\Models\GraphicTimes;
 use App\Models\ValuesParameters;
 use App\Models\User;
+use App\Models\Parameters;
 
 
 class ParamsGraphController extends Controller
@@ -154,7 +155,45 @@ class ParamsGraphController extends Controller
         // dd($query);
         return $query;
     }
+    public function getParamsForUserHorizontal($id, $change, $ChangeDay, $tabId)
+    {
+        $idArray = explode(',', $id);
+        $blogsIds = array_map('intval', $idArray);
+        $blogsIdsString = implode(',', $blogsIds);
+        $query = DB::select("
+            SELECT * FROM 
+            (
+                SELECT 
+                    graphic_times.id AS GTid,
+                    graphic_times.Name AS GTName,
+                    graphic_times.Change AS Change,
+                    graphic_times.StartTime AS STime,
+                    graphic_times.EndTime AS ETime,
+                    parameters.Name AS PName,
+                    parameters.NameRus AS PNameRus,
+                    parameters.Min AS Min,
+                    parameters.Max AS Max,
+                    groups.Name as GroupName,
+                    graphics_paramenters.*,
+                    (SELECT TOP 1 DATEADD(DAY, CASE WHEN f.StartingDay = 1 THEN 1 ELSE 0 END, ?)
+                     FROM [dbo].[Change2](1, ? + CAST(graphic_times.StartTime AS DATETIME)) f) 
+                     + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
+                    ? AS ChangeDay1 
+                FROM graphics_paramenters 
+                INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
+                INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
+                INNER JOIN groups ON graphics_paramenters.GroupID = groups.id
+                WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
+                    AND (graphic_times.Change = ? OR ? = 0) 
+                    AND graphics_paramenters.PageId = $tabId
+            ) p
+            WHERE p.StartDateTime <= GETDATE()
+            ORDER BY StartDateTime DESC, OrderNumber
+        ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
 
+        // dd($query);
+        return $query;
+    }
 
     //dd($ChangeDay);
     //  $query = DB::select("select * from 
@@ -305,17 +344,17 @@ class ParamsGraphController extends Controller
 
     private function create(Request $request)
     {
+
         $GParams = GraphicsParamenters::create([
             'OrderNumber' => $request->OrderNumber,
             'ParametersID' => $request->ParametersID,
             'FactoryStructureID' => $request->FactoryStructureID,
             'BlogsID' => $request->BlogID,
             'WithFormula' => $request->WithFormula,
-
             'GrapicsID' => $request->GrapicsID,
             'SourceID' => $request->SourceID,
             'PageId' => $request->PageId,
-
+            'GroupID' => $request->GroupID,
             'CurrentTime' => date('Y-m-d H:i:s', strtotime($request->CurrentTime)),
             'EndingTime' => date('Y-m-d H:i:s', strtotime($request->EndingTime)),
         ]);
@@ -329,6 +368,7 @@ class ParamsGraphController extends Controller
 
     private function update(Request $request)
     {
+
         $unit = GraphicsParamenters::find($request->id);
         $unit->update([
             'OrderNumber' => $request->OrderNumber,
@@ -339,10 +379,15 @@ class ParamsGraphController extends Controller
             'GrapicsID' => $request->GrapicsID,
             'SourceID' => $request->SourceID,
             'PageId' => $request->PageId,
+            'GroupID' => $request->GroupID,
             'CurrentTime' => date('Y-m-d H:i:s', strtotime($request->CurrentTime)),
             'EndingTime' => date('Y-m-d H:i:s', strtotime($request->EndingTime)),
         ]);
-
+        if ($request->ParametersID && $request->ShortName) {
+            Parameters::where('id', $request->ParametersID)->update([
+                'ShortName' => $request->ShortName
+            ]);
+        }
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli yangilandi",

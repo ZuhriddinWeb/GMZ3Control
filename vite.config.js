@@ -25,4 +25,11 @@ export default defineConfig({
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },
+    // server: {
+    //     cors: {
+    //         origin: ['http://192.168.14.82:8001'], // Bu manzildan kirishga ruxsat bering
+    //         methods: ['GET', 'POST'], // Ruxsat berilgan metodlar
+    //     },
+    // },
+    
 });

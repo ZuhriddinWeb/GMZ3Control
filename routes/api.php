@@ -3,6 +3,8 @@
 use App\Http\Controllers\api\CalculatorController;
 use App\Http\Controllers\api\DocumentsController;
 use App\Http\Controllers\api\FormulaController;
+use App\Http\Controllers\api\GroupsController;
+use App\Http\Controllers\api\ServersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\UnitsController;
@@ -64,6 +66,9 @@ Route::match(['get', 'post', 'put', 'delete'], '/blogs/{id?}', [BlogsController:
 Route::match(['get', 'post', 'put', 'delete'], '/formula/{id?}', [FormulaController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/calculator/{id?}', [CalculatorController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/documents/{id?}', [DocumentsController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/servers/{id?}', [ServersController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsController::class, 'handle']);
+
 
 
 Route::get('/getUserData/{id}', [DocumentsController::class, 'getUserData']);
@@ -79,6 +84,8 @@ Route::post('/treeChart', [TreeController::class, 'treeChart']);
 Route::get('get-params-for-user-count/{user_id}/{change_id}' , [ParamsGraphController::class, 'getParamsForUserCount']);
 Route::get('get-params-for-id-edit/{param_id}' , [ParamsGraphController::class, 'getRowParamEdit']);
 Route::get('get-params-for-user/{user_id}/{change_id}/{date}/{tabId}' , [ParamsGraphController::class, 'getParamsForUser']);
+Route::get('get-params-for-user-horizontal/{user_id}/{change_id}/{date}/{tabId}' , [ParamsGraphController::class, 'getParamsForUserHorizontal']);
+
 Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
 Route::post('vparamsEdit' , [ParametrValueController::class, 'update']);
 Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}' , [ParametrValueController::class, 'getByBlog']);
@@ -92,6 +99,9 @@ Route::get('/getRowPageResult/{id}',  [ParamsGraphController::class, 'getRowPage
 Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);
 Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
 Route::get('/getRowPage/{id}',  [NumberPageController::class, 'getRowPage']);
+Route::get('/getRowGroup/{idS}/{idP}',  [GroupsController::class, 'getRowGroup']);
+Route::get('/getRowGroupEdit/{id}',  [GroupsController::class, 'getRowGroupEdit']);
+
 
 Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);
 Route::get('/getForFormule/{id}',  [ParamsGraphController::class, 'getForFormule']);

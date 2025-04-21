@@ -127,6 +127,7 @@ const menu = ref([
       { title: 'menu.graphics', icon: 'schedule', path: '/graphics' },
       { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },
       { title: 'menu.pages', icon: 'auto_stories', path: '/pages' },
+      { title: 'menu.groups', icon: 'table_view', path: '/group' },
       { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
       { title: 'menu.formula', icon: 'calculate', path: '/formula' },
       { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
@@ -134,10 +135,11 @@ const menu = ref([
       { title: 'menu.document', icon: 'file_present', path: '/documents' },
       { title: 'menu.operator_count', icon: 'flag_circle', path: '/opercount' },
 
-
     // ]
   // },
   { title: 'menu.vparams', icon: 'diamond', path: '/vparams' },
+  { title: 'menu.vparamsHorizontal', icon: 'grid_goldenratio', path: '/vparamsHorizontal' },
+
   { title: 'menu.users', icon: 'person', path: '/users' },
 ]);
 

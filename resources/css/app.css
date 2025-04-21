@@ -1,3 +1,87 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.ag-grid-container {
+    width: 100%;
+    height: 100%;
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+/* .row-green {
+    background-color: green;
+    color: white;
+  } */
+
+.cell-green {
+    background-color: rgb(211, 207, 207);
+    color: black;
+}
+
+.cell-yellow {
+    background-color: rgb(22 163 74);
+    /* yoki sariqroq rang tanlasa bo’ladi */
+    color: black;
+}
+
+.cell-pink {
+    background-color: rgb(234 179 8);
+    /* sariq rang */
+    color: black;
+}
+
+
+.ag-row-hover {
+    color: black !important;
+    /* Change text color to black on hover */
+}
+
+.ag-theme-material .ag-row:hover {
+    background-color: #f0f0f0;
+}
+
+.header-center {
+    text-align: center;
+}
+
+.ag-header-cell {
+    height: 60px;
+    line-height: 60px;
+    padding: 0 10px;
+    /* font-size: 16px; Adjust font size if needed */
+}
+
+/* Center align header text */
+.header-center {
+    text-align: center;
+}
+
+.header-center .ag-header-cell-label {
+    font-weight: bold;
+}
+
+.ag-theme-material .ag-cell {
+    border-right: 1px solid #d1d5db;
+}
+
+.ag-theme-material .ag-header-cell {
+    border-right: 1px solid #d1d5db;
+}
+
+.ag-theme-material .ag-row {
+    border-bottom: 1px solid #e5e7eb;
+}

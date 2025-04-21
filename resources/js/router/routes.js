@@ -128,6 +128,48 @@ export default [
 			guard: 'auth',
 		},
 	},
+
+
+
+
+
+	{
+		path: '/groupPage/:id',
+		name:'GroupDetailPage',
+		component: () => import('../pages/GroupPagesCard.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
+		path: '/group/:id/:page',
+		name: 'GroupDetail',
+		component: () => import('../pages/GroupsPage.vue'),
+		meta: {
+		  guard: 'auth',
+		},
+		props: route => ({
+		  id: route.params.id,
+		  page: route.params.page
+		})
+	  },
+	  	  
+	{
+		path: '/group',
+		name:'groupcard',
+		component: () => import('../pages/GroupCardPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+
+
+
+
+
+
+
 	{
 		path: '/paramtypes',
 		name:'paramtypes',
@@ -205,7 +247,7 @@ export default [
 	{
 		path: '/vparams',
 		name:'vparams',
-		component: () => import('../pages/ParametrValueCard.vue'),
+		component: () => import('../pages/ParametrValueCardVertical.vue'),
 		meta: {
 			guard: 'auth',
 		},
@@ -213,20 +255,38 @@ export default [
 	{
 		path: '/vparam/:id',
 		name:'vparam',
-		component: () => import('../pages/ParametrValue.vue'),
+		component: () => import('../pages/ParametrValueVertical.vue'),
 		meta: {
 			guard: 'auth',
 		},
 		props: true,
 	},
-	// {
-	// 	path: '/count',
-	// 	name:'createDoc',
-	// 	component: () => import('../pages/ParametrValueCard.vue'),
-	// 	meta: {
-	// 		guard: 'auth',
-	// 	},
-	// },
+
+	{
+		path: '/vparamsHorizontal',
+		name:'vparamsHorizontal',
+		component: () => import('../pages/ParametrValueCardHorizontal.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
+		path: '/vparamsHorizontal/:id',
+		name:'vparamHorizontal',
+		component: () => import('../pages/ParametrValueHorizontal.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
+	{
+		path: '/count',
+		name:'createDoc',
+		component: () => import('../pages/ParametrValueCardVertical.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
 	{
 		path: '/opercount',
 		name:'createDoc',

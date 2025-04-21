@@ -27,6 +27,8 @@
             <VaInput class="w-full" v-model="result.WinCC"
               :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
               :label="t('form.wincc')" />
+              <VaSelect v-model="result.ServerId" value-by="value" class="w-full" :label="t('menu.servers')"
+                :options="serversOptions" clearable />
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2 items-end w-full">
               <VaInput class="w-full" v-model="result.Min"
                 :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.min')" />
@@ -71,6 +73,8 @@ const rowData = ref([]);
 const gridApi = ref(null);
 const showModal = ref(false);
 const paramsOptions = ref([]);
+const serversOptions = ref([]);
+
 const unitsOptions = ref([]);
 
 const result = reactive({
@@ -80,6 +84,7 @@ const result = reactive({
   ShortName: "",
   WinCC: "",
   ParamsTypeID: "",
+  ServerId: "",
   UnitsID: "",
   Min: "",
   Max: "",
@@ -156,13 +161,21 @@ const fetchParams = async () => {
   try {
     const responseGraphics = await axios.get('/paramtypes');
     const responseChanges = await axios.get('/units');
+    const responseServers = await axios.get('/servers');
+
     paramsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.id,
       text: graphic.Name
     }));
+
     unitsOptions.value = responseChanges.data.map(change => ({
       value: change.id,
       text: change.Name
+    }));
+
+    serversOptions.value = responseServers.data.map(server => ({
+      value: server.id,
+      text: server.name
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);

@@ -33,7 +33,8 @@ class ParamsController extends Controller
     {
         $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
             ->join('units', 'parameters.UnitsID', '=', 'units.id')
-            ->select('parameters.id as Uuid', 'parameters.Name','parameters.WinCC', 'parameters.ShortName', 'parameters.Comment', 'parameters.Min', 'parameters.Max', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
+            ->leftJoin('servers', 'parameters.ServerId', '=', 'servers.id') 
+            ->select('parameters.id as Uuid','parameters.ShortName as ShName', 'parameters.Name','parameters.WinCC','parameters.ServerId', 'parameters.ShortName', 'parameters.Comment', 'parameters.Min', 'parameters.Max', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid','servers.name as IpName', 'servers.id as IpId')
             ->get();
         return response()->json($params);
     }
@@ -41,10 +42,28 @@ class ParamsController extends Controller
     {
         // dd($id);
         return Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
-            ->join('units', 'parameters.UnitsID', '=', 'units.id')
-            ->where('parameters.id', $id)
-            ->select('parameters.id as Uuid','parameters.WinCC','parameters.Min','parameters.Max','parameters.NameRus', 'parameters.ShortNameRus', 'parameters.Name', 'parameters.ShortName', 'parameters.Comment', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid')
-            ->first();
+        ->join('units', 'parameters.UnitsID', '=', 'units.id')
+        ->leftJoin('servers', 'parameters.ServerId', '=', 'servers.id') 
+        ->where('parameters.id', $id)
+        ->select(
+            'parameters.id as Uuid',
+            'parameters.WinCC',
+            'parameters.Min',
+            'parameters.Max',
+            'parameters.NameRus',
+            'parameters.ShortNameRus',
+            'parameters.Name',
+            'parameters.ShortName',
+            'parameters.Comment',
+            'paramenters_types.Name as PName',
+            'paramenters_types.id as Pid',
+            'units.Name as UName',
+            'units.id as Uid',
+            'servers.name as IpName',
+            'servers.id as Ipid'
+        )
+        ->first();
+    
     }
 
     private function create(Request $request)
@@ -60,6 +79,7 @@ class ParamsController extends Controller
             'ShortNameRus' => $request->ShortNameRus,
             'ParametrTypeID' => $request->ParamsTypeID,
             'WinCC' => $request->WinCC,
+            'ServerId' => $request->ServerId,
             'Min' => $request->Min,
             'Max' => $request->Max,
             'UnitsID' => $request->UnitsID,
@@ -83,6 +103,7 @@ class ParamsController extends Controller
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
             'WinCC' => $request->WinCC,
+            'ServerId' => $request->ServerId,
             'ParametrTypeID' => $request->ParamsTypeID,
             'Min' => $request->Min,
             'Max' => $request->Max,

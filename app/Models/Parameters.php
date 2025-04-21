@@ -15,6 +15,7 @@ class Parameters extends Model
         'ShortName',
         'ShortNameRus',
         'WinCC',
+        'ServerId',
         'ParametrTypeID',
         'Min',
         'Max',

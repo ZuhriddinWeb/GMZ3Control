@@ -226,7 +226,7 @@ const columnDefs = computed(() => {
     cellEditor: "agNumberCellEditor",
     flex: 1,
     headerClass: "header-center",
-    cellStyle: { textAlign: "center", fontSize: "25px" },
+    cellStyle: { textAlign: "center", fontSize: "20px" },
     cellClassRules: {
       'cell-green': (params) =>
         params.data && params.value === lastEnteredValues.value?.[params.data.id]?.[param] &&
@@ -279,7 +279,7 @@ const getColumnDefsForGroup = (groupData) => {
     cellEditor: "agNumberCellEditor",
     flex: 1,
     headerClass: "header-center",
-    cellStyle: { textAlign: "center", fontSize: "20px",fontWeight:"bold" },
+    cellStyle: { textAlign: "center", fontSize: "18px"},
     cellClassRules: {
       'cell-green': (params) =>
         params.data && params.value === lastEnteredValues.value?.[params.data.id]?.[param] &&
@@ -876,7 +876,7 @@ onBeforeUnmount(() => {
   white-space: normal !important;
   line-height: 1.2;
   text-align: center;
-  font-size: 17px;
+  font-size: 13px;
 }
 .cell-pink {
   background-color: rgb(241, 192, 44);

@@ -34,22 +34,17 @@
 
         <div ref="pdfTarget" class="ag-grid-container h-full w-full print-mode">
           <div v-for="(groupData, groupId) in groupedByGroupId" :key="`group-${groupId}`" class="mb-6 w-full">
-            <h3 class="font-bold text-lg mb-2">Jadval: {{ groupData[0].GroupName }}</h3>
+            <h3 class="font-bold text-lg mb-2  mt-2 p-1 bg-blue-200 text-center">{{ groupData[0].GroupName }} ⬇️</h3>
             <ag-grid-vue :key="`grid-${selectedTab}-${groupId}-${day.day}-${day.smena}`"
               class="ag-theme-material w-full" style="width: 100%" :columnDefs="getColumnDefsForGroup(groupData)"
               :rowData="getPivotedRowDataForGroup(groupData)"
               :defaultColDef="{ sortable: true, filter: true, resizable: true, flex: 1 }" :gridOptions="{
-                domLayout: 'autoHeight', headerHeight: 50,
+                domLayout: 'autoHeight', headerHeight: 80,
                 rowHeight: 35,
               }" @cellValueChanged="onCellValueChanged" @gridReady="params => onGridReady(params, groupId)" />
 
           </div>
-
         </div>
-
-
-
-
       </div>
 
       <!-- <EditValue v-if="showModalEdit" :showModalEdit="showModalEdit" :resultEdit="resultEdit" @update="handleUpdate" /> -->
@@ -224,13 +219,14 @@ const columnDefs = computed(() => {
 
   const parameterColumns = uniqueParameters.map(param => ({
     headerName: param,
+    headerClass: 'wrap-header',
     field: param,
     editable: (params) =>
       canCreate.value && params.data?.[`WithFormula${param}`] !== "1",
     cellEditor: "agNumberCellEditor",
     flex: 1,
     headerClass: "header-center",
-    cellStyle: { textAlign: "center", fontSize: "15px" },
+    cellStyle: { textAlign: "center", fontSize: "25px" },
     cellClassRules: {
       'cell-green': (params) =>
         params.data && params.value === lastEnteredValues.value?.[params.data.id]?.[param] &&
@@ -283,7 +279,7 @@ const getColumnDefsForGroup = (groupData) => {
     cellEditor: "agNumberCellEditor",
     flex: 1,
     headerClass: "header-center",
-    cellStyle: { textAlign: "center", fontSize: "15px" },
+    cellStyle: { textAlign: "center", fontSize: "20px",fontWeight:"bold" },
     cellClassRules: {
       'cell-green': (params) =>
         params.data && params.value === lastEnteredValues.value?.[params.data.id]?.[param] &&
@@ -876,9 +872,14 @@ onBeforeUnmount(() => {
   /* yoki sariqroq rang tanlasa bo’ladi */
   color: black;
 }
-
+.ag-header-cell-label {
+  white-space: normal !important;
+  line-height: 1.2;
+  text-align: center;
+  font-size: 17px;
+}
 .cell-pink {
-  background-color: rgb(234 179 8);
+  background-color: rgb(241, 192, 44);
   /* sariq rang */
   color: black;
 }

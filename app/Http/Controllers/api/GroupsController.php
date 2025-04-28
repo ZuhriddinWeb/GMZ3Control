@@ -34,7 +34,6 @@ class GroupsController extends Controller
     }
     public function getRowGroup($idS, $idP)
     {
-        // dd($idS, $idP);
         $unit = Groups::join('factory_structures', 'groups.StructureID', '=', 'factory_structures.id')
             ->join('number_pages', 'number_pages.NumberPage', '=', 'groups.PageID')
             ->where('groups.StructureID', $idS)

@@ -35,7 +35,7 @@
           </div>
           <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
             <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
-              :options="pagesOptions" searchable />
+              :options="pagesOptions"   @update:modelValue="onPageOrStructureChange" searchable />
             <VaSelect v-model="result.GroupID" value-by="value" class="mb-1" :label="t('menu.groups')"
               :options="GroupsOptions" searchable />
           </div>
@@ -85,21 +85,28 @@ const result = reactive({
   WithFormula: "",
   id: props.params.data['id']
 });
-
 const fetchParams = async () => {
-
   try {
-    const [resParam, resGraphic, resStruct, resBlogs, resSources, responsePages, response, resFormula, resGroups] = await Promise.all([
+    const [
+      resParam,
+      resGraphic,
+      resStruct,
+      resBlogs,
+      resSources,
+      responsePages,
+      response,
+      resFormula,
+    ] = await Promise.all([
       axios.get('/param'),
       axios.get('/graphics'),
       axios.get('/structure'),
       axios.get('/blogs'),
       axios.get('/sources'),
-      axios.get('/pages'),
+      axios.get(`/getRowPage/${props.params.data['FactoryStructureID']}`),
       axios.get(`get-params-for-id-edit/${props.params.data['id']}`, { timeout: 10000 }),
       axios.get('/formula'),
-      axios.get('/groups'),
     ]);
+
     paramsRawData.value = resParam.data;
     paramsOptions.value = resParam.data.map(param => ({
       value: param.Uuid,
@@ -113,9 +120,9 @@ const fetchParams = async () => {
       value: struct.id,
       text: struct.Name
     }));
-    blogsOptions.value = resBlogs.data.map(blogs => ({
-      value: blogs.id,
-      text: blogs.Name
+    blogsOptions.value = resBlogs.data.map(blog => ({
+      value: blog.id,
+      text: blog.Name
     }));
     sourcesOptions.value = resSources.data.map(source => ({
       value: source.id,
@@ -125,46 +132,76 @@ const fetchParams = async () => {
       value: page.NumberPage,
       text: page.Name
     }));
-
     FormulaOptions.value = resFormula.data.map(formula => ({
       value: formula.id,
       text: formula.Name
     }));
 
-    GroupsOptions.value = resGroups.data.map(group => ({
-      value: group.id,
-      text: group.Name
-    }));
-    result.ParametersID = response.data[0]?.ParametersID || null;
-    result.GrapicsID = +response.data[0]?.GrapicsID || null;
-    result.FactoryStructureID = +response.data[0]?.Sid || null;
-    result.SourceID = +response.data[0]?.SourceID || null;
-    result.WithFormula = response.data[0]?.WithFormula ?? null;
+    const paramInfo = response.data[0];
 
-    result.OrderNumber = response.data[0]?.OrderNumber || null;
+    if (paramInfo) {
+      result.ParametersID = paramInfo.ParametersID || null;
+      result.GrapicsID = +paramInfo.GrapicsID || null;
+      result.FactoryStructureID = +paramInfo.Sid || null;
+      result.SourceID = +paramInfo.SourceID || null;
+      result.WithFormula = paramInfo.WithFormula ?? null;
+      result.OrderNumber = paramInfo.OrderNumber || null;
+      result.CurrentTime = paramInfo.CurrentTime ? parseISO(paramInfo.CurrentTime) : null;
+      result.EndingTime = paramInfo.EndingTime ? parseISO(paramInfo.EndingTime) : null;
+      result.BlogID = paramInfo.BlogsID ? +paramInfo.BlogsID : null;
+      result.PageId = paramInfo.PageId ?? null;
+      result.GroupID = paramInfo.GroupID ?? null; // 👈 BU joy majburiy
 
-    result.CurrentTime = response.data[0]?.CurrentTime ? parseISO(response.data[0].CurrentTime) : null;
-    result.EndingTime = response.data[0]?.EndingTime ? parseISO(response.data[0].EndingTime) : null;
-    result.BlogID = +response.data[0].BlogsID ?? null;
-    result.PageId = response.data[0]?.PageId ?? null;
-    result.GroupID = response.data[0]?.GroupID ?? null;
-    
-    const matchedParam = resParam.data.find(param => param.Uuid === result.ParametersID);
-    if (matchedParam) {
-      
-      result.ShortName = matchedParam.ShortName;
+      const matchedParam = resParam.data.find(param => param.Uuid === result.ParametersID);
+      if (matchedParam) {
+        result.ShortName = matchedParam.ShortName || '';
+      }
+    }
+
+    // Va PageId va FactoryStructureID ga qarab avtomatik Group larni ham chaqirib yuklab qo'yamiz:
+    if (result.PageId && result.FactoryStructureID) {
+      await onPageOrStructureChange();
     }
 
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching initial data:', error);
   }
 };
+
 watch(() => result.ParametersID, (newVal) => {
   const matchedParam = paramsRawData.value.find(p => p.Uuid === newVal);
   if (matchedParam) {
     result.ShortName = matchedParam.ShortName || '';
   }
 });
+const onPageOrStructureChange = async () => {
+  if (!result.PageId || !result.FactoryStructureID) {
+    GroupsOptions.value = [];
+    result.GroupID = null;
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`/getRowGroup/${result.FactoryStructureID}/${result.PageId}`);
+    
+    GroupsOptions.value = data.map(group => ({
+      value: group.id,
+      text: group.Name,
+    }));
+
+    if (!GroupsOptions.value.some(group => group.value === result.GroupID)) {
+      result.GroupID = null;
+    }
+  } catch (error) {
+    GroupsOptions.value = [];
+    result.GroupID = null;
+    console.error('Error fetching groups:', error);
+  }
+};
+
+
+
+
 
 const onSubmit = async () => {
   try {

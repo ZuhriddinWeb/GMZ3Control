@@ -67,8 +67,8 @@ const structureOptions = ref([]);
 const blogsOptions = ref([]);
 const sourcesOptions = ref([]);
 const pagesOptions = ref([]);
-const FormulaOptions = ref([]);
 const GroupsOptions = ref([]);
+const FormulaOptions = ref([]);
 const paramsRawData = ref([]);
 const result = reactive({
   ParametersID: "",

@@ -34,8 +34,9 @@ class GroupsController extends Controller
     }
     public function getRowGroup($idS, $idP)
     {
+        // dd($idS, $idP);
         $unit = Groups::join('factory_structures', 'groups.StructureID', '=', 'factory_structures.id')
-            ->join('number_pages', 'number_pages.id', '=', 'groups.PageID')
+            ->join('number_pages', 'number_pages.NumberPage', '=', 'groups.PageID')
             ->where('groups.StructureID', $idS)
             ->where('groups.PageID', $idP)
             ->select('factory_structures.Name as SName', 'number_pages.Name as NName', 'groups.*')->get();
@@ -49,6 +50,16 @@ class GroupsController extends Controller
             ->select('factory_structures.Name as SName', 'number_pages.Name as NName', 'groups.*')->get();
         return response()->json($unit);
     }
+    public function getRowGroupWithId($id)
+    {
+        // dd($id);
+        $unit = Groups::join('factory_structures', 'groups.StructureID', '=', 'factory_structures.id')
+            ->join('number_pages', 'number_pages.id', '=', 'groups.PageID')
+            ->where('groups.PageID', $id)
+            ->select('factory_structures.Name as SName', 'number_pages.Name as NName', 'groups.*')->get();
+        return response()->json($unit);
+    }
+    
     private function create(Request $request)
     {
         $unit = Groups::create([

@@ -5,6 +5,7 @@ export default {
       id:"id",
       page:"Cтраница",
       name: "Название",
+      namePage: "Название cтраницы",
       shortName: "Краткое название",
       structure: "Цех",
       comment: "Kомментарий",
@@ -150,6 +151,7 @@ export default {
     table: {
       id:"id",
       page:"Sahifa",
+      namePage: "Sahifa nomlanishi",
       headerRow: "№",
       name: "Nomlanishi",
       shortName: "Qisqa nomi",

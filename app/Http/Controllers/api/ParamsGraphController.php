@@ -344,6 +344,7 @@ class ParamsGraphController extends Controller
 
     private function create(Request $request)
     {
+        // dd( $request);
 
         $GParams = GraphicsParamenters::create([
             'OrderNumber' => $request->OrderNumber,

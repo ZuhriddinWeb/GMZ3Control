@@ -101,6 +101,8 @@ Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
 Route::get('/getRowPage/{id}',  [NumberPageController::class, 'getRowPage']);
 Route::get('/getRowGroup/{idS}/{idP}',  [GroupsController::class, 'getRowGroup']);
 Route::get('/getRowGroupEdit/{id}',  [GroupsController::class, 'getRowGroupEdit']);
+Route::get('/getRowGroupWithId/{id}',  [GroupsController::class, 'getRowGroupWithId']);
+
 
 
 Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);

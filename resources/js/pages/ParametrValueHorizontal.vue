@@ -262,7 +262,7 @@ const getColumnDefsForGroup = (groupData) => {
       pinned: "left",
       valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
       headerClass: "header-center",
-      cellStyle: { textAlign: "center", fontWeight: "bold",backgroundColor: "#f0f8ff" },
+      cellStyle: { textAlign: "center", fontWeight: "bold", backgroundColor: "#f0f8ff" },
     },
   ];
 
@@ -276,10 +276,56 @@ const getColumnDefsForGroup = (groupData) => {
     field: param,
     editable: (params) =>
       canCreate.value && params.data?.[`WithFormula${param}`] !== "1",
+    // editable: (params) => {
+    //   const canEditByRole = canCreate.value && params.data?.[`WithFormula${param}`] !== "1";
+    //   const time = params.data?.time;
+    //   const value = params.value;
+    //   const createdAt = params.data?.[`meta_${param}`]?.created_at;
+
+    //   if (!canEditByRole || !time) return false;
+
+    //   const now = new Date();
+    //   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    //   const [hourStr, minuteStr] = time.split(":");
+    //   const cellMinutes = parseInt(hourStr) * 60 + parseInt(minuteStr || "0");
+    //   const diffSinceSTime = currentMinutes - cellMinutes;
+
+    //   if (!value || value === "") {
+    //     // Agar hali qiymat yo'q bo‘lsa — 1 soat ichida kiritish mumkin
+    //     return diffSinceSTime >= 0 && diffSinceSTime <= 60;
+    //   }
+
+    //   if (value && createdAt) {
+    //     // Agar qiymat mavjud va yaratilgan vaqt ham mavjud bo‘lsa — faqat 1 daqiqa ichida tahrirlash mumkin
+    //     const created = new Date(createdAt);
+    //     const diffInMinutes = (now - created) / (1000 * 60); // farq daqiqalarda
+
+    //     return diffInMinutes <= 1;
+    //   }
+
+    //   return false;
+    // }
+
+    // ,
+    // editable: (params) => {
+    //   const canEditByRole = canCreate.value && params.data?.[`WithFormula${param}`] !== "1";
+    //   const time = params.data?.time;
+    //   if (!canEditByRole || !time) return false;
+
+    //   const now = new Date();
+    //   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    //   const [hourStr, minuteStr] = time.split(":");
+    //   const cellMinutes = parseInt(hourStr) * 60 + parseInt(minuteStr || "0");
+
+    //   const timeDiff = currentMinutes - cellMinutes;
+    //   return timeDiff >= 0 && timeDiff <= 60; // faqat 1 soat ichida ruxsat
+    // },
     cellEditor: "agNumberCellEditor",
     flex: 1,
     headerClass: "header-center",
-    cellStyle: { textAlign: "center", fontSize: "18px"},
+    cellStyle: { textAlign: "center", fontSize: "18px" },
     cellClassRules: {
       'cell-green': (params) =>
         params.data && params.value === lastEnteredValues.value?.[params.data.id]?.[param] &&
@@ -331,6 +377,7 @@ const getPivotedRowDataForGroup = (groupData) => {
           BlogID: match.BlogsID || store.state.user.structure_id,
           FactoryStructureID: match.FactoryStructureID,
           GroupID: match.GroupID,
+          created_at: match.created_at,
           id: match.id, // Existing row ID if available
         };
       }
@@ -872,12 +919,14 @@ onBeforeUnmount(() => {
   /* yoki sariqroq rang tanlasa bo’ladi */
   color: black;
 }
+
 .ag-header-cell-label {
   white-space: normal !important;
   line-height: 1.2;
   text-align: center;
   font-size: 13px;
 }
+
 .cell-pink {
   background-color: rgb(241, 192, 44);
   /* sariq rang */
@@ -904,11 +953,13 @@ onBeforeUnmount(() => {
   padding: 0 10px;
   /* font-size: 16px; Adjust font size if needed */
 }
+
 @media print {
   .print-mode {
     height: auto !important;
     overflow: visible !important;
   }
+
   .ag-root-wrapper {
     height: auto !important;
   }

@@ -50,6 +50,10 @@
             <VaSelect v-model="result.PageId" value-by="value" class="mb-1" :label="t('menu.pages')"
               :options="pagesOptions" clearable />
           </div> -->
+          <div class="grid grid-cols-2 md:grid-cols-1 gap-1 items-end w-full">
+            <VaSelect v-model="result.GroupID" value-by="value" class="mb-1" :label="t('menu.groups')"
+              :options="GroupsOptions" searchable />
+          </div>
           <VaInput type="number" class="w-full" v-model="result.OrderNumber"
             :rules="[(value) => (value && value.length > 0) || 'To\'ldirish majburiy bo\'lgan maydon']"
             :label="t('modals.ordernumber')" />
@@ -92,6 +96,7 @@ const gridApi = ref(null);
 const showModal = ref(false);
 const paramsOptions = ref([]);
 const pagesOptions = ref([]);
+const GroupsOptions = ref([]);
 const structureOptions = ref([]);
 const GraphicTimeOptions = ref([]);
 const BlogsOptions = ref([]);
@@ -108,7 +113,8 @@ const result = reactive({
   EndingTime: "",
   OrderNumber: "",
   BlogID: "",
-  PageId: props.page,
+  GroupID: "",
+  PageId:props['page'],
   WithFormula: null,
 });
 const userRole = computed(() => store.state.user.roles[13]);
@@ -240,6 +246,7 @@ const fetchParams = async () => {
     const responseBlogs = await axios.get('/blogs');
     const responseSource = await axios.get('/source');
     const responseFormula = await axios.get('/formula');
+    const resGroups = await axios.get(`/getRowGroupWithId/${props['page']}`);
 
 
     paramsOptions.value = responseGraphics.data.map(graphic => ({
@@ -265,6 +272,10 @@ const fetchParams = async () => {
     FormulaOptions.value = responseFormula.data.map(change => ({
       value: change.id,
       text: change.Name
+    }));
+    GroupsOptions.value = resGroups.data.map(group => ({
+      value: group.id,
+      text: group.Name
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
@@ -297,6 +308,8 @@ const onSubmit = async () => {
         result.BlogID = "",
         // result.PageId = "",
         result.WithFormula = "",
+        result.GroupID = "",
+
         await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });
     } else {

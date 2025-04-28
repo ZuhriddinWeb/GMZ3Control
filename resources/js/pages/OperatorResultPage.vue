@@ -45,7 +45,7 @@ const day = ref({
 const columnDefs = computed(() => [
   { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1",width:80 },
   { headerName: t('table.structure'), field: getFielBlog(), flex: 1 },
-  { headerName: t('table.name'), field: getFieldName(), flex: 1 },
+  { headerName: t('table.namePage'), field: getFieldName(), flex: 1 },
   // { headerName: t('table.numberpage'), field: 'page_id' },
   { headerName: t('table.want'), field: 'multiplied_parameter_count' },
   { headerName: t('table.be'), field: 'kiritilgan' },

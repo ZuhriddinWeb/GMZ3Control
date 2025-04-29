@@ -215,7 +215,7 @@ const columnDefs = computed(() => {
     }
   ];
 
-  const uniqueParameters = [...new Set(rowData.value.map(row => locale.value === 'ru' ? row.PNameRus : row.PName))];
+  const uniqueParameters = [...new Set(rowData.value.map(row => locale.value === 'ru' ? row.PNameRus : row.ShName))];
 
   const parameterColumns = uniqueParameters.map(param => ({
     headerName: param,
@@ -268,7 +268,7 @@ const getColumnDefsForGroup = (groupData) => {
 
   // 🟢 Faqat ushbu groupData uchun unikal parametrlar
   const uniqueParameters = [
-    ...new Set(groupData.map(row => (locale.value === 'ru' ? row.PNameRus : row.PName)))
+    ...new Set(groupData.map(row => (locale.value === 'ru' ? row.PNameRus : row.ShName)))
   ];
 
   const parameterColumns = uniqueParameters.map(param => ({
@@ -349,14 +349,14 @@ const getColumnDefsForGroup = (groupData) => {
 // Ma'lumotlarni har bir guruhga mos ravishda qaytarish
 const getPivotedRowDataForGroup = (groupData) => {
   const times = [...new Set(groupData.map(r => r.GTName))];
-  const parameters = [...new Set(groupData.map(r => locale.value === 'ru' ? r.PNameRus : r.PName))];
+  const parameters = [...new Set(groupData.map(r => locale.value === 'ru' ? r.PNameRus : r.ShName))];
 
   return times.map(time => {
     const row = { time };
     parameters.forEach(param => {
       const match = groupData.find(r =>
         r.GTName === time &&
-        (locale.value === 'ru' ? r.PNameRus : r.PName) === param
+        (locale.value === 'ru' ? r.PNameRus : r.ShName) === param
       );
       if (match) {
         row[param] = match.Value;
@@ -371,7 +371,7 @@ const getPivotedRowDataForGroup = (groupData) => {
           GrapicsID: match.GrapicsID,
           PageId: match.PageId,
           OrderNumber: match.OrderNumber,
-          PName: match.PName,
+          ShName: match.ShName,
           PNameRus: match.PNameRus,
           SourceID: match.SourceID,
           BlogID: match.BlogsID || store.state.user.structure_id,
@@ -555,7 +555,7 @@ const fetchGraphics = async () => {
     }));
     ParamOptions.value = responseParams.data.map(factory => ({
       value: factory.Pid,
-      text: factory.PName
+      text: factory.ShName
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
@@ -697,7 +697,7 @@ const onCellValueChanged = async (event) => {
 
   const indexToUpdate = rowData.value.findIndex(row =>
     row.GTName === time &&
-    (locale.value === 'ru' ? row.PNameRus : row.PName) === parameterName &&
+    (locale.value === 'ru' ? row.PNameRus : row.ShName) === parameterName &&
     row.PageId == selectedTab.value
   );
 

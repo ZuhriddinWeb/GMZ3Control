@@ -171,6 +171,7 @@ class ParamsGraphController extends Controller
                     graphic_times.EndTime AS ETime,
                     parameters.Name AS PName,
                     parameters.NameRus AS PNameRus,
+                    parameters.ShortName AS ShName,
                     parameters.Min AS Min,
                     parameters.Max AS Max,
                     groups.Name as GroupName,
@@ -239,7 +240,7 @@ class ParamsGraphController extends Controller
         $idsArray = explode(',', $id);
         return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->whereIn('FactoryStructureID', $idsArray)
-            ->select('parameters.id as Pid', 'parameters.Name as PName', 'graphics_paramenters.*')
+            ->select('parameters.id as Pid', 'parameters.Name as PName','parameters.ShortName as ShName', 'graphics_paramenters.*')
             ->get();
     }
     public function sendTimeUpdate()

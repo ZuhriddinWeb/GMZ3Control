@@ -277,64 +277,73 @@ class ParamsGraphController extends Controller
     {
         $day = $request->input('day');
         $smena = $request->input('smena');
-
-        $graphicsParams = GraphicsParamenters::with(['NumberPage', 'factoryStructure'])
-            ->where('FactoryStructureID', $id)
-            ->get();
-
-        $groupedByPages = $graphicsParams->groupBy('PageId');
-
-        $result = $groupedByPages->map(function ($items, $pageId) use ($day, $smena) {
-            $parameterCount = $items->count();
-            $graphicsIDs = $items->pluck('GrapicsID')->unique()->toArray();
-
-            $graphicTimesQuery = GraphicTimes::whereIn('GraphicsID', $graphicsIDs);
-            if ($day) {
+    
+        $graphicsParams = GraphicsParamenters::where('FactoryStructureID', $id)
+            ->with(['NumberPage', 'factoryStructure']) // Relationship larni chaqiramiz
+            ->get()
+            ->groupBy('PageId');
+    
+        $result = collect();
+    
+        foreach ($graphicsParams as $pageId => $items) {
+            $parameterIDs = $items->pluck('ParametersID');
+            $graphicIDs = $items->pluck('GrapicsID');
+    
+            $parameterCount = $parameterIDs->count();
+            $formulaCount = $items->where('WithFormula', 1)->count();
+            $manualCount = $items->where('WithFormula', 2)->count();
+    
+            $graphicTimesQuery = GraphicTimes::whereIn('GraphicsID', $graphicIDs);
+    
+            if ($smena) {
                 $graphicTimesQuery->where('Change', $smena);
             }
+    
             $graphicTimesCount = $graphicTimesQuery->count();
-
-            $parameterIDs = $items->pluck('ParametersID')->toArray();
-
-            // Kiritilgan barcha qiymatlar (user yoki formula farq qilmaydi)
-            $enteredParamsAll = ValuesParameters::whereIn('ParametersID', $parameterIDs);
-
-            if ($day) {
-                $enteredParamsAll->whereDate('created_at', $day);
-            }
-
-            if ($smena) {
-                $enteredParamsAll->where('ChangeID', $smena);
-            }
-
-            $enteredData = $enteredParamsAll->get();
+    
+            // Yangi: multiplied_formula_count va multiplied_manual_count
+            $multipliedFormulaCount = $formulaCount * $graphicTimesCount;
+            $multipliedManualCount = $manualCount * $graphicTimesCount;
+    
+            $multipliedCount = $parameterCount * $graphicTimesCount;
+    
+            $enteredData = ValuesParameters::whereIn('ParametersID', $parameterIDs)
+                ->whereDate('created_at', $day)
+                ->where('ChangeID', $smena)
+                ->get();
+    
             $enteredCount = $enteredData->count();
-
-            // Faqat user tomonidan kiritilganlardan Creator ni aniqlaymiz
-            $firstCreatorId = optional(
-                $enteredData->firstWhere('Creator', '!=', null)
-            )->Creator;
-
-            $creatorName = $firstCreatorId
-                ? optional(User::find($firstCreatorId))->name
-                : null;
-                $multipliedCount = $parameterCount * $graphicTimesCount;
-            return [
+            $firstCreatorId = optional($enteredData->firstWhere('Creator', '!=', null))->Creator;
+            $creatorName = null;
+    
+            if ($firstCreatorId) {
+                $creatorName = optional(User::find($firstCreatorId))->name;
+            }
+    
+            $percentage = $multipliedCount > 0 ? round(($enteredCount / $multipliedCount) * 100, 2) : 0;
+    
+            $result->push([
                 'page_id' => $pageId,
-                'page_name' => optional($items->first()->NumberPage)->Name,
+                'page_name' => optional(optional($items->first())->NumberPage)->Name,
                 'parameter_count' => $parameterCount,
-                'factory_structure_name' => optional($items->first()->factoryStructure)->Name,
-                'graphics_ids' => $graphicsIDs,
+                'formula_count' => $formulaCount,
+                'manual_count' => $manualCount,
+                'multiplied_formula_count' => $multipliedFormulaCount, // ✅ Yangi
+                'multiplied_manual_count' => $multipliedManualCount,   // ✅ Yangi
+                'factory_structure_name' => optional(optional($items->first())->factoryStructure)->Name,
+                'graphics_ids' => $graphicIDs,
                 'graphic_times_count' => $graphicTimesCount,
-                'multiplied_parameter_count' => $parameterCount * $graphicTimesCount,
+                'multiplied_parameter_count' => $multipliedCount,
                 'kiritilgan' => $enteredCount,
                 'kiritgan_operator' => $creatorName,
-                'foiz' => $multipliedCount > 0 ? round(($enteredCount / $multipliedCount) * 100, 2) : 0,
-            ];
-        });
-
+                'foiz' => $percentage,
+            ]);
+        }
+    
         return response()->json($result->values());
     }
+    
+    
 
 
 

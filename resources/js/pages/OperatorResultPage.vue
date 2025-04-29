@@ -47,6 +47,8 @@ const columnDefs = computed(() => [
   { headerName: t('table.structure'), field: getFielBlog(), flex: 1 },
   { headerName: t('table.namePage'), field: getFieldName(), flex: 1 },
   // { headerName: t('table.numberpage'), field: 'page_id' },
+  { headerName: 'Operator', field: 'multiplied_manual_count' },
+  { headerName:'Formula', field: 'multiplied_formula_count' },
   { headerName: t('table.want'), field: 'multiplied_parameter_count' },
   { headerName: t('table.be'), field: 'kiritilgan' },
   { headerName: '%', field: 'foiz',valueFormatter: (params) => `${params.value}%` },

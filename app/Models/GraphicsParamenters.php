@@ -47,7 +47,7 @@ class GraphicsParamenters extends Model
 }
 public function numberPage()
 {
-    return $this->belongsTo(NumberPage::class, 'PageId', 'id');
+    return $this->belongsTo(NumberPage::class, 'PageId', 'NumberPage');
 }
 public function factoryStructure()
 {

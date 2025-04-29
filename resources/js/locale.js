@@ -182,7 +182,7 @@ export default {
       user:"Foydalanuvchi",
       OrderNumber:"Tartib raqami",
       numberpage:"Tartib raqami",
-      want:"Soni",
+      want:"Umumiy soni",
       be:"Kiritilgan",
       operator:"Operator"
     },

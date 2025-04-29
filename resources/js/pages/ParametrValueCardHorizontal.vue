@@ -79,7 +79,7 @@ onMounted(async () => {
     if (Array.isArray(structureIds) && structureIds.length === 1) {
       // Agar faqat bitta qiymat bo'lsa, avtomatik yo'naltirish
       const singleStructureId = structureIds[0];
-      router.push({ name: 'vparam', params: { id: singleStructureId } });
+      router.push({ name: 'vparamHorizontal', params: { id: singleStructureId } });
     } else if (Array.isArray(structureIds) && structureIds.length > 1) {
       // Agar bir nechta qiymat bo'lsa, ma'lumotlarni olish
       const response = await axios.get(`/structures/${structureIds.join(',')}`);

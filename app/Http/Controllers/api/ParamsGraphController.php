@@ -14,7 +14,6 @@ use App\Models\ValuesParameters;
 use App\Models\User;
 use App\Models\Parameters;
 
-
 class ParamsGraphController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -279,8 +278,17 @@ class ParamsGraphController extends Controller
         $day = $request->input('day');
         $smena = $request->input('smena');
     
+        // Smena vaqt oraliqlari
+        if ($smena == 1) {
+            $startOfShift = Carbon::parse($day)->setTime(8, 0, 0);
+            $endOfShift = Carbon::parse($day)->setTime(19, 59, 59);
+        } else {
+            $startOfShift = Carbon::parse($day)->setTime(20, 0, 0);
+            $endOfShift = Carbon::parse($day)->copy()->addDay()->setTime(7, 59, 59);
+        }
+    
         $graphicsParams = GraphicsParamenters::where('FactoryStructureID', $id)
-            ->with(['NumberPage', 'factoryStructure']) // Relationship larni chaqiramiz
+            ->with(['NumberPage', 'factoryStructure'])
             ->get()
             ->groupBy('PageId');
     
@@ -294,31 +302,64 @@ class ParamsGraphController extends Controller
             $formulaCount = $items->where('WithFormula', 1)->count();
             $manualCount = $items->where('WithFormula', 2)->count();
     
-            $graphicTimesQuery = GraphicTimes::whereIn('GraphicsID', $graphicIDs);
+            $graphicTimes = GraphicTimes::whereIn('GraphicsID', $graphicIDs)
+                ->when($smena, fn($q) => $q->where('Change', $smena))
+                ->get();
     
-            if ($smena) {
-                $graphicTimesQuery->where('Change', $smena);
-            }
+            $graphicTimesIds = $graphicTimes->pluck('id');
+            $graphicTimesCount = $graphicTimes->count();
     
-            $graphicTimesCount = $graphicTimesQuery->count();
-    
-            // Yangi: multiplied_formula_count va multiplied_manual_count
             $multipliedFormulaCount = $formulaCount * $graphicTimesCount;
             $multipliedManualCount = $manualCount * $graphicTimesCount;
-    
             $multipliedCount = $parameterCount * $graphicTimesCount;
     
+            // Kiritilgan ma'lumotlar
             $enteredData = ValuesParameters::whereIn('ParametersID', $parameterIDs)
-                ->whereDate('created_at', $day)
+                ->whereIn('GraphicsTimesID', $graphicTimesIds)
+                ->whereBetween('created_at', [$startOfShift, $endOfShift])
                 ->where('ChangeID', $smena)
                 ->get();
     
-            $enteredCount = $enteredData->count();
-            $firstCreatorId = optional($enteredData->firstWhere('Creator', '!=', null))->Creator;
-            $creatorName = null;
+            // Unikal kirimlar soni
+            $enteredCount = $enteredData
+                ->map(fn ($item) => $item->ParametersID . '-' . $item->GraphicsTimesID)
+                ->unique()
+                ->count();
     
-            if ($firstCreatorId) {
-                $creatorName = optional(User::find($firstCreatorId))->name;
+            $firstCreatorId = optional($enteredData->firstWhere('Creator', '!=', null))->Creator;
+            $creatorName = $firstCreatorId ? optional(User::find($firstCreatorId))->name : null;
+    
+            $langField = app()->getLocale() === 'ru' ? 'NameRus' : 'Name';
+            $allParams = \App\Models\Parameters::whereIn('id', $parameterIDs)->get(['id', $langField]);
+            $parameterNames = $allParams->pluck($langField)->values();
+    
+            $enteredParamIds = $enteredData->pluck('ParametersID')->unique();
+            $inputedParamNames = $allParams->whereIn('id', $enteredParamIds)->pluck($langField)->values();
+            $notInputedParamNames = $allParams->whereNotIn('id', $enteredParamIds)->pluck($langField)->values();
+    
+            $inputedParamsWithTimes = [];
+            $notInputedParamsWithTimes = [];
+    
+            foreach ($allParams as $param) {
+                $paramId = $param->id;
+                $paramName = $param->{$langField};
+    
+                foreach ($graphicTimes as $graphicTime) {
+                    $recordExists = $enteredData->where('ParametersID', $paramId)
+                        ->where('GraphicsTimesID', $graphicTime->id)
+                        ->isNotEmpty();
+    
+                    $entry = [
+                        'param' => $paramName,
+                        'time' => $graphicTime->Name
+                    ];
+    
+                    if ($recordExists) {
+                        $inputedParamsWithTimes[] = $entry;
+                    } else {
+                        $notInputedParamsWithTimes[] = $entry;
+                    }
+                }
             }
     
             $percentage = $multipliedCount > 0 ? round(($enteredCount / $multipliedCount) * 100, 2) : 0;
@@ -327,10 +368,15 @@ class ParamsGraphController extends Controller
                 'page_id' => $pageId,
                 'page_name' => optional(optional($items->first())->NumberPage)->Name,
                 'parameter_count' => $parameterCount,
+                'parameter_names' => $parameterNames,
+                'inputed_param_names' => $inputedParamNames,
+                'not_inputed_param_names' => $notInputedParamNames,
+                'inputed_param_with_times' => $inputedParamsWithTimes,
+                'not_inputed_param_with_times' => $notInputedParamsWithTimes,
                 'formula_count' => $formulaCount,
                 'manual_count' => $manualCount,
-                'multiplied_formula_count' => $multipliedFormulaCount, // ✅ Yangi
-                'multiplied_manual_count' => $multipliedManualCount,   // ✅ Yangi
+                'multiplied_formula_count' => $multipliedFormulaCount,
+                'multiplied_manual_count' => $multipliedManualCount,
                 'factory_structure_name' => optional(optional($items->first())->factoryStructure)->Name,
                 'graphics_ids' => $graphicIDs,
                 'graphic_times_count' => $graphicTimesCount,
@@ -343,6 +389,15 @@ class ParamsGraphController extends Controller
     
         return response()->json($result->values());
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
 

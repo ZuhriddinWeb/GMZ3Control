@@ -27,22 +27,7 @@
     color: white;
   } */
 
-.cell-green {
-    background-color: rgb(211, 207, 207);
-    color: black;
-}
 
-.cell-yellow {
-    background-color: rgb(22 163 74);
-    /* yoki sariqroq rang tanlasa bo’ladi */
-    color: black;
-}
-
-.cell-pink {
-    background-color: rgb(234 179 8);
-    /* sariq rang */
-    color: black;
-}
 
 
 .ag-row-hover {

@@ -5,15 +5,25 @@
         <div
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4">
           <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
-            class="p-4 border-2 bg-white shadow-lg border-slate-400 cursor-pointer"
-            :style="{ backgroundImage: `url('/log.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }">
+            class="p-4 border-2 bg-white shadow-xl border-slate-400 cursor-pointer">
             <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start">
               <span class="material-symbols-outlined w-1">circles_ext</span>
               <span class="flex-grow leading-none w-5/6">{{ locale === 'ru' ? card.NameRus : card.Name }}</span>
             </h5>
-            <VaButton @click="goToCardDetail(card.id)" preset="primary" class="mr-6  mt-8" round border-color="primary">
-              {{ t('modals.viewPage') }}
-            </VaButton>
+            <div class="flex justify-between">
+              <div>
+                <VaButton @click="goToCardDetail(card.id)" preset="primary" class="mr-6  mt-8" round
+                  border-color="primary">
+                  {{ t('modals.viewPage') }}
+                </VaButton>
+              </div>
+              <div class="flex justify-end">
+                <VaButton @click="goToCardDetail(card.id)" round icon="va-check" class="mr-6  mt-8" color="success">
+                </VaButton>
+                <VaButton @click="goToCardDetail(card.id)" round icon="clear" class="mr-6  mt-8" color="danger">
+                </VaButton>
+              </div>
+            </div>
           </div>
         </div>
       </div>

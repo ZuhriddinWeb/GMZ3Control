@@ -53,6 +53,14 @@ const columnDefs = computed(() => [
   { headerName: t('table.be'), field: 'kiritilgan' },
   { headerName: '%', field: 'foiz',valueFormatter: (params) => `${params.value}%` },
   { headerName: t('table.operator'), field: 'kiritgan_operator' },
+  // {
+  //   cellClass: ['px-0'],
+  //   headerName: "",
+  //   field: "",
+  //   width: 70,
+  //   cellRenderer: ViewResultOperators,
+  // },
+
 
 ]);
 const formatted = computed(() => {

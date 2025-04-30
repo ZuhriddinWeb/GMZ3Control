@@ -215,7 +215,7 @@ const columnDefs = computed(() => {
     }
   ];
 
-  const uniqueParameters = [...new Set(rowData.value.map(row => locale.value === 'ru' ? row.PNameRus : row.ShName))];
+  const uniqueParameters = [...new Set(rowData.value.map(row => locale.value === 'ru' ? row.PNameRus : row.PName))];
 
   const parameterColumns = uniqueParameters.map(param => ({
     headerName: param,
@@ -268,7 +268,7 @@ const getColumnDefsForGroup = (groupData) => {
 
   // 🟢 Faqat ushbu groupData uchun unikal parametrlar
   const uniqueParameters = [
-    ...new Set(groupData.map(row => (locale.value === 'ru' ? row.PNameRus : row.ShName)))
+    ...new Set(groupData.map(row => (locale.value === 'ru' ? row.PNameRus : row.PName)))
   ];
 
   const parameterColumns = uniqueParameters.map(param => ({
@@ -349,14 +349,14 @@ const getColumnDefsForGroup = (groupData) => {
 // Ma'lumotlarni har bir guruhga mos ravishda qaytarish
 const getPivotedRowDataForGroup = (groupData) => {
   const times = [...new Set(groupData.map(r => r.GTName))];
-  const parameters = [...new Set(groupData.map(r => locale.value === 'ru' ? r.PNameRus : r.ShName))];
+  const parameters = [...new Set(groupData.map(r => locale.value === 'ru' ? r.PNameRus : r.PName))];
 
   return times.map(time => {
     const row = { time };
     parameters.forEach(param => {
       const match = groupData.find(r =>
         r.GTName === time &&
-        (locale.value === 'ru' ? r.PNameRus : r.ShName) === param
+        (locale.value === 'ru' ? r.PNameRus : r.PName) === param
       );
       if (match) {
         row[param] = match.Value;
@@ -371,7 +371,7 @@ const getPivotedRowDataForGroup = (groupData) => {
           GrapicsID: match.GrapicsID,
           PageId: match.PageId,
           OrderNumber: match.OrderNumber,
-          ShName: match.ShName,
+          PName: match.PName,
           PNameRus: match.PNameRus,
           SourceID: match.SourceID,
           BlogID: match.BlogsID || store.state.user.structure_id,
@@ -555,7 +555,7 @@ const fetchGraphics = async () => {
     }));
     ParamOptions.value = responseParams.data.map(factory => ({
       value: factory.Pid,
-      text: factory.ShName
+      text: factory.PName
     }));
   } catch (error) {
     console.error('Error fetching graphics data:', error);
@@ -697,7 +697,7 @@ const onCellValueChanged = async (event) => {
 
   const indexToUpdate = rowData.value.findIndex(row =>
     row.GTName === time &&
-    (locale.value === 'ru' ? row.PNameRus : row.ShName) === parameterName &&
+    (locale.value === 'ru' ? row.PNameRus : row.PName) === parameterName &&
     row.PageId == selectedTab.value
   );
 
@@ -723,6 +723,19 @@ const onCellValueChanged = async (event) => {
 
   try {
     await saveDataToServer(savePayload, selectedTab.value, groupId);
+    const nextColIndex = event.column.getInstanceId() + 1;
+    const allColumns = event.columnApi.getAllDisplayedColumns();
+    const nextColumn = allColumns[nextColIndex];
+
+    if (nextColumn) {
+      const rowIndex = event.rowIndex;
+      const colId = nextColumn.getColId();
+
+      const api = gridApiMap.value[groupId];
+      if (api) {
+        api.setFocusedCell(rowIndex, colId);
+      }
+    }
   } catch (error) {
     console.error("❌ Saqlashda xatolik:", error);
   }

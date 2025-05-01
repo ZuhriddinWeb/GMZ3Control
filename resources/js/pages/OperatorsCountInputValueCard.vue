@@ -1,16 +1,19 @@
 <template>
-  <div class="grid grid-rows-[55px,1fr]">
+  <div class="grid grid-rows-[55px,1fr] bg-stone-100">
     <div class="flex justify-between">
       <div class="w-4/6">
         <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-6 shadow-sm border border-slate-200 mt-24 p-4">
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 my-6 shadow-sm border border-slate-200 mt-24 p-4">
           <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
-            class="relative p-4 border-2 bg-white shadow-xl border-slate-400 cursor-pointer">
+            class="relative p-4 border-2 bg-white shadow-lg border-slate-400 cursor-pointer">
 
             <!-- Card title -->
-            <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start ">
-              <span class="material-symbols-outlined w-1">circles_ext</span>
-              <span class="flex-grow leading-none w-5/6">{{ locale === 'ru' ? card.NameRus : card.Name }}</span>
+            <h5 class="mb-2 text-slate-800  font-semibold flex items-center ">
+              <span class="material-symbols-outlined w-1">
+                factory
+              </span>
+              <span class="block flex-grow leading-none w-5/6" v-html="formatName(card)"></span>
+              <!-- <span class="flex-grow leading-none w-5/6 truncate-text">{{ locale === 'ru' ? card.NameRus : card.Name }}</span> -->
             </h5>
 
             <div class="flex justify-between">
@@ -18,9 +21,9 @@
 
                 <div class="flex justify-end">
                   <div>
-                    <VaButton @click="goToCardDetail(card.id)" preset="primary" icon="va-warning" class="mr-2  mt-8" round
-                      border-color="primary">
-                     
+                    <VaButton @click="goToCardDetail(card.id)" preset="primary" icon="va-warning" class="mr-2  mt-8"
+                      round border-color="primary">
+
                     </VaButton>
                     <VaButton @click="goToCardDetailInputed(card.id)" round icon="va-check" class="mr-2  mt-8"
                       color="success">
@@ -36,7 +39,7 @@
                       class="absolute top-2 right-2 w-24 grid grid-cols-[min-content,1fr] gap-x-2 gap-y-1 text-xl font-semibold text-right">
                       <span class="text-green-600 material-symbols-outlined ">edit</span>
                       <span class="text-green-600 text-base">{{ card.filled }}</span>
-                        
+
                       <span class="material-symbols-outlined text-red-600">warning</span>
                       <span class="text-red-600 text-base">{{ card.notFilled }}</span>
 
@@ -72,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide, computed,onUnmounted  } from 'vue';
+import { ref, reactive, onMounted, provide, computed, onUnmounted } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import { useI18n } from 'vue-i18n';
@@ -100,6 +103,17 @@ function goToCardDetailInputed(cardId) {
 
 function goToCardDetailNotInputed(cardId) {
   router.push({ name: 'OperatorDetail', params: { id: cardId }, query: { type: 'not_inputed' } });
+}
+function formatName(card) {
+  const name = locale.value === 'ru' ? card.NameRus : card.Name;
+  const words = name.split(' ');
+  const grouped = [];
+
+  for (let i = 0; i < words.length; i += 3) {
+    grouped.push(words.slice(i, i + 3).join(' '));
+  }
+
+  return grouped.join('<br>');
 }
 
 const filteredData = computed(() => {
@@ -210,7 +224,13 @@ onMounted(async () => {
     } else if (Array.isArray(structureIds) && structureIds.length > 1) {
       // Agar bir nechta qiymat bo'lsa, ma'lumotlarni olish
       const response = await axios.get(`/structures/${structureIds.join(',')}`);
-      rowData.value = response.data;
+      rowData.value = response.data.map(item => ({
+        ...item,
+        filled: 0,
+        notFilled: 0,
+        formula: 0,
+        manual: 0
+      }));
     } else {
       console.warn('structure_id bo\'sh yoki noto\'g\'ri formatda');
     }
@@ -220,7 +240,7 @@ onMounted(async () => {
   await updateChart();
   refreshInterval = setInterval(() => {
     updateChart();
-  }, 600000); 
+  }, 600000);
 });
 
 const currentLanguageLabel = computed(() => {
@@ -235,6 +255,15 @@ onUnmounted(() => {
 
 
 <style>
+.truncate-text {
+  display: inline-block;
+  max-width: calc(100% - 10px); /* icon va oraliq uchun */
+  overflow-wrap: break-word;     /* so‘z bo‘yicha bo‘lish */
+  word-break: break-word;        /* so‘z ichidan ham bo‘lishi mumkin */
+  white-space: normal;           /* bitta qatorda turmasin */
+  line-height: 1.2;
+}
+
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;

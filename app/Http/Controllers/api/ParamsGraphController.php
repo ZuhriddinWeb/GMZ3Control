@@ -14,6 +14,7 @@ use App\Models\ValuesParameters;
 use App\Models\User;
 use App\Models\Parameters;
 
+
 class ParamsGraphController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -239,7 +240,7 @@ class ParamsGraphController extends Controller
         $idsArray = explode(',', $id);
         return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
             ->whereIn('FactoryStructureID', $idsArray)
-            ->select('parameters.id as Pid', 'parameters.Name as PName','parameters.ShortName as ShName', 'graphics_paramenters.*')
+            ->select('parameters.id as Pid', 'parameters.Name as PName', 'parameters.ShortName as ShName', 'graphics_paramenters.*')
             ->get();
     }
     public function sendTimeUpdate()
@@ -278,15 +279,6 @@ class ParamsGraphController extends Controller
         $day = $request->input('day');
         $smena = $request->input('smena');
     
-        // Smena vaqt oraliqlari
-        if ($smena == 1) {
-            $startOfShift = Carbon::parse($day)->setTime(8, 0, 0);
-            $endOfShift = Carbon::parse($day)->setTime(19, 59, 59);
-        } else {
-            $startOfShift = Carbon::parse($day)->setTime(20, 0, 0);
-            $endOfShift = Carbon::parse($day)->copy()->addDay()->setTime(7, 59, 59);
-        }
-    
         $graphicsParams = GraphicsParamenters::where('FactoryStructureID', $id)
             ->with(['NumberPage', 'factoryStructure'])
             ->get()
@@ -303,39 +295,27 @@ class ParamsGraphController extends Controller
             $manualCount = $items->where('WithFormula', 2)->count();
     
             $graphicTimes = GraphicTimes::whereIn('GraphicsID', $graphicIDs)
-                ->when($smena, fn($q) => $q->where('Change', $smena))
+                ->when($smena, fn($q) => $q->where('Change',  $smena))
                 ->get();
     
-            $graphicTimesIds = $graphicTimes->pluck('id');
             $graphicTimesCount = $graphicTimes->count();
+            $graphicTimeIds = $graphicTimes->pluck('id');
     
             $multipliedFormulaCount = $formulaCount * $graphicTimesCount;
             $multipliedManualCount = $manualCount * $graphicTimesCount;
             $multipliedCount = $parameterCount * $graphicTimesCount;
     
-            // Kiritilgan ma'lumotlar
+            // kiritilgan ma'lumotlar
             $enteredData = ValuesParameters::whereIn('ParametersID', $parameterIDs)
-                ->whereIn('GraphicsTimesID', $graphicTimesIds)
-                ->whereBetween('created_at', [$startOfShift, $endOfShift])
+                ->whereDate('created_at', $day)
                 ->where('ChangeID', $smena)
                 ->get();
-    
-            // Unikal kirimlar soni
-            $enteredCount = $enteredData
-                ->map(fn ($item) => $item->ParametersID . '-' . $item->GraphicsTimesID)
-                ->unique()
-                ->count();
     
             $firstCreatorId = optional($enteredData->firstWhere('Creator', '!=', null))->Creator;
             $creatorName = $firstCreatorId ? optional(User::find($firstCreatorId))->name : null;
     
             $langField = app()->getLocale() === 'ru' ? 'NameRus' : 'Name';
             $allParams = \App\Models\Parameters::whereIn('id', $parameterIDs)->get(['id', $langField]);
-            $parameterNames = $allParams->pluck($langField)->values();
-    
-            $enteredParamIds = $enteredData->pluck('ParametersID')->unique();
-            $inputedParamNames = $allParams->whereIn('id', $enteredParamIds)->pluck($langField)->values();
-            $notInputedParamNames = $allParams->whereNotIn('id', $enteredParamIds)->pluck($langField)->values();
     
             $inputedParamsWithTimes = [];
             $notInputedParamsWithTimes = [];
@@ -345,16 +325,16 @@ class ParamsGraphController extends Controller
                 $paramName = $param->{$langField};
     
                 foreach ($graphicTimes as $graphicTime) {
-                    $recordExists = $enteredData->where('ParametersID', $paramId)
-                        ->where('GraphicsTimesID', $graphicTime->id)
-                        ->isNotEmpty();
+                    $exists = $enteredData->contains(function ($data) use ($paramId, $graphicTime) {
+                        return $data->ParametersID == $paramId && $data->TimeStr == $graphicTime->Name;
+                    });
     
                     $entry = [
                         'param' => $paramName,
-                        'time' => $graphicTime->Name
+                        'time' => $graphicTime->Name,
                     ];
     
-                    if ($recordExists) {
+                    if ($exists) {
                         $inputedParamsWithTimes[] = $entry;
                     } else {
                         $notInputedParamsWithTimes[] = $entry;
@@ -362,44 +342,36 @@ class ParamsGraphController extends Controller
                 }
             }
     
-            $percentage = $multipliedCount > 0 ? round(($enteredCount / $multipliedCount) * 100, 2) : 0;
+            $percentage = $multipliedCount > 0 ? round((count($inputedParamsWithTimes) / $multipliedCount) * 100, 2) : 0;
     
             $result->push([
                 'page_id' => $pageId,
                 'page_name' => optional(optional($items->first())->NumberPage)->Name,
                 'parameter_count' => $parameterCount,
-                'parameter_names' => $parameterNames,
-                'inputed_param_names' => $inputedParamNames,
-                'not_inputed_param_names' => $notInputedParamNames,
-                'inputed_param_with_times' => $inputedParamsWithTimes,
-                'not_inputed_param_with_times' => $notInputedParamsWithTimes,
                 'formula_count' => $formulaCount,
                 'manual_count' => $manualCount,
                 'multiplied_formula_count' => $multipliedFormulaCount,
                 'multiplied_manual_count' => $multipliedManualCount,
+                'multiplied_parameter_count' => $multipliedCount,
                 'factory_structure_name' => optional(optional($items->first())->factoryStructure)->Name,
                 'graphics_ids' => $graphicIDs,
                 'graphic_times_count' => $graphicTimesCount,
-                'multiplied_parameter_count' => $multipliedCount,
-                'kiritilgan' => $enteredCount,
+                'kiritilgan' => count($inputedParamsWithTimes),
                 'kiritgan_operator' => $creatorName,
                 'foiz' => $percentage,
+                'inputed_param_with_times' => $inputedParamsWithTimes,
+                'not_inputed_param_with_times' => $notInputedParamsWithTimes,
             ]);
         }
     
         return response()->json($result->values());
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
 
 
 

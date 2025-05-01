@@ -9,7 +9,7 @@
 
             <!-- Card title -->
             <h5 class="mb-2 text-slate-800 text-xl font-semibold flex items-start ">
-              <span class="material-symbols-outlined w-1 mr-3">circles_ext</span>
+              <span class="material-symbols-outlined w-1">circles_ext</span>
               <span class="flex-grow leading-none w-5/6">{{ locale === 'ru' ? card.NameRus : card.Name }}</span>
             </h5>
 
@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, provide, computed } from 'vue';
+import { ref, reactive, onMounted, provide, computed,onUnmounted  } from 'vue';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import { useI18n } from 'vue-i18n';
@@ -192,7 +192,7 @@ async function updateChart() {
   }
 }
 
-
+let refreshInterval = null;
 onMounted(async () => {
   // Load language preference from localStorage
   const savedLocale = localStorage.getItem('locale');
@@ -218,10 +218,18 @@ onMounted(async () => {
     console.error('Error fetching data:', error);
   }
   await updateChart();
+  refreshInterval = setInterval(() => {
+    updateChart();
+  }, 600000); 
 });
 
 const currentLanguageLabel = computed(() => {
   return locale.value === 'uz' ? 'Русский' : 'O‘zbek';
+});
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
 });
 </script>
 

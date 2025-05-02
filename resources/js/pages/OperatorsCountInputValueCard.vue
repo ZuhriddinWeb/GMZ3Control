@@ -44,7 +44,7 @@
                     <!-- Card title -->
                     <!-- Card title -->
                     <div
-                      class="absolute top-2 right-2 w-24 grid grid-cols-[min-content,1fr] gap-x-2 gap-y-1 text-xl font-semibold text-right">
+                      class="absolute top-2 right-2 w-20 grid grid-cols-[min-content,1fr] gap-x-2 gap-y-1 text-xl font-semibold text-right">
                       <span class="text-green-600 material-symbols-outlined ">edit</span>
                       <span class="text-green-600 text-base">{{ card.filled }}</span>
 

@@ -29,6 +29,7 @@
         "devextreme-vue": "^24.1.7",
         "exceljs": "^4.4.0",
         "file-saver": "^2.0.5",
+        "highcharts": "^12.2.0",
         "highcharts-vue": "^2.0.1",
         "html2pdf.js": "^0.10.3",
         "material-icons": "^1.13.12",

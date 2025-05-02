@@ -124,8 +124,8 @@ function formatName(card) {
   const words = name.split(' ');
   const grouped = [];
 
-  for (let i = 0; i < words.length; i += 3) {
-    grouped.push(words.slice(i, i + 3).join(' '));
+  for (let i = 0; i < words.length; i += 2) {
+    grouped.push(words.slice(i, i + 2).join(' '));
   }
 
   return grouped.join('<br>');

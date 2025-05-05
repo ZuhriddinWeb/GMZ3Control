@@ -11,7 +11,7 @@
         <div
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 my-6 shadow-sm border border-slate-200 mt-24 p-4">
           <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
-            :class="['relative p-4 border-2 bg-white shadow-lg border-slate-300 cursor-pointer rounded transition-opacity duration-300', card.loading ? 'opacity-60 pointer-events-none' : 'opacity-100']">
+            :class="['relative p-6 border-2 bg-white shadow-lg border-slate-300 cursor-pointer rounded transition-opacity duration-300', card.loading ? 'opacity-60 pointer-events-none' : 'opacity-100']">
             <div v-if="card.loading" class="absolute inset-0 flex justify-center items-center bg-white/80 z-10 rounded">
               <VaProgressCircle indeterminate size="medium" />
             </div>
@@ -44,7 +44,7 @@
                     <!-- Card title -->
                     <!-- Card title -->
                     <div
-                      class="absolute top-2 right-2 w-20 grid grid-cols-[min-content,1fr] gap-x-2 gap-y-1 text-xl font-semibold text-right">
+                      class="absolute top-1 right-2 w-20 grid grid-cols-[min-content,1fr] gap-x-2 gap-y-1 font-semibold text-right ">
                       <span class="text-green-600 material-symbols-outlined ">edit</span>
                       <span class="text-green-600 text-base">{{ card.filled }}</span>
 
@@ -56,6 +56,14 @@
 
                       <span class="material-symbols-outlined text-teal-600">function</span>
                       <span class="text-teal-600 text-base">{{ card.formula }}</span>
+                      <span class="material-symbols-outlined text-purple-600">%</span>
+                      <span class="text-purple-600 text-base">
+                        {{
+                          card.filled + card.notFilled > 0
+                            ? Math.round((card.filled / (card.filled + card.notFilled)) * 100)
+                        : 0
+                        }}
+                      </span>
                     </div>
 
                     <!-- <div class="absolute right-10 flex gap-3">

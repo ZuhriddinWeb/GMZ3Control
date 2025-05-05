@@ -1,37 +1,26 @@
 <template>
   <div class="grid grid-rows-[55px,1fr] bg-stone-100">
-    <div class="flex flex-row-reverse justify-between w-full">
-      <div class="w-[200] mt-28 mr-2">
-        <VueShiftCalendar v-model="day" class=" w-full  mr-2  shadow-sm">
-          <VaInput v-model="formatted" label="Smena" readonly />
-        </VueShiftCalendar>
-      </div>
-
-      <div class="flex-1 w-5/6">
-        <div
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 my-6 shadow-sm border border-slate-200 mt-24 p-4">
-          <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
-            :class="['relative p-6 border-2 bg-white shadow-lg border-slate-300 cursor-pointer rounded transition-opacity duration-300', card.loading ? 'opacity-60 pointer-events-none' : 'opacity-100']">
-            <div v-if="card.loading" class="absolute inset-0 flex justify-center items-center bg-white/80 z-10 rounded">
-              <VaProgressCircle indeterminate size="medium" />
-            </div>
-            <!-- Card title -->
-            <h5 class="mb-2 text-slate-800  font-semibold flex items-center ">
-              <span class="material-symbols-outlined w-1">
-                factory
-              </span>
-              <span class="block flex-grow leading-none w-5/6" v-html="formatName(card)"></span>
-              <!-- <span class="flex-grow leading-none w-5/6 truncate-text">{{ locale === 'ru' ? card.NameRus : card.Name }}</span> -->
-            </h5>
-
-            <div class="flex justify-between">
-              <div class="flex justify-between flex-col">
-
-                <div class="flex justify-end">
+    <div class="flex justify-between w-full mt-6 px-4">
+      <div class="flex flex-col w-full">
+        <div class="w-full">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 my-6 shadow-sm border border-slate-200 mt-16 p-4">
+            <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
+              :class="['relative p-1 border-2 bg-white shadow-lg border-slate-300 cursor-pointer rounded transition-opacity duration-300', card.loading ? 'opacity-60 pointer-events-none' : 'opacity-100']">
+              <div v-if="card.loading"
+                class="absolute inset-0 flex justify-center items-center bg-white/80 z-10 rounded">
+                <VaProgressCircle indeterminate size="medium" />
+              </div>
+              <div class="flex justify-between">
+                <div class="flex flex-col w-9/12">
                   <div>
+                    <h5 class="mb-2 text-slate-800  font-semibold flex items-center p-2">
+                      <span class="block flex-grow leading-none " v-html="formatName(card)"></span>
+                    </h5>
+                  </div>
+                 <div>
+                  <div class="p-2">
                     <VaButton @click="goToCardDetail(card.id)" preset="primary" icon="va-warning" class="mr-2  mt-8"
                       round border-color="primary">
-
                     </VaButton>
                     <VaButton @click="goToCardDetailInputed(card.id)" round icon="va-check" class="mr-2  mt-8"
                       color="success">
@@ -40,53 +29,49 @@
                       color="danger">
                     </VaButton>
                   </div>
-                  <div>
-                    <!-- Card title -->
-                    <!-- Card title -->
-                    <div
-                      class="absolute top-1 right-2 w-20 grid grid-cols-[min-content,1fr] gap-x-2 gap-y-1 font-semibold text-right ">
-                      <span class="text-green-600 material-symbols-outlined ">edit</span>
-                      <span class="text-green-600 text-base">{{ card.filled }}</span>
-
-                      <span class="material-symbols-outlined text-red-600">warning</span>
-                      <span class="text-red-600 text-base">{{ card.notFilled }}</span>
-
-                      <span class="material-symbols-outlined text-blue-600">support_agent</span>
-                      <span class="text-blue-600 text-base">{{ card.manual }}</span>
-
-                      <span class="material-symbols-outlined text-teal-600">function</span>
-                      <span class="text-teal-600 text-base">{{ card.formula }}</span>
-                      <span class="material-symbols-outlined text-purple-600">%</span>
-                      <span class="text-purple-600 text-base">
-                        {{
-                          card.filled + card.notFilled > 0
-                            ? Math.round((card.filled / (card.filled + card.notFilled)) * 100)
-                        : 0
-                        }}
-                      </span>
-                    </div>
-
-                    <!-- <div class="absolute right-10 flex gap-3">
-                      <VaButton @click="goToCardDetailInputed(card.id)" round icon="va-check" class="mr-2  mt-8"
-                        color="success">
-                      </VaButton>
-                      <VaButton @click="goToCardDetailNotInputed(card.id)" round icon="clear" class="mr-2  mt-8"
-                        color="danger">
-                      </VaButton>
-
-                    </div> -->
-                  </div>
+                 </div>
                 </div>
+                <div class="grid grid-cols-[min-content,auto] gap-x-2 gap-y-1 font-semibold m-2">
+                  <span class="text-green-600 material-symbols-outlined text-lg mr-3">edit</span>
+                  <span class="text-green-600">{{ card.filled }}</span>
+
+                  <span class="text-red-600 material-symbols-outlined text-lg mr-3">warning</span>
+                  <span class="text-red-600">{{ card.notFilled }}</span>
+
+                  <span class="text-blue-600 material-symbols-outlined text-lg mr-3">support_agent</span>
+                  <span class="text-blue-600">{{ card.manual }}</span>
+
+                  <span class="text-teal-600 material-symbols-outlined text-lg mr-3">function</span>
+                  <span class="text-teal-600">{{ card.formula }}</span>
+
+                  <span class="text-purple-600 material-symbols-outlined text-lg mr-3">%</span>
+                  <span class="text-purple-600">
+                    {{
+                      card.filled + card.notFilled > 0
+                        ? Math.round((card.filled / (card.filled + card.notFilled)) * 100)
+                        : 0
+                    }}
+                  </span>
+                </div>
+
               </div>
             </div>
+
+          </div>
+
+        </div>
+        <div class="p-6 bg-white border border-slate-200 shadow-lg mt-2 mx-3 rounded-lg">
+          <!-- <h2 class="text-lg font-semibold mb-4 text-center">Bo‘limlar bo‘yicha parametrlar holati</h2> -->
+          <div style="height: 300px;">
+            <canvas id="barChart"></canvas>
           </div>
         </div>
       </div>
-
-      <!-- <div class="flex flex-col justify-between w-1/6 h-screen bg-neutral-200 mt-28">
-        <div id="container" class="w-full h-28 items-start"></div>
-
-      </div> -->
+      <div class="w-[200] mt-20 mr-2">
+        <VueShiftCalendar v-model="day" class=" w-full  mr-2  shadow-lg">
+          <VaInput v-model="formatted" label="Smena" readonly />
+        </VueShiftCalendar>
+      </div>
     </div>
   </div>
 </template>
@@ -94,7 +79,7 @@
 <script setup>
 import { ref, reactive, onMounted, provide, computed, onUnmounted, watch } from 'vue';
 import axios from 'axios';
-
+import { nextTick } from 'vue';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaCard } from 'vuestic-ui';
@@ -105,6 +90,10 @@ const day = ref({ smena: null, day: null });
 import store from '../store';
 const filterType = computed(() => route.query.type); // 'inputed' yoki 'not_inputed'
 import { useRouter } from 'vue-router'
+import Chart from 'chart.js/auto';
+
+let barChartInstance = null;
+
 const router = useRouter()
 const rowData = ref([]);
 const gridApi = ref(null);
@@ -132,8 +121,8 @@ function formatName(card) {
   const words = name.split(' ');
   const grouped = [];
 
-  for (let i = 0; i < words.length; i += 2) {
-    grouped.push(words.slice(i, i + 2).join(' '));
+  for (let i = 0; i < words.length; i += 3) {
+    grouped.push(words.slice(i, i + 3).join(' '));
   }
 
   return grouped.join('<br>');
@@ -229,8 +218,65 @@ async function updateChart() {
       }
     }
   }
+  await nextTick(); // chart DOM mavjud bo'lishini kutish
+  renderBarChart(); // shundan keyin chizish
 }
+function renderBarChart() {
+  const ctx = document.getElementById('barChart');
+  if (!ctx) return;
 
+  if (barChartInstance) {
+    barChartInstance.destroy(); // eski chartni tozalash
+  }
+
+  const labels = rowData.value.map(card => locale.value === 'ru' ? card.NameRus : card.Name);
+  const filledData = rowData.value.map(card => card.filled);
+  const notFilledData = rowData.value.map(card => card.notFilled);
+
+  barChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: t('To‘ldirilgan'),
+          data: filledData,
+          backgroundColor: 'rgba(34,197,94,0.6)', // green
+        },
+        {
+          label: t('To‘ldirilmagan'),
+          data: notFilledData,
+          backgroundColor: 'rgba(239,68,68,0.6)', // red
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: t('Bo‘limlar bo‘yicha parametrlar holati')
+        },
+        legend: {
+          position: 'top'
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false,
+            maxRotation: 90,
+            minRotation: 45
+          }
+        },
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
 
 let refreshInterval = null;
 onMounted(async () => {
@@ -332,5 +378,9 @@ onUnmounted(() => {
 .container {
   display: flex;
   justify-content: center;
+}
+
+#barChart {
+  max-height: 100%;
 }
 </style>

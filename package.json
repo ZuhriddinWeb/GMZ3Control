@@ -23,7 +23,7 @@
         "@vuestic/tailwind": "^0.1.5",
         "ag-grid-vue3": "^31.3.2",
         "animejs": "^3.2.2",
-        "chart.js": "^4.4.3",
+        "chart.js": "^4.4.9",
         "date-fns": "^3.6.0",
         "devextreme": "^24.1.7",
         "devextreme-vue": "^24.1.7",

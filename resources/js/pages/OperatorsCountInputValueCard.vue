@@ -280,6 +280,9 @@ function renderBarChart() {
 
 let refreshInterval = null;
 onMounted(async () => {
+  document.body.style.transform = 'scale(0.9)';
+  document.body.style.transformOrigin = 'top left';
+  document.body.style.width = '111.11%'; // (1 / 0.75) * 100
   const savedLocale = localStorage.getItem('locale');
   if (savedLocale) {
     locale.value = savedLocale;

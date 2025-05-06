@@ -61,7 +61,7 @@
           </div>
 
         </div>
-        <div class="p-6 bg-white border border-slate-200 shadow-lg mt-2 mx-3 rounded-lg">
+        <div class="p-6 bg-white border-sm border-slate-200 shadow-lg mt-2 mx-3 rounded-lg">
           <!-- <h2 class="text-lg font-semibold mb-4 text-center">Bo‘limlar bo‘yicha parametrlar holati</h2> -->
           <div style="height: 280px;">
             <canvas id="barChart"></canvas>
@@ -202,50 +202,43 @@ async function updateChart() {
     totalManual.value = pageStats.manual;
 
   } else {
-    const { data } = await axios.get('/structure');
-    for (const sex of data) {
-      const res = await axios.get(`/getRowPageResult/${sex.id}`, {
-        params: { day: selectedDate, smena: selectedSmena }
-      });
+  let total = 0;
+  let filled = 0;
 
-      const total = res.data.reduce((sum, row) => sum + row.multiplied_parameter_count, 0);
-      const filled = res.data.reduce((sum, row) => sum + row.kiritilgan, 0);
-      const formula = res.data.reduce((sum, row) => sum + row.multiplied_formula_count, 0);
-      const manual = res.data.reduce((sum, row) => sum + row.multiplied_manual_count, 0);
-      const notFilled = total - filled;
+  const { data } = await axios.get('/structure');
+  for (const sex of data) {
+    const res = await axios.get(`/getRowPageResult/${sex.id}`, {
+      params: { day: selectedDate, smena: selectedSmena }
+    });
 
-      totalFormula.value += formula;
-      totalManual.value += manual;
+    const totalCount = res.data.reduce((sum, row) => sum + row.multiplied_parameter_count, 0);
+    const filledCount = res.data.reduce((sum, row) => sum + row.kiritilgan, 0);
+    const formula = res.data.reduce((sum, row) => sum + row.multiplied_formula_count, 0);
+    const manual = res.data.reduce((sum, row) => sum + row.multiplied_manual_count, 0);
+    const notFilled = totalCount - filledCount;
 
-      const card = rowData.value.find(c => c.id === sex.id);
-      if (card) {
-        card.loading = true;
-        card.filled = filled;
-        card.notFilled = notFilled;
-        card.formula = formula;
-        card.manual = manual;
-        card.loading = false;
-      }
+    total += totalCount;
+    filled += filledCount;
+    totalFormula.value += formula;
+    totalManual.value += manual;
+
+    const card = rowData.value.find(c => c.id === sex.id);
+    if (card) {
+      card.loading = true;
+      card.filled = filledCount;
+      card.notFilled = notFilled;
+      card.formula = formula;
+      card.manual = manual;
+      card.loading = false;
     }
   }
+
+  renderPieChart(filled, total); // faqat 1 marta chaqiriladi
+}
+
   await nextTick(); // chart DOM mavjud bo'lishini kutish
   renderBarChart(); // shundan keyin chizish
-  if (!selectedCardId.value) {
-    let total = 0;
-    let filled = 0;
 
-    const { data } = await axios.get('/structure');
-    for (const sex of data) {
-      const res = await axios.get(`/getRowPageResult/${sex.id}`, {
-        params: { day: selectedDate, smena: selectedSmena }
-      });
-
-      total += res.data.reduce((sum, row) => sum + row.multiplied_parameter_count, 0);
-      filled += res.data.reduce((sum, row) => sum + row.kiritilgan, 0);
-    }
-
-    renderPieChart(filled, total);
-  }
 }
 function renderBarChart() {
   const ctx = document.getElementById('barChart');

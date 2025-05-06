@@ -12,10 +12,18 @@
           <VaInput v-model="formatted" label="Smena" readonly />
         </VueShiftCalendar>
         <div class="flex justify-end">
-          <VaButton @click="exportToPDF" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
+          <!-- <VaButton @click="exportToPDF" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
             icon="file_download">
             Export PDF
+          </VaButton> -->
+          <VaButton @click="exportToExcelReal" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
+            icon="file_download">
+            Export Excel 
           </VaButton>
+
+
+
+
           <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
             icon="fullscreen" />
 
@@ -59,6 +67,11 @@ import { useI18n } from 'vue-i18n';
 import { format, parse } from 'date-fns';
 import 'vuestic-ui/dist/vuestic-ui.css';
 // import EditValue from '../components/ParameterValueComponent/EditValue.vue';
+import * as XLSX from 'xlsx';
+
+const { utils } = XLSX; // <-- muhim: utils ni ajratib olamiz
+import { saveAs } from 'file-saver';
+
 import { useRouter } from 'vue-router';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs } from 'vuestic-ui';
 // import store from '../store';
@@ -133,6 +146,136 @@ const exportToPDF = () => {
 
   html2pdf().set(options).from(element).save();
 };
+
+
+const exportToExcelReal = async () => {
+  const wb = XLSX.utils.book_new();
+
+  for (const page of pagesValue.value) {
+    const tabId = page.NumberPage;
+    const tabName = page.Name?.substring(0, 31) || `Page-${tabId}`;
+
+    await getPages(tabId);
+    const visibleGroupIds = getGroupIdsByTab(tabId);
+    const ws = {};
+    let currentRow = 0;
+
+    visibleGroupIds.forEach(groupId => {
+      const groupData = rowData.value.filter(r => r.PageId == tabId && r.GroupID == groupId);
+      if (!groupData.length) return;
+
+      const pivotedData = getPivotedRowDataForGroup(groupData);
+      const parameters = [...new Set(groupData.map(r => locale.value === 'ru' ? r.PNameRus : r.PName))];
+      const groupName = groupData[0]?.GroupName || `Group ${groupId}`;
+      const mergeEndCol = parameters.length + 1;
+
+      const titleCell = XLSX.utils.encode_cell({ r: currentRow, c: 0 });
+      ws[titleCell] = {
+        v: groupName.toUpperCase(),
+        t: "s",
+        s: {
+          font: { name: "Calibri", bold: true, sz: 16, color: { rgb: "000000" } },
+          alignment: { horizontal: "center", vertical: "center" },
+          fill: { patternType: "solid", fgColor: { rgb: "E2EFDA" } },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } }
+          }
+        }
+      };
+      ws["!merges"] = ws["!merges"] || [];
+      ws["!merges"].push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: mergeEndCol } });
+      currentRow++;
+
+      const headerRow = ["Boshlanish soati", ...parameters];
+      headerRow.forEach((title, index) => {
+        const cellRef = XLSX.utils.encode_cell({ r: currentRow, c: index });
+        ws[cellRef] = {
+          v: title,
+          t: "s",
+          s: {
+            font: { bold: true, sz: 12 },
+            fill: { patternType: "solid", fgColor: { rgb: "BDD7EE" } }, // 🟦 Ko‘k pastel
+            alignment: { horizontal: "center", vertical: "center" },
+            border: {
+              bottom: { style: "thin", color: { rgb: "000000" } }
+            }
+          }
+        };
+      });
+      currentRow++;
+
+      pivotedData.forEach((row, rIndex) => {
+        const values = [format(new Date(`1970-01-01T${row.time}`), 'HH:mm'), ...parameters.map(p => row[p] ?? "")];
+        values.forEach((val, cIndex) => {
+          const param = parameters[cIndex - 1];
+          const cellRef = XLSX.utils.encode_cell({ r: currentRow + rIndex, c: cIndex });
+
+          let bgColor = "FFFFFF";
+          if (cIndex > 0) {
+            if (row[`WithFormula${param}`] === "1") bgColor = "FFEB9C"; // 🟨 Sariq pastel (formula)
+            else if (val !== '' && val === lastEnteredValues.value?.[row.id]?.[param]) bgColor = "C6EFCE"; // 🟩 Yashil pastel
+            else if (val !== '') bgColor = "FFD265"; // eski kiritilgan (custom)
+          }
+
+          ws[cellRef] = {
+            v: val,
+            t: typeof val === "number" ? "n" : "s",
+            s: {
+              font: { sz: 12 },
+              fill: { patternType: "solid", fgColor: { rgb: bgColor } },
+              alignment: { horizontal: "center", vertical: "center" },
+              border: {
+                bottom: { style: "thin", color: { rgb: "000000" } }
+              }
+            }
+          };
+        });
+      });
+
+      currentRow += pivotedData.length + 3;
+    });
+
+    const allParams = [...new Set(
+      visibleGroupIds.flatMap(id =>
+        rowData.value
+          .filter(r => r.PageId == tabId && r.GroupID == id)
+          .map(r => locale.value === 'ru' ? r.PNameRus : r.PName))
+    )];
+
+    const maxCol = 1 + allParams.length;
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: currentRow, c: maxCol } });
+    ws['!cols'] = [{ wch: 20 }, ...allParams.map(() => ({ wch: 25 }))];
+    XLSX.utils.book_append_sheet(wb, ws, tabName);
+  }
+
+  const wbout = XLSX.write(wb, {
+    bookType: "xlsx",
+    type: "binary",
+    cellStyles: true
+  });
+
+  function s2ab(s) {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
+    return buf;
+  }
+
+  saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), `jadval-${day.value.day}-smena${day.value.smena}.xlsx`);
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -25,6 +25,10 @@
           <VaInput v-model="formatted" label="Smena" readonly />
         </VueShiftCalendar>
         <div class="flex justify-end">
+          <VaButton @click="exportToExcelReal" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
+            icon="file_download">
+            Export Excel 
+          </VaButton>
           <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
             icon="fullscreen" />
 
@@ -61,7 +65,7 @@ import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon, VaTabs }
 // import store from '../store';
 import { useStore } from 'vuex';
 const store = useStore();
-
+import * as XLSX from 'xlsx';
 import { VueShiftCalendar } from 'vue-shift-calendar';
 const props = defineProps({
   id: Number
@@ -118,6 +122,59 @@ watch(
   { immediate: true } // sahifa yuklanganda darhol tekshiradi
 );
 const hasPermission = (perm) => userRole.value?.pivot?.[perm] === "1";
+const exportToExcelReal = async () => {
+  if (!pagesValue.value.length) return;
+
+  const wb = XLSX.utils.book_new();
+
+  for (const page of pagesValue.value) {
+    try {
+      const selectedDay = day.value.day;
+      const selectedSmena = day.value.smena;
+
+      const [paramsResponse, valuesResponse] = await axios.all([
+        axios.get(`/get-params-for-user/${props.id}/${selectedSmena}/${selectedDay}/${page.NumberPage}`),
+        axios.get(`/vparams-value/${store.state.user.structure_id}/${selectedDay}/${selectedSmena}`)
+      ]);
+
+      const params = Array.isArray(paramsResponse.data) ? paramsResponse.data : [];
+      const values = Array.isArray(valuesResponse.data) ? valuesResponse.data : [];
+
+      // Parametr va qiymatlarni qo‘shamiz
+      params.forEach((param, index) => {
+        const val = values.find(v =>
+          v.TimeStr === param.GTName && v.ParametersID === param.ParametersID
+        );
+        if (val) {
+          params[index] = { ...param, ...val };
+        }
+      });
+
+      const data = params.map((row, index) => ({
+        '№': index + 1,
+        'Smena': row.Change,
+        'Tartib raqami': row.OrderNumber,
+        'Parametrlar': locale.value === 'ru' ? row.PNameRus : row.PName,
+        'Boshlanish soati': row.STime,
+        'Tugash soati': row.ETime,
+        'Min': row.Min,
+        'Max': row.Max,
+        'Qiymat': row.Value,
+        'Izoh': row.Comment
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, page.Name.substring(0, 31)); // Sheet nomi 31 belgidan oshmasin
+    } catch (error) {
+      console.error(`Xatolik sahifa "${page.Name}" uchun:`, error);
+    }
+  }
+
+  const dayStr = day.value?.day ?? 'unknown';
+  const smenaStr = day.value?.smena ?? 'X';
+  XLSX.writeFile(wb, `Export-${dayStr}-smena${smenaStr}.xlsx`);
+};
+
 
 const canCreate = computed(() => hasPermission("create"));
 const canView = computed(() => hasPermission("view"));

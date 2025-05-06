@@ -29,6 +29,7 @@
             icon="file_download">
             Export Excel 
           </VaButton>
+          <VaButton @click="printTable" icon="print" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10">Pechat</VaButton>
           <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
             icon="fullscreen" />
 

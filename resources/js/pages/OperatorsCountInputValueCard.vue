@@ -3,7 +3,8 @@
     <div class="flex justify-between w-full mt-6 px-4">
       <div class="flex flex-col w-full">
         <div class="w-full">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 my-6 shadow-sm border border-slate-200 mt-16 p-4">
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-1 my-6 shadow-sm border border-slate-200 mt-16 p-4">
             <div v-for="(card, index) in rowData" @click="handleCardClick(card.id)" :key="index"
               :class="['relative p-1 border-2 bg-white shadow-lg border-slate-300 cursor-pointer rounded transition-opacity duration-300', card.loading ? 'opacity-60 pointer-events-none' : 'opacity-100']">
               <div v-if="card.loading"
@@ -17,19 +18,19 @@
                       <span class="block flex-grow leading-none " v-html="formatName(card)"></span>
                     </h5>
                   </div>
-                 <div>
-                  <div class="p-2">
-                    <VaButton @click="goToCardDetail(card.id)" preset="primary" icon="va-warning" class="mr-2  mt-8"
-                      round border-color="primary">
-                    </VaButton>
-                    <VaButton @click="goToCardDetailInputed(card.id)" round icon="va-check" class="mr-2  mt-8"
-                      color="success">
-                    </VaButton>
-                    <VaButton @click="goToCardDetailNotInputed(card.id)" round icon="clear" class="mr-2  mt-8"
-                      color="danger">
-                    </VaButton>
+                  <div>
+                    <div class="p-2">
+                      <VaButton @click="goToCardDetail(card.id)" preset="primary" icon="va-warning" class="mr-2  mt-8"
+                        round border-color="primary">
+                      </VaButton>
+                      <VaButton @click="goToCardDetailInputed(card.id)" round icon="va-check" class="mr-2  mt-8"
+                        color="success">
+                      </VaButton>
+                      <VaButton @click="goToCardDetailNotInputed(card.id)" round icon="clear" class="mr-2  mt-8"
+                        color="danger">
+                      </VaButton>
+                    </div>
                   </div>
-                 </div>
                 </div>
                 <div class="grid grid-cols-[min-content,auto] gap-x-2 gap-y-1 font-semibold m-2">
                   <span class="text-green-600 material-symbols-outlined text-lg mr-3">edit</span>
@@ -62,16 +63,24 @@
         </div>
         <div class="p-6 bg-white border border-slate-200 shadow-lg mt-2 mx-3 rounded-lg">
           <!-- <h2 class="text-lg font-semibold mb-4 text-center">Bo‘limlar bo‘yicha parametrlar holati</h2> -->
-          <div style="height: 300px;">
+          <div style="height: 280px;">
             <canvas id="barChart"></canvas>
           </div>
         </div>
       </div>
-      <div class="w-[200] mt-20 mr-2">
-        <VueShiftCalendar v-model="day" class=" w-full  mr-2  shadow-lg">
-          <VaInput v-model="formatted" label="Smena" readonly />
-        </VueShiftCalendar>
+      <div class="flex flex-col justify-between">
+        <div class="w-[200] mt-20 mr-2">
+          <VueShiftCalendar v-model="day" class=" w-full  mr-2  shadow-lg">
+            <VaInput v-model="formatted" label="Smena" readonly />
+          </VueShiftCalendar>
+        </div>
+
+        <div class="w-full mr-2 mt-80 flex justify-center">
+          <canvas id="pieChart" class="w-[350px] h-[350px]"></canvas>
+        </div>
+
       </div>
+
     </div>
   </div>
 </template>
@@ -93,6 +102,7 @@ import { useRouter } from 'vue-router'
 import Chart from 'chart.js/auto';
 
 let barChartInstance = null;
+let pieChartInstance = null;
 
 const router = useRouter()
 const rowData = ref([]);
@@ -220,6 +230,22 @@ async function updateChart() {
   }
   await nextTick(); // chart DOM mavjud bo'lishini kutish
   renderBarChart(); // shundan keyin chizish
+  if (!selectedCardId.value) {
+    let total = 0;
+    let filled = 0;
+
+    const { data } = await axios.get('/structure');
+    for (const sex of data) {
+      const res = await axios.get(`/getRowPageResult/${sex.id}`, {
+        params: { day: selectedDate, smena: selectedSmena }
+      });
+
+      total += res.data.reduce((sum, row) => sum + row.multiplied_parameter_count, 0);
+      filled += res.data.reduce((sum, row) => sum + row.kiritilgan, 0);
+    }
+
+    renderPieChart(filled, total);
+  }
 }
 function renderBarChart() {
   const ctx = document.getElementById('barChart');
@@ -277,7 +303,37 @@ function renderBarChart() {
     }
   });
 }
+function renderPieChart(filledCount, totalCount) {
+  const ctx = document.getElementById('pieChart');
+  if (!ctx) return;
 
+  if (pieChartInstance) {
+    pieChartInstance.destroy(); // eski diagrammani o‘chiramiz
+  }
+
+  pieChartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Kiritilgan', 'Kiritilmagan'],
+      datasets: [{
+        data: [filledCount, totalCount - filledCount],
+        backgroundColor: ['#10b981', '#ef4444'], // yashil va qizil
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+        },
+        title: {
+          display: true,
+          text: 'Umumiy parametrlar'
+        }
+      }
+    }
+  });
+}
 let refreshInterval = null;
 onMounted(async () => {
   document.body.style.transform = 'scale(0.9)';

@@ -74,13 +74,14 @@
             <VaInput v-model="formatted" label="Smena" readonly />
           </VueShiftCalendar>
         </div>
-
-        <div class="w-full mr-2 mt-80 flex justify-center">
+        <div class="flex flex-col mr-2 mt-2">
+          <div class="w-[200] mb-2 p-10 text-center shadow-lg bg-white">123</div>
+          <div class="w-[200]  p-10 text-center shadow-md bg-white">123</div>
+        </div>
+        <div class="w-full flex justify-center">
           <canvas id="pieChart" class="w-[350px] h-[350px]"></canvas>
         </div>
-
       </div>
-
     </div>
   </div>
 </template>

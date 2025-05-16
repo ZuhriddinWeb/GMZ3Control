@@ -124,33 +124,36 @@ class ParamsGraphController extends Controller
         $blogsIds = array_map('intval', $idArray);
         $blogsIdsString = implode(',', $blogsIds);
         $query = DB::select("
-            SELECT * FROM 
-            (
-                SELECT 
-                    graphic_times.id AS GTid,
-                    graphic_times.Name AS GTName,
-                    graphic_times.Change AS Change,
-                    graphic_times.StartTime AS STime,
-                    graphic_times.EndTime AS ETime,
-                    parameters.Name AS PName,
-                    parameters.NameRus AS PNameRus,
-                    parameters.Min AS Min,
-                    parameters.Max AS Max,
-                    graphics_paramenters.*,
-                    (SELECT TOP 1 DATEADD(DAY, CASE WHEN f.StartingDay = 1 THEN 1 ELSE 0 END, ?)
-                     FROM [dbo].[Change2](1, ? + CAST(graphic_times.StartTime AS DATETIME)) f) 
-                     + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
-                    ? AS ChangeDay1 
-                FROM graphics_paramenters 
-                INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
-                INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
-                WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
-                    AND (graphic_times.Change = ? OR ? = 0) 
-                    AND graphics_paramenters.PageId = $tabId
-            ) p
-            WHERE p.StartDateTime <= GETDATE()
-            ORDER BY StartDateTime DESC, OrderNumber
-        ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
+        SELECT * FROM 
+        (
+            SELECT 
+                graphic_times.id AS GTid,
+                graphic_times.Name AS GTName,
+                graphic_times.Change AS Change,
+                graphic_times.StartTime AS STime,
+                graphic_times.EndTime AS ETime,
+                parameters.Name AS PName,
+                parameters.NameRus AS PNameRus,
+                parameters.Min AS Min,
+                parameters.Max AS Max,
+                graphics_paramenters.*,
+                CASE 
+                    WHEN DATEPART(HOUR, graphic_times.StartTime) < 8 
+                    THEN DATEADD(DAY, -1, ?)
+                    ELSE ?
+                END + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
+                ? AS ChangeDay1 
+            FROM graphics_paramenters 
+            INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
+            INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
+            WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
+                AND (graphic_times.Change = ? OR ? = 0) 
+                AND graphics_paramenters.PageId = $tabId
+        ) p
+        WHERE p.StartDateTime <= GETDATE()
+        ORDER BY StartDateTime DESC, OrderNumber
+    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
+    
 
         // dd($query);
         return $query;
@@ -161,36 +164,35 @@ class ParamsGraphController extends Controller
         $blogsIds = array_map('intval', $idArray);
         $blogsIdsString = implode(',', $blogsIds);
         $query = DB::select("
-            SELECT * FROM 
-            (
-                SELECT 
-                    graphic_times.id AS GTid,
-                    graphic_times.Name AS GTName,
-                    graphic_times.Change AS Change,
-                    graphic_times.StartTime AS STime,
-                    graphic_times.EndTime AS ETime,
-                    parameters.Name AS PName,
-                    parameters.NameRus AS PNameRus,
-                    parameters.ShortName AS ShName,
-                    parameters.Min AS Min,
-                    parameters.Max AS Max,
-                    groups.Name as GroupName,
-                    graphics_paramenters.*,
-                    (SELECT TOP 1 DATEADD(DAY, CASE WHEN f.StartingDay = 1 THEN 1 ELSE 0 END, ?)
-                     FROM [dbo].[Change2](1, ? + CAST(graphic_times.StartTime AS DATETIME)) f) 
-                     + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
-                    ? AS ChangeDay1 
-                FROM graphics_paramenters 
-                INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
-                INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
-                INNER JOIN groups ON graphics_paramenters.GroupID = groups.id
-                WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
-                    AND (graphic_times.Change = ? OR ? = 0) 
-                    AND graphics_paramenters.PageId = $tabId
-            ) p
-            WHERE p.StartDateTime <= GETDATE()
-            ORDER BY StartDateTime DESC, OrderNumber
-        ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
+        SELECT * FROM 
+        (
+            SELECT 
+                graphic_times.id AS GTid,
+                graphic_times.Name AS GTName,
+                graphic_times.Change AS Change,
+                graphic_times.StartTime AS STime,
+                graphic_times.EndTime AS ETime,
+                parameters.Name AS PName,
+                parameters.NameRus AS PNameRus,
+                parameters.Min AS Min,
+                parameters.Max AS Max,
+                graphics_paramenters.*,
+                CASE 
+                    WHEN DATEPART(HOUR, graphic_times.StartTime) < 8 
+                    THEN DATEADD(DAY, -1, ?)
+                    ELSE ?
+                END + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
+                ? AS ChangeDay1 
+            FROM graphics_paramenters 
+            INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
+            INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
+            WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
+                AND (graphic_times.Change = ? OR ? = 0) 
+                AND graphics_paramenters.PageId = $tabId
+        ) p
+        WHERE p.StartDateTime <= GETDATE()
+        ORDER BY StartDateTime DESC, OrderNumber
+    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
 
         // dd($query);
         return $query;

@@ -60,6 +60,7 @@ export default {
       pages:"Страница",
       formula:"Формула",
       document:"Отчет",
+      term:"Сроки",
       create_document:"Создать oтчет",
       operator_count:"Отчет оператора",
       groups:"Группы"
@@ -211,6 +212,7 @@ export default {
       pages:"Sahifalar",
       formula:"Formula",
       document:"Hisobot",
+      term:"Muddatlar",
       create_document:"Hisobot yaratish",
       operator_count:"Operator hisoboti",
       groups:"Guruhlar"

@@ -97,6 +97,24 @@ export default [
 		},
 		props: true,
 	},
+
+	{
+		path: '/graphicterms',
+		name:'graphicterms',
+		component: () => import('../pages/TermsCardPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+	},
+	{
+		path: '/terms/:id',
+		name:'TermsDetail',
+		component: () => import('../pages/GraphicTermsPage.vue'),
+		meta: {
+			guard: 'auth',
+		},
+		props: true,
+	},
 	{
 		path: '/cardPage/:id',
 		name:'CardDetailPage',

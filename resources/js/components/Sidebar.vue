@@ -125,6 +125,7 @@ const menu = ref([
       { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
       { title: 'menu.units', icon: 'ad_units', path: '/units' },
       { title: 'menu.graphics', icon: 'schedule', path: '/graphics' },
+      { title: 'menu.term', icon: 'gavel', path: '/graphicterms' },
       { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },
       { title: 'menu.pages', icon: 'auto_stories', path: '/pages' },
       { title: 'menu.groups', icon: 'table_view', path: '/group' },

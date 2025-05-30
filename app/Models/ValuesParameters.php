@@ -20,6 +20,7 @@ class ValuesParameters extends Model
         'FactoryStructureID',
         'BlogID',
         'GraphicsTimesID',
+        'TermID',
         'Created',
         'Creator',
         'Changed',

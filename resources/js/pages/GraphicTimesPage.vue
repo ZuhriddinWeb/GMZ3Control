@@ -75,7 +75,6 @@ const canCreate = computed(() => hasPermission("create"));
 const canUpdate = computed(() => hasPermission("update"));
 const canDelete = computed(() => hasPermission("delete"));
 
-console.log(userRole);
 
 const result = reactive({
   GraphicId: props.id,
@@ -173,6 +172,9 @@ const fetchData = async () => {
 const fetchGraphics = async () => {
   try {
     const responseGraphics = await axios.get('/graphics');
+    const responseTerms = await axios.get(`/graphicterms/${props.id}`);
+    console.log(responseTerms);
+    
     const responseChanges = await axios.get('/changes');
     graphicsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.id,

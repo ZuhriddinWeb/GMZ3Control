@@ -310,15 +310,16 @@ const columnDefs = computed(() => {
 
 
 
-watch(pagesValue, (newPages) => {
-  if (newPages.length > 0) {
-    selectedTab.value = newPages[0].NumberPage; // Birinchi sahifa avtomatik tanlanadi
-  }
-}, { immediate: true }); // Sahifa ochilganda darhol ishlaydi
-watch(day, (newDay) => {
-  // console.log("Kalendar yoki smena o‘zgardi:", newDay);
-  getPages(selectedTab.value); // Tanlangan tab uchun qayta yuklash
-}, { deep: true }); // ❗ deep: true muhim
+// watch(pagesValue, (newPages) => {
+//   if (newPages.length > 0) {
+//     selectedTab.value = newPages[0].NumberPage; // Birinchi sahifa avtomatik tanlanadi
+//   }
+// }, { immediate: true }); // Sahifa ochilganda darhol ishlaydi
+// watch(day, (newDay) => {
+//   if (selectedTab.value) {
+//     getPages(selectedTab.value);
+//   }
+// }, { deep: true });
 const handleTabKey = (event) => {
   if (event.key === " ") {
     event.preventDefault(); // Prevent default space behavior like scrolling
@@ -540,6 +541,7 @@ async function getPages(newTab) {
       if (select) {
         params[index] = { ...parametr, ...select };
       }
+      
     });
 
     // ✅ Saqlashdan oldin ham tekshirib qo'yish mumkin
@@ -551,6 +553,16 @@ async function getPages(newTab) {
   }
 }
 
+watch(
+  [() => day.value.day, () => day.value.smena, () => selectedTab.value],
+  ([newDay, newSmena, newTab], [oldDay, oldSmena, oldTab]) => {
+    // Faqat o‘zgarishda chaqiramiz
+    if (newDay && newSmena && newTab && (newDay !== oldDay || newSmena !== oldSmena || newTab !== oldTab)) {
+      getPages(newTab);
+    }
+  },
+  { immediate: true }
+);
 
 
 
@@ -658,13 +670,17 @@ const handleCellBlur = (event) => {
 
 const startIntervals = () => {
   if (!dataIntervalId) {
-    store.state.newValue = store.state.newValue || 1;
-    dataIntervalId = setInterval(() => getPages(store.state.newValue), 60000);
+    dataIntervalId = setInterval(() => {
+      if (selectedTab.value) {
+        getPages(selectedTab.value);
+      }
+    }, 60000);
   }
   if (!graphicsIntervalId) {
     graphicsIntervalId = setInterval(fetchGraphics, 60000);
   }
 };
+
 
 
 const stopIntervals = () => {
@@ -685,25 +701,24 @@ const onGridReady = (params) => {
   startIntervals(); // Start intervals when the grid is ready
 }
 // watch([() => result.Change, () => day.value], fetchData);
-watch(selectedTab, (newTab) => {
-  getPages(newTab);
-});
+// watch(selectedTab, (newTab) => {
+//   getPages(newTab);
+// });
 
+// 🔄 BUNDA pagesValue o‘zgarganda emas, faqat birinchi marta sahifa yuklanganda bajariladi
 onMounted(() => {
   const now = new Date();
   const hours = now.getHours();
   const minutes = now.getMinutes();
 
   if ((hours >= 8 && hours < 20) || (hours === 19 && minutes <= 59)) {
-    // 1-smena: 08:00 - 19:59
+    // 1-smena
     day.value.smena = 1;
     day.value.day = format(now, "yyyy-MM-dd");
   } else {
     // 2-smena
     day.value.smena = 2;
-
     if (hours < 8) {
-      // 2-smena, lekin tunda → kechagi kunni olish kerak
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
       day.value.day = format(yesterday, "yyyy-MM-dd");
@@ -712,16 +727,23 @@ onMounted(() => {
     }
   }
 
-  getPages(selectedTab.value); // 1-chi tabga yuklash
-  fetchGraphics();
+  fetchGraphics().then(() => {
+    // Birinchi tabni avtomatik tanlash
+    if (pagesValue.value.length > 0) {
+      selectedTab.value = pagesValue.value[0].NumberPage;
+    }
+  });
+
   startIntervals();
   addKeyboardListeners();
 });
-watch(pagesValue, (newPages) => {
-  if (newPages.length > 0) {
-    selectedTab.value = newPages[0].NumberPage;
-  }
-}, { immediate: true });
+
+
+// watch(pagesValue, (newPages) => {
+//   if (newPages.length > 0) {
+//     selectedTab.value = newPages[0].NumberPage;
+//   }
+// }, { immediate: true });
 
 onBeforeUnmount(() => {
   stopIntervals(); // Stop intervals when component unmounts

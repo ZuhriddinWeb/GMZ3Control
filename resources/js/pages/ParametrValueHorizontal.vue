@@ -39,7 +39,6 @@
             </VaTab>
           </template>
         </VaTabs>
-
         <div ref="pdfTarget" class="ag-grid-container h-full w-full print-mode">
           <div v-for="(groupData, groupId) in groupedByGroupId" :key="`group-${groupId}`" class="mb-6 w-full">
             <h3 class="font-bold text-lg mb-2  mt-2 p-1 bg-blue-200 text-center">{{ groupData[0].GroupName }} ⬇️</h3>

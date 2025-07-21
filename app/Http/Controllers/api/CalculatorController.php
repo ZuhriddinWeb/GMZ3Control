@@ -214,24 +214,24 @@ class CalculatorController extends Controller
     {
         $tidValues = []; // Asl Tid massiv
         $integerTidValues = []; // Integerga o'zgartirilgan Tid massiv
-    
+
         foreach ($request['Calculate'] as $item) {
             if (is_array($item)) { // Faqat Tid massivlarini ajratamiz
                 $tidValues = $item; // Tid massivini o'zida saqlab qolamiz
-    
+
                 // Tid= ni olib tashlaymiz va integerga aylantiramiz
                 $integerTidValues = array_map(function ($tid) {
                     return (int) str_replace("Tid=", "", $tid);
                 }, $item);
             }
         }
-    
+
         // Formulalarni yaratish va bazaga yozish
         if ($request['Comment'] === "1") {
             $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
             for ($i = 1; $i <= $totalTidCount; $i++) {
                 $formula = []; // Har bir sikl uchun yangi formula
-    
+
                 // Birinchi element uchun formula
                 if ($i === 1) {
                     $formula = [
@@ -255,7 +255,7 @@ class CalculatorController extends Controller
                     $formula[] = "/";
                     $formula[] = (string) $i; // Division value
                 }
-    
+
                 // Bazaga yozish
                 Calculator::create([
                     'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i - 1]), // TimeID ni tozalash va intga o‘tkazish
@@ -274,7 +274,7 @@ class CalculatorController extends Controller
                         $newCalculate[] = $subItem; // Qolgan qismlar o'z holicha
                     }
                 }
-    
+
                 Calculator::create([
                     'TimeID' => $timeID,
                     'ParametersID' => $request['id'],
@@ -286,7 +286,7 @@ class CalculatorController extends Controller
             $pid1 = $request['Calculate'][1]; // Birinchi parameter ID
             $pid2 = $request['Calculate'][4]; // Ikkinchi parameter ID
             $totalTidCount = count($tidValues); // Tid qiymatlarining umumiy soni
-    
+
             for ($i = 0; $i < $totalTidCount; $i++) {
                 $formula = [
                     "(",
@@ -299,7 +299,7 @@ class CalculatorController extends Controller
                     "/",
                     "2"
                 ];
-    
+
                 // Bazaga yozish
                 Calculator::create([
                     'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i]), // TimeID ni tozalash va intga o‘tkazish
@@ -312,7 +312,7 @@ class CalculatorController extends Controller
             $pid1 = $request['Calculate'][1]; // Birinchi parameter ID
             $pid2 = $request['Calculate'][4]; // Ikkinchi parameter ID
             $totalTidCount = count($tidValues); // Tid qiymatlarining umumiy soni
-    
+
             for ($i = 0; $i < $totalTidCount; $i++) {
                 $formula = [
                     "(",
@@ -323,7 +323,7 @@ class CalculatorController extends Controller
                     $tidValues[$i],   // Ikkinchi Tid
                     ")"
                 ];
-    
+
                 // Bazaga yozish
                 Calculator::create([
                     'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i]), // TimeID ni tozalash va intga o‘tkazish
@@ -332,12 +332,36 @@ class CalculatorController extends Controller
                     'Comment' => $request['Comment'], // Komment qiymati
                 ]);
             }
-        }
-        elseif($request['Comment']=='') {
+        } elseif ($request['Comment'] === "5") {
+            $staticParam = $request['Calculate'][0]; // Static param (Static=UUID)
+            $operator = $request['Calculate'][1];    // Operator: +, -, *, /
+            $pid = $request['Calculate'][2];         // Pid=UUID
+            $tidValues = $request['Calculate'][3];   // array of Tid
+
+            $totalTidCount = count($integerTidValues); // Tid soni
+
+            for ($i = 0; $i < $totalTidCount; $i++) {
+                $formula = [];
+                $formula[] = $staticParam;
+
+                for ($j = 0; $j <= $i; $j++) {
+                    $formula[] = $operator;
+                    $formula[] = $pid;
+                    $formula[] = $tidValues[$j];
+                }
+
+                Calculator::create([
+                    'TimeID' => $integerTidValues[$i],
+                    'ParametersID' => $request['id'],
+                    'Calculate' => $formula,
+                    'Comment' => $request['Comment'],
+                ]);
+            }
+        } elseif ($request['Comment'] == '') {
             $totalTidCount = count($tidValues); // Umumiy Tid qiymatlari soni
             for ($i = 1; $i <= $totalTidCount; $i++) {
                 $formula = []; // Har bir sikl uchun yangi formula
-    
+
                 if ($i === 1) {
                     $formula = [
                         "(",
@@ -356,7 +380,7 @@ class CalculatorController extends Controller
                     }
                     $formula[] = ")";
                 }
-    
+
                 // Bazaga yozish
                 Calculator::create([
                     'TimeID' => (int) str_replace("Tid=", "", $tidValues[$i - 1]), // TimeID ni tozalash va intga o‘tkazish
@@ -366,13 +390,13 @@ class CalculatorController extends Controller
                 ]);
             }
         }
-    
+
         return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",
         ]);
     }
-    
+
 
     private function update(Request $request)
     {
@@ -406,19 +430,19 @@ class CalculatorController extends Controller
 
     public function delete(Request $request, $parametersID)
     {
-       
+
         try {
             // ParametersID bo'yicha barcha yozuvlarni topish
             $records = Calculator::where('ParametersID', $parametersID)->get();
-    
+
             // Agar hech narsa topilmasa, xato qaytarish
             if ($records->isEmpty()) {
                 return response()->json(['status' => 404, 'message' => 'No records found for the given ParametersID']);
             }
-    
+
             // Yozuvlarni o'chirish
             Calculator::where('ParametersID', $parametersID)->delete();
-    
+
             return response()->json(['status' => 200, 'message' => 'Records deleted successfully']);
         } catch (\Exception $e) {
             return response()->json(['status' => 500, 'message' => 'Error deleting records: ' . $e->getMessage()]);

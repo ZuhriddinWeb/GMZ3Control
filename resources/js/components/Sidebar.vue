@@ -130,6 +130,7 @@ const menu = ref([
       { title: 'menu.pages', icon: 'auto_stories', path: '/pages' },
       { title: 'menu.groups', icon: 'table_view', path: '/group' },
       { title: 'menu.params', icon: 'format_list_bulleted', path: '/params' },
+      { title: 'menu.static', icon: 'data_usage', path: '/static' },
       { title: 'menu.formula', icon: 'calculate', path: '/formula' },
       { title: 'menu.paramgraphics', icon: 'schema', path: '/paramgraphics' },
       { title: 'menu.create_document', icon: 'history_edu', path: '/createDoc' },

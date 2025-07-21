@@ -5,6 +5,11 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\FactoryStructure;
+use Illuminate\Http\JsonResponse;
+use App\Models\NumberPage;            // sahifa
+use App\Models\Groups;                // guruh
+use App\Models\GraphicsParamenters;   // parametr-bog‘lovchi
+use Illuminate\Support\Collection;
 use DB;
 class FactoryStructureController extends Controller
 {
@@ -38,6 +43,68 @@ class FactoryStructureController extends Controller
     {
         $unit = FactoryStructure::find($id);
         return response()->json($unit);
+    }
+    public function tree(): JsonResponse
+    {
+        /* 1)  Barcha jadval ma’lumotlarini oldindan tortib olamiz */
+        $sexes   = FactoryStructure::orderBy('Name')->get();          // id => sex
+        $pages   = NumberPage::all()->groupBy('StructureID');         // sid => collection
+        $groups  = Groups::all()->groupBy(fn ($g) => $g->StructureID.'-'.$g->PageID);
+
+        $params  = GraphicsParamenters::with('parameters:id,Name')
+                   ->get()
+                   ->groupBy(fn ($p) =>
+                       $p->FactoryStructureID.'-'.$p->PageId.'-'.$p->GroupID);
+                   // key →  sid-page-group
+
+        /* 2)  Daraxtni yig‘amiz */
+        $tree = $sexes->map(function ($sex) use ($pages, $groups, $params) {
+
+            $sexNode = [
+                'key'      => "sex-{$sex->id}",
+                'title'    => $sex->Name,
+                'type'     => 'sex',
+                'children' => [],
+            ];
+
+            foreach (($pages[$sex->id] ?? collect()) as $page) {
+
+                $pageNode = [
+                    'key'      => "page-{$sex->id}-{$page->id}",
+                    'title'    => $page->Name,
+                    'type'     => 'page',
+                    'children' => [],
+                ];
+
+                foreach (($groups["{$sex->id}-{$page->id}"] ?? collect()) as $group) {
+
+                    $grpKey = "{$sex->id}-{$page->id}-{$group->id}";
+                    $grpNode = [
+                        'key'      => "grp-$grpKey",
+                        'title'    => $group->Name,
+                        'type'     => 'group',
+                        'children' => [],
+                    ];
+
+                    foreach (($params[$grpKey] ?? collect()) as $p) {
+                        $grpNode['children'][] = [
+                            'key'         => "prm-{$p->id}",
+                            'title'       => $p->parameters->Name ?? "Param #{$p->id}",
+                            'ParameterID' => $p->ParametersID,   // GUID
+                            'type'        => 'param',
+                        ];
+                    }
+
+                    $pageNode['children'][] = $grpNode;
+                }
+
+                $sexNode['children'][] = $pageNode;
+            }
+
+            return $sexNode;
+        })->values();
+
+        return response()->json($tree);
     }
     public function getForUser($id)
     {

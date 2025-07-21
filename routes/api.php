@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\api\CalculatorController;
+use App\Http\Controllers\api\DocumentNumberPageController;
 use App\Http\Controllers\api\DocumentsController;
 use App\Http\Controllers\api\FormulaController;
 use App\Http\Controllers\api\GroupsController;
 use App\Http\Controllers\api\ServersController;
+use App\Http\Controllers\api\StaticParametersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\UnitsController;
@@ -39,13 +41,14 @@ use App\Http\Controllers\TreeController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
-Route::post('/login' , [UserController::class, 'login']);
-Route::post('/logout' , [UserController::class, 'login']);
+Route::post('/login', [UserController::class, 'login']);
+Route::post('/logout', [UserController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'authenticatedUser']);
 
 Route::match(['get', 'post', 'put', 'delete'], '/units/{id?}', [UnitsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/pages/{id?}', [NumberPageController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/addfordoc/{id?}', [DocumentNumberPageController::class, 'handle']);
 
 Route::match(['get', 'post', 'put', 'delete'], '/graphictimes/{id?}', [GraphicTimesController::class, 'handle']);
 
@@ -68,53 +71,65 @@ Route::match(['get', 'post', 'put', 'delete'], '/calculator/{id?}', [CalculatorC
 Route::match(['get', 'post', 'put', 'delete'], '/documents/{id?}', [DocumentsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/servers/{id?}', [ServersController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/static/{id?}', [StaticParametersController::class, 'handle']);
 
+
+Route::get('/structures-number', [DocumentNumberPageController::class, 'getStructures']);
+Route::get('/pages-number/{sexId}', [DocumentNumberPageController::class, 'getPages']);
+Route::get('/groups-number/{sexId}/{pageId}', [DocumentNumberPageController::class, 'getGroups']);
+Route::get('/parameters-number/{sexId}/{pageId}/{groupId}', [DocumentNumberPageController::class, 'getParameters']);
+Route::get('/periodType', [StaticParametersController::class, 'periodType']);
 
 
 Route::get('/getUserData/{id}', [DocumentsController::class, 'getUserData']);
 Route::get('/document/{id}/{start}', [DocumentsController::class, 'generate']);
 Route::get('/structures/{id}', [FactoryStructureController::class, 'getForUser']);
+Route::get('/structureTree', [FactoryStructureController::class, 'tree']);
+Route::get('/addfordoc/selected/{doc_id}', [DocumentNumberPageController::class, 'selected']);
 
+Route::get('/doc/tree/{id}', [DocumentNumberPageController::class, 'treeFlat']);   // ↑ rows
+Route::get('/doc/selected/{id}', [DocumentNumberPageController::class, 'selected']);   // GUID[]
+Route::post('/doc/save', [DocumentNumberPageController::class, 'save']);       // saqlash
 
 
 Route::get('/tree', [TreeController::class, 'getTree']);
 Route::post('/node-clicked', [TreeController::class, 'handleNodeClick']);
 Route::post('/treeChart', [TreeController::class, 'treeChart']);
 
-Route::get('get-params-for-user-count/{user_id}/{change_id}' , [ParamsGraphController::class, 'getParamsForUserCount']);
-Route::get('get-params-for-id-edit/{param_id}' , [ParamsGraphController::class, 'getRowParamEdit']);
-Route::get('get-params-for-user/{user_id}/{change_id}/{date}/{tabId}' , [ParamsGraphController::class, 'getParamsForUser']);
-Route::get('get-params-for-user-horizontal/{user_id}/{change_id}/{date}/{tabId}' , [ParamsGraphController::class, 'getParamsForUserHorizontal']);
+Route::get('get-params-for-user-count/{user_id}/{change_id}', [ParamsGraphController::class, 'getParamsForUserCount']);
+Route::get('get-params-for-id-edit/{param_id}', [ParamsGraphController::class, 'getRowParamEdit']);
+Route::get('get-params-for-user/{user_id}/{change_id}/{date}/{tabId}', [ParamsGraphController::class, 'getParamsForUser']);
+Route::get('get-params-for-user-horizontal/{user_id}/{change_id}/{date}/{tabId}', [ParamsGraphController::class, 'getParamsForUserHorizontal']);
 
-Route::get('get-params-for-id/{param_id}' , [ParametrValueController::class, 'getParamsForId']);
-Route::post('vparamsEdit' , [ParametrValueController::class, 'update']);
-Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}' , [ParametrValueController::class, 'getByBlog']);
+Route::get('get-params-for-id/{param_id}', [ParametrValueController::class, 'getParamsForId']);
+Route::post('vparamsEdit', [ParametrValueController::class, 'update']);
+Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}', [ParametrValueController::class, 'getByBlog']);
 
-Route::get('restart-password/{user_id}' , [UserController::class, 'restart']);
+Route::get('restart-password/{user_id}', [UserController::class, 'restart']);
 Route::get('/broadcast-time', [ParametrValueController::class, 'sendTimeUpdate']);
 Route::get('/vparamsGetValue/{id}', [ParametrValueController::class, 'vparamsGetValue']);
-Route::get('/getRowPageResult/{id}',  [ParamsGraphController::class, 'getRowPageResult']);
+Route::get('/getRowPageResult/{id}', [ParamsGraphController::class, 'getRowPageResult']);
 
 // Route::get('/vparamsuser/{blog_id}/{change_id}/{date}', [ParametrValueController::class, 'getByBlog']);
-Route::get('/paramWithId/{id}',  [ParamsGraphController::class, 'getRowParamID']);
-Route::get('/pages-select/{id}',  [NumberPageController::class, 'getRowPages']);
-Route::get('/getRowPage/{id}',  [NumberPageController::class, 'getRowPage']);
-Route::get('/getRowGroup/{idS}/{idP}',  [GroupsController::class, 'getRowGroup']);
-Route::get('/getRowGroupEdit/{id}',  [GroupsController::class, 'getRowGroupEdit']);
-Route::get('/getRowGroupWithId/{id}',  [GroupsController::class, 'getRowGroupWithId']);
+Route::get('/paramWithId/{id}', [ParamsGraphController::class, 'getRowParamID']);
+Route::get('/pages-select/{id}', [NumberPageController::class, 'getRowPages']);
+Route::get('/getRowPage/{id}', [NumberPageController::class, 'getRowPage']);
+Route::get('/getRowGroup/{idS}/{idP}', [GroupsController::class, 'getRowGroup']);
+Route::get('/getRowGroupEdit/{id}', [GroupsController::class, 'getRowGroupEdit']);
+Route::get('/getRowGroupWithId/{id}', [GroupsController::class, 'getRowGroupWithId']);
 
 
 
-Route::get('/get-graph-with-params/{id}',  [ParamsGraphController::class, 'getGraficWithParams']);
-Route::get('/getForFormule/{id}',  [ParamsGraphController::class, 'getForFormule']);
-Route::get('/getRowTimes/{id}/{GParamID}/{GPid}/{GrapicsID}',  [GraphicTimesController::class, 'getRowTimes']);
-Route::get('/getTimes/{id}',  [GraphicTimesController::class, 'getTimes']);
-Route::get('/time/{id}',  [GraphicTimesController::class, 'time']);
+Route::get('/get-graph-with-params/{id}', [ParamsGraphController::class, 'getGraficWithParams']);
+Route::get('/getForFormule/{id}', [ParamsGraphController::class, 'getForFormule']);
+Route::get('/getRowTimes/{id}/{GParamID}/{GPid}/{GrapicsID}', [GraphicTimesController::class, 'getRowTimes']);
+Route::get('/getTimes/{id}', [GraphicTimesController::class, 'getTimes']);
+Route::get('/time/{id}', [GraphicTimesController::class, 'time']);
 
 
-Route::get('/getForFormuleTimes/{GParamID}',  [GraphicTimesController::class, 'getRowFormuleTimes']);
-Route::get('/withCardId/{id}/{pageId}',  [ParamsGraphController::class, 'withCardId']);
-Route::get('/getRowBlog/{id}',  [BlogsController::class, 'getRowBlog']);
-Route::get('/getForFormuleId/{paramID}/{timeID}',  [CalculatorController::class, 'getForFormuleId']);
+Route::get('/getForFormuleTimes/{GParamID}', [GraphicTimesController::class, 'getRowFormuleTimes']);
+Route::get('/withCardId/{id}/{pageId}', [ParamsGraphController::class, 'withCardId']);
+Route::get('/getRowBlog/{id}', [BlogsController::class, 'getRowBlog']);
+Route::get('/getForFormuleId/{paramID}/{timeID}', [CalculatorController::class, 'getForFormuleId']);
 
 

@@ -12,7 +12,7 @@
           Excel
         </VaButton>
       </div>
-      <DxDataGrid ref="dataGridRef" :data-source="rowData" showBorders="true" rowAlternationEnabled="true"
+      <!-- <DxDataGrid ref="dataGridRef" :data-source="rowData" showBorders="true" rowAlternationEnabled="true"
         :selectedRowKeys="selectedRowKeys" @selection-changed="onSelectionChanged" columnAutoWidth="true"
         showColumnLines="true" showRowLines="true" wordWrapEnabled="true"
         :pager="{ visible: true, showPageSizeSelector: true, allowedPageSizes: [5, 10, 20], showInfo: true }"
@@ -22,7 +22,7 @@
         <DxColumn dataField="PName" caption="Nomlanishi" />
         <DxColumn dataField="PName" caption="Nomlanishi" />
         <DxColumn dataField="Value" caption="Qiymati" />
-      </DxDataGrid>
+      </DxDataGrid> -->
     </main>
   </div>
 </template>

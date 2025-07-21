@@ -63,7 +63,8 @@ export default {
       term:"Сроки",
       create_document:"Создать oтчет",
       operator_count:"Отчет оператора",
-      groups:"Группы"
+      groups:"Группы",
+      static:"Статические параметры"
     },
     buttons: {
       save: "Сохранить",
@@ -115,7 +116,8 @@ export default {
       login: "Логин",
       tabel:"Табелный номер",
       password: "Пароль",
-      wincc:"WinCC"
+      wincc:"WinCC",
+      numberpage:"Номер страницы"
     },
     validation: {
       requiredField: "Поле, обязательное для заполнения",
@@ -215,7 +217,8 @@ export default {
       term:"Muddatlar",
       create_document:"Hisobot yaratish",
       operator_count:"Operator hisoboti",
-      groups:"Guruhlar"
+      groups:"Guruhlar",
+      static:"Static parametrlar"
     },
     buttons: {
       save: "Saqlash",
@@ -265,7 +268,8 @@ export default {
       login: "Login",
       tabel: "Tabel raqami",
       password: "Parol",
-      wincc:"WinCC"
+      wincc:"WinCC",
+      numberpage:"Sahifa raqami"
     },
     validation: {
       requiredField: "To'ldirish majburiy bo'lgan maydon",

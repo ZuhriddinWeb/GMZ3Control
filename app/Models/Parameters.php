@@ -8,6 +8,9 @@ use App\Models\GraphicsParamenters;
 class Parameters extends Model
 {
     use HasFactory;
+     protected $table = 'parameters';    // id, Name, …
+     public    $incrementing = false;
+     protected $keyType = 'string';
     protected $fillable = [
         'id',
         'Name',

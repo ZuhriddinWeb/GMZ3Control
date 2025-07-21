@@ -12,6 +12,8 @@ use App\Models\FactoryStructure;
 class GraphicsParamenters extends Model
 {
     use HasFactory;
+    protected $table = 'graphics_paramenters';
+
     protected $fillable = [
         'OrderNumber',
         'ParametersID',
@@ -38,25 +40,33 @@ class GraphicsParamenters extends Model
         'PageId' => 'integer',
         'SourceID' => 'integer',
         'ParametersID' => 'string',
-        'WithFormula'=>'integer',
-        'GroupID'=>'integer'
+        'WithFormula' => 'integer',
+        'GroupID' => 'integer'
     ];
     public function parameters()
-{
-    return $this->belongsTo(Parameters::class, 'ParametersID', 'id');
-}
-public function numberPage()
-{
-    return $this->belongsTo(NumberPage::class, 'PageId', 'NumberPage');
-}
-public function factoryStructure()
-{
-    return $this->belongsTo(FactoryStructure::class, 'FactoryStructureID', 'id');
-}
+    {
+        return $this->belongsTo(Parameters::class, 'ParametersID', 'id');
+    }
+    public function parameter()                  // 🔹 faqat shu!
+    {
+        return $this->belongsTo(
+            Parameters::class,    // foreign model
+            'ParametersID',      // FK (graphics_paramenters)
+            'id'                 // PK (parameters)
+        );
+    }
+    public function numberPage()
+    {
+        return $this->belongsTo(NumberPage::class, 'PageId', 'NumberPage');
+    }
+    public function factoryStructure()
+    {
+        return $this->belongsTo(FactoryStructure::class, 'FactoryStructureID', 'id');
+    }
 
-public function graphics()
-{
-    return $this->belongsTo(Graphics::class, 'GraphicsID', 'id'); // diqqat: ID emas, GraphicsID
-}
-    
+    public function graphics()
+    {
+        return $this->belongsTo(Graphics::class, 'GraphicsID', 'id'); // diqqat: ID emas, GraphicsID
+    }
+
 }

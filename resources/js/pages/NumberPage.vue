@@ -5,6 +5,7 @@
       <div class="flex justify-between">
         <span class="flex w-full"></span>
         <VaButton v-if="canCreate" @click="showModal = true,fetchGraphics" class="w-14 h-12 mt-1 mr-1" icon="add" />
+        
       </div>
       <VaModal v-model="showModal" :ok-text="t('buttons.save')" :cancel-text="t('buttons.cancel')" @ok="onSubmit" close-button>
         <h3 class="va-h3">
@@ -45,6 +46,8 @@ import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteBlog from '../components/NumberPage/DeleteBlog.vue';
 import EditBlog from '../components/NumberPage/EditBlog.vue';
+import AddForDocuments from '../components/NumberPage/AddForDocuments.vue';
+
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 const { init } = useToast();
@@ -69,9 +72,13 @@ const result = reactive({
 });
 const userRole = computed(() => store.state.user.roles[17]);
 const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
+const hasDoc = (permission) => props.id === 22;
+
 const canCreate = computed(() => hasPermission("create"));
 const canUpdate = computed(() => hasPermission("update"));
 const canDelete = computed(() => hasPermission("delete"));
+const canDocument = computed(() => hasDoc);
+
 
 
 function ondeleted(selectedData) {
@@ -93,7 +100,15 @@ const columnDefs = computed(() => {
     { headerName: t('table.numberpage'), field: 'NumberPage' },
     { headerName: t('table.comment'), field: getFieldShortName() },
   ];
-
+ if (props.id==22) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: AddForDocuments,
+    });
+  }
   if (canUpdate.value) {
     cols.push({
       cellClass: ['px-0'],

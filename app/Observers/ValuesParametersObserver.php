@@ -91,6 +91,7 @@ class ValuesParametersObserver
                             ->where('Created', $valuesParameters->Created)
                             ->value('Value') ?? 0;
                     }
+                    
                 }
 
                 // Hisoblash ifodasini yaratish uchun `calculateArray` ichidagi har bir elementni ko‘rib chiqish

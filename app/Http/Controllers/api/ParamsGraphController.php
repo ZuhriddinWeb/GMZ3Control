@@ -118,12 +118,13 @@ class ParamsGraphController extends Controller
         return response()->json($allParameters);
     }
 
-    public function getParamsForUser($id, $change, $ChangeDay, $tabId)
-    {
-        $idArray = explode(',', $id);
-        $blogsIds = array_map('intval', $idArray);
-        $blogsIdsString = implode(',', $blogsIds);
-        $query = DB::select("
+public function getParamsForUser($id, $change, $ChangeDay, $tabId)
+{
+    $idArray = explode(',', $id);
+    $blogsIds = array_map('intval', $idArray);
+    $blogsIdsString = implode(',', $blogsIds);
+
+    $query = DB::select("
         SELECT * FROM 
         (
             SELECT 
@@ -137,27 +138,45 @@ class ParamsGraphController extends Controller
                 parameters.Min AS Min,
                 parameters.Max AS Max,
                 graphics_paramenters.*,
+                terms.id as TMid,
+
+                -- Smena vaqtiga qarab StartDateTime
                 CASE 
                     WHEN DATEPART(HOUR, graphic_times.StartTime) < 8 
-                    THEN DATEADD(DAY, -1, ?)
-                    ELSE ?
+                        THEN DATEADD(DAY, -1, ?) 
+                        ELSE ? 
                 END + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
-                ? AS ChangeDay1 
+                ? AS ChangeDay1,
+
+                -- Sun’iy tartib raqam qiymatlari
+                CASE 
+                    WHEN ? = 2 THEN 
+                        CASE 
+                            WHEN DATEPART(HOUR, graphic_times.StartTime) >= 20 THEN DATEPART(HOUR, graphic_times.StartTime) - 19
+                            ELSE DATEPART(HOUR, graphic_times.StartTime) + 5
+                        END
+                    ELSE DATEPART(HOUR, graphic_times.StartTime)
+                END AS SortOrder
+
             FROM graphics_paramenters 
             INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
             INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
-            WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
-                AND (graphic_times.Change = ? OR ? = 0) 
-                AND graphics_paramenters.PageId = $tabId
-        ) p
-        WHERE p.StartDateTime <= GETDATE()
-        ORDER BY StartDateTime DESC, OrderNumber
-    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
-    
+            INNER JOIN terms ON terms.GraphicsID = graphic_times.GraphicsID
 
-        // dd($query);
-        return $query;
-    }
+            WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
+              AND (graphic_times.Change = ? OR ? = 0)
+              AND graphics_paramenters.PageId = $tabId
+        ) p
+
+        WHERE p.StartDateTime <= GETDATE()
+
+        ORDER BY 
+            CASE WHEN p.Change = 2 THEN p.SortOrder ELSE DATEPART(HOUR, p.STime) END DESC,
+            p.OrderNumber ASC
+    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change, $change]);
+
+    return $query;
+}
     public function getParamsForUserHorizontal($id, $change, $ChangeDay, $tabId)
     {
         $idArray = explode(',', $id);
@@ -176,6 +195,7 @@ class ParamsGraphController extends Controller
                 parameters.NameRus AS PNameRus,
                 parameters.Min AS Min,
                 parameters.Max AS Max,
+                groups.Name as GroupName,
                 graphics_paramenters.*,
                 CASE 
                     WHEN DATEPART(HOUR, graphic_times.StartTime) < 8 
@@ -186,6 +206,8 @@ class ParamsGraphController extends Controller
             FROM graphics_paramenters 
             INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
             INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
+            INNER JOIN groups ON graphics_paramenters.GroupID = groups.id
+
             WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
                 AND (graphic_times.Change = ? OR ? = 0) 
                 AND graphics_paramenters.PageId = $tabId

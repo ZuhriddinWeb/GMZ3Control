@@ -41,6 +41,12 @@
 
             </div>
             <div class="parameter-list-container h-full">
+              <div v-if="staticParameters.length" class="ml-2 mt-2">
+                <VaButton v-for="param in staticParameters" :key="param.id" text-color="black" color="warning" border-color="black"
+                  :style="{ borderRadius: '0' }" class="mr-2 mb-2" @click="appendStatic(param)">
+                  {{ param.Name }}
+                </VaButton>
+              </div>
               <div v-if="parameters.length" class="ml-2">
                 <VaButton
                   v-for="(parameter, index) in parameters.filter(param => param !== null && param !== undefined)"
@@ -85,7 +91,7 @@ const props = defineProps(["params"]);
 const selectedDataEdit = ref(false);
 const onupdated = inject('onupdated');
 const factoryOptions = ref([]);
-
+const staticParameters = ref([]);
 const getButton = ref(null);
 const parameters = ref([]);
 const timesG = ref([]);
@@ -146,6 +152,10 @@ const append = (input) => {
   }
 
   console.log("Updated Calculate:", result.Calculate);
+};
+const appendStatic = (param) => {
+  result.Calculate.push(`Static=${param.id}`);
+  current.value += `[${param.Name}]`;
 };
 
 
@@ -239,15 +249,45 @@ const divide = () => {
 // const calculateString = computed(() => result.Calculate.join('&'));
 const equal = () => {
   animateOperator('equal');
-  if (!operatorClicked.value) {
-    answer.value = eval(logList.value + current.value);
-  } else {
-    answer.value = 'WHAT?!!';
+
+  let formulaString = '';
+
+  for (const item of result.Calculate) {
+    if (typeof item === 'string') {
+      if (item.startsWith('Pid=')) {
+        // Bu yer dynamic param value olish uchun api kerak
+        formulaString += 10; // placeholder qiymat
+      } 
+      else if (item.startsWith('Static=')) {
+        const staticValue = staticParameters.value.find(s => s.id === item.split('=')[1])?.Value ?? 0;
+        formulaString += staticValue;
+      } 
+      else {
+        formulaString += item;
+      }
+    } else {
+      formulaString += item;
+    }
+  }
+
+  try {
+    answer.value = eval(formulaString);
+  } catch (error) {
+    answer.value = 'Error!';
   }
 };
 
+const fetchStaticParameters = async () => {
+  try {
+    const response = await axios.get('/static'); // Laravel API route
+    staticParameters.value = response.data;
+  } catch (error) {
+    console.error('Error fetching static parameters:', error);
+  }
+};
 const fetchGraphics = async () => {
   try {
+    await fetchStaticParameters();
     const responseGraphics = await axios.get('/structure');
     factoryOptions.value = responseGraphics.data.map(factory => ({
       value: factory.id,

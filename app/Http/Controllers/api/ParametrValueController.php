@@ -42,34 +42,37 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-    public function getByBlog($factoryId, $current,$ChangeID)
-    {
-        // dd($factoryId);
-        $current = Carbon::parse($current)->toDateString();
+public function getByBlog($factoryId, $current, $ChangeID)
+{
+    $current = Carbon::parse($current)->toDateString();
+    $currentMonth = Carbon::parse($current)->month;
+    $currentYear = Carbon::parse($current)->year;
 
-        // FactoryStructureID'ni arrayga aylantirish
-        $idArray = explode(',', $factoryId);
+    $idArray = explode(',', $factoryId);
 
-        // Query yaratish
-        $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
-            ->where('ChangeID', $ChangeID)
-            ->where(function ($query) use ($current) {
-                $query->whereRaw("CAST(Created AS DATE) = ?", [$current])
-                    ->orWhereRaw("CAST(Changed AS DATE) = ?", [$current]);
-            })
-            // ->orWhere(function ($query) use ($current) {
-            //     $query->whereRaw("CAST(Created AS DATE) >= ?", [$current])
-            //         ->orWhereRaw("CAST(Changed AS DATE) >= ?", [$current]);
-            // })
-            ->get();
+   $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
+    ->where('ChangeID', $ChangeID)
+    ->where(function ($query) use ($current, $currentMonth, $currentYear) {
+        $query->where(function ($q1) use ($currentMonth, $currentYear) {
+            $q1->where('TermID', 1)
+                ->whereMonth('Created', $currentMonth)
+                ->whereYear('Created', $currentYear);
+        })
+        ->orWhereRaw("((TermID != 1 OR TermID IS NULL) AND (CAST(Created AS DATE) = ? OR CAST(Changed AS DATE) = ?))", [$current, $current]);
+    })
+    ->get();
 
 
-        return $result;
-    }
+    return $result;
+}
+
+
+
 
 
     public function create(Request $request)
     {
+        // dd($request);
         $uuidString = (string) Str::uuid();
         try {
             // Yangi yoki mavjud yozuvni topish
@@ -79,8 +82,8 @@ class ParametrValueController extends Controller
                 'TimeID' => $request->GTid,
                 'TimeStr'=>$request->GTName,
                 'Created' => $request->daySelect,
-                // 'ChangeID' => $request->change,
-
+                'TermID' => $request->TMid,
+                'GraphicsTimesID' => $request->GrapicsID,
             ])->first();
 
             // Agar yozuv mavjud bo'lmasa, yangi yozuv qo'shiladi
@@ -94,6 +97,7 @@ class ParametrValueController extends Controller
                     'ChangeID' => $request->change,
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
+                    'TermID' => $request->TMid,
                     'BlogID' => $request->BlogsID,
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
@@ -106,6 +110,7 @@ class ParametrValueController extends Controller
                 $existingRecord->update([
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
+                    'TermID' => $request->TMid,
                     'BlogID' => $request->BlogsID,
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,

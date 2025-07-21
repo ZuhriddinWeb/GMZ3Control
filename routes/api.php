@@ -6,7 +6,11 @@ use App\Http\Controllers\api\DocumentsController;
 use App\Http\Controllers\api\FormulaController;
 use App\Http\Controllers\api\GroupsController;
 use App\Http\Controllers\api\ServersController;
+<<<<<<< HEAD
 use App\Http\Controllers\api\StaticParametersController;
+=======
+use App\Http\Controllers\api\TermController;
+>>>>>>> 3af28dc308a6afe4979d4a6da5e8ed35a9c2e036
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\UnitsController;
@@ -51,6 +55,8 @@ Route::match(['get', 'post', 'put', 'delete'], '/pages/{id?}', [NumberPageContro
 Route::match(['get', 'post', 'put', 'delete'], '/addfordoc/{id?}', [DocumentNumberPageController::class, 'handle']);
 
 Route::match(['get', 'post', 'put', 'delete'], '/graphictimes/{id?}', [GraphicTimesController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/graphicterms/{id?}', [TermController::class, 'handle']);
+
 
 Route::match(['get', 'post', 'put', 'delete'], '/sources/{id?}', [SourcesController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/changes/{id?}', [ChangesController::class, 'handle']);

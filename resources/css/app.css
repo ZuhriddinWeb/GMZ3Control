@@ -70,3 +70,10 @@
 .ag-theme-material .ag-row {
     border-bottom: 1px solid #e5e7eb;
 }
+.ag-root .ag-cell {
+  border: 0.5px solid rgb(109, 106, 106) ;
+}
+/* .ag-header-cell, .ag-header-group-cell {
+  border: 0.5px solid rgb(109, 106, 106) ;
+} */
+

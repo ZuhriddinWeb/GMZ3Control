@@ -148,7 +148,11 @@ public function getParamsForUser($id, $change, $ChangeDay, $tabId)
                 END + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
                 ? AS ChangeDay1,
 
+<<<<<<< HEAD
                 -- Sun’iy tartib raqam qiymatlari
+=======
+                -- Sun’iy tartib qiymati
+>>>>>>> 3af28dc308a6afe4979d4a6da5e8ed35a9c2e036
                 CASE 
                     WHEN ? = 2 THEN 
                         CASE 
@@ -162,6 +166,7 @@ public function getParamsForUser($id, $change, $ChangeDay, $tabId)
             INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
             INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
             INNER JOIN terms ON terms.GraphicsID = graphic_times.GraphicsID
+<<<<<<< HEAD
 
             WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
               AND (graphic_times.Change = ? OR ? = 0)
@@ -177,12 +182,30 @@ public function getParamsForUser($id, $change, $ChangeDay, $tabId)
 
     return $query;
 }
+=======
+
+            WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
+              AND (graphic_times.Change = ? OR ? = 0)
+              AND graphics_paramenters.PageId = $tabId
+        ) p
+
+        WHERE p.StartDateTime <= GETDATE()
+
+        ORDER BY 
+            CASE WHEN p.Change = 2 THEN p.SortOrder ELSE DATEPART(HOUR, p.STime) END DESC,
+            p.OrderNumber ASC
+    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change, $change]);
+
+    return $query;
+}
+
+>>>>>>> 3af28dc308a6afe4979d4a6da5e8ed35a9c2e036
     public function getParamsForUserHorizontal($id, $change, $ChangeDay, $tabId)
     {
         $idArray = explode(',', $id);
         $blogsIds = array_map('intval', $idArray);
         $blogsIdsString = implode(',', $blogsIds);
-        $query = DB::select("
+       $query = DB::select("
         SELECT * FROM 
         (
             SELECT 
@@ -197,29 +220,52 @@ public function getParamsForUser($id, $change, $ChangeDay, $tabId)
                 parameters.Max AS Max,
                 groups.Name as GroupName,
                 graphics_paramenters.*,
+                groups.Name as GroupName,
+            terms.id as TMid,
+                -- Smena vaqtiga qarab StartDateTime
                 CASE 
                     WHEN DATEPART(HOUR, graphic_times.StartTime) < 8 
-                    THEN DATEADD(DAY, -1, ?)
-                    ELSE ?
+                        THEN DATEADD(DAY, -1, ?) 
+                        ELSE ? 
                 END + CAST(graphic_times.StartTime AS DATETIME) AS StartDateTime,
-                ? AS ChangeDay1 
+                ? AS ChangeDay1,
+
+                -- Sun’iy tartib qiymati
+                CASE 
+                    WHEN ? = 2 THEN 
+                        CASE 
+                            WHEN DATEPART(HOUR, graphic_times.StartTime) >= 20 THEN DATEPART(HOUR, graphic_times.StartTime) - 19
+                            ELSE DATEPART(HOUR, graphic_times.StartTime) + 5
+                        END
+                    ELSE DATEPART(HOUR, graphic_times.StartTime)
+                END AS SortOrder
+
             FROM graphics_paramenters 
             INNER JOIN graphic_times ON graphics_paramenters.GrapicsID = graphic_times.GraphicsID
             INNER JOIN parameters ON graphics_paramenters.ParametersID = parameters.id
+<<<<<<< HEAD
             INNER JOIN groups ON graphics_paramenters.GroupID = groups.id
 
+=======
+            INNER JOIN terms ON terms.GraphicsID = graphic_times.GraphicsID
+            INNER JOIN groups ON graphics_paramenters.GroupID = groups.id
+>>>>>>> 3af28dc308a6afe4979d4a6da5e8ed35a9c2e036
             WHERE graphics_paramenters.FactoryStructureID IN ($blogsIdsString)
-                AND (graphic_times.Change = ? OR ? = 0) 
-                AND graphics_paramenters.PageId = $tabId
+              AND (graphic_times.Change = ? OR ? = 0)
+              AND graphics_paramenters.PageId = $tabId
         ) p
+
         WHERE p.StartDateTime <= GETDATE()
-        ORDER BY StartDateTime DESC, OrderNumber
-    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change]);
+
+        ORDER BY 
+            CASE WHEN p.Change = 2 THEN p.SortOrder ELSE DATEPART(HOUR, p.STime) END DESC,
+            p.OrderNumber ASC
+    ", [$ChangeDay, $ChangeDay, $ChangeDay, $change, $change, $change]);
+
+    return $query;
 
         // dd($query);
-        return $query;
     }
-
     //dd($ChangeDay);
     //  $query = DB::select("select * from 
     //  (
@@ -263,6 +309,7 @@ public function getParamsForUser($id, $change, $ChangeDay, $tabId)
     {
         $idsArray = explode(',', $id);
         return GraphicsParamenters::join('parameters', 'graphics_paramenters.ParametersID', '=', 'parameters.id')
+            // ->join('groups', 'graphics_paramenters.GroupID', '=', 'parameters.id')
             ->whereIn('FactoryStructureID', $idsArray)
             ->select('parameters.id as Pid', 'parameters.Name as PName', 'parameters.ShortName as ShName', 'graphics_paramenters.*')
             ->get();

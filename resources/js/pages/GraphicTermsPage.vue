@@ -82,7 +82,7 @@ const gridApi = ref(null);
 const showModal = ref(false);
 const graphicsOptions = ref([]);
 const changesOptions = ref([]);
-const selectedForm = ref('Oy')
+const selectedForm = ref('Soat')
 const userRole = computed(() => store.state.user.roles[8]);
 const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
 const canCreate = computed(() => hasPermission("create"));
@@ -118,31 +118,19 @@ const columnDefs = computed(() => {
   const cols = [
     { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1", width: 80 },
     { headerName: "ID", field: "id", width: 80 },
-    { headerName: t('table.change'), field: "Change", width: 120 },
     { headerName: t('table.graphicName'), field: "GName", flex: 1 },
     {
       headerName: t('table.name'),
       field: "Name",
       flex: 1,
-      valueFormatter: (params) => {
-        return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
-      },
+      
     },
-    {
-      headerName: t('table.startTime'),
-      field: "StartTime",
-      valueFormatter: (params) => {
-        return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
-      },
+     {
+      headerName: 'Component',
+      field: "Component",
+      flex: 1,
+      
     },
-    {
-      headerName: t('table.endTime'),
-      field: "EndTime",
-      valueFormatter: (params) => {
-        return format(new Date(`1970-01-01T${params.value}`), 'HH:mm');
-      },
-    },
-    { headerName: t('table.comment'), field: "Comment", flex: 1 },
   ];
 
   if (canUpdate.value) {
@@ -176,7 +164,7 @@ const defaultColDef = {
 
 const fetchData = async () => {
   try {
-    const response = await axios.get(`/getTimes/${props.id}`);
+    const response = await axios.get(`/graphicterms/${props.id}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -202,14 +190,12 @@ const fetchGraphics = async () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/graphictimes", result);
+    const { data } = await axios.post("/graphicterms", result);
     if (data.status === 200) {
       showModal.value = false;
-      // result.GraphicId = '';
-      result.ChangeId = '';
+      result.GraphicId = '';
       result.Name = '';
-      result.StartTime = '';
-      result.EndTime = '';
+      result.Component='';
       // result.Current=false;
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

@@ -1,3 +1,4 @@
+
 import { createApp } from "vue";
 import App from "./App.vue";
 import axios from "axios";
@@ -27,11 +28,11 @@ axios.defaults.baseURL = "/api/";
 window.axios = axios;
 axios.defaults.withCredentials = true;
 
+
 // window.Swal = Swal;
 window.store = store;
 window.router = router;
 window.router = useToast;
-
 // window.Pusher = Pusher;
 
 // console.log(window.location.hostname);

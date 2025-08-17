@@ -110,6 +110,8 @@ Route::get('get-params-for-user-horizontal/{user_id}/{change_id}/{date}/{tabId}'
 Route::get('get-params-for-id/{param_id}', [ParametrValueController::class, 'getParamsForId']);
 Route::post('vparamsEdit', [ParametrValueController::class, 'update']);
 Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}', [ParametrValueController::class, 'getByBlog']);
+Route::get('selectResultBlogs/{date}', [ParametrValueController::class, 'selectResultBlogs']);
+
 
 Route::get('restart-password/{user_id}', [UserController::class, 'restart']);
 Route::get('/broadcast-time', [ParametrValueController::class, 'sendTimeUpdate']);

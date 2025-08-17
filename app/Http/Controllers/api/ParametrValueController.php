@@ -42,29 +42,29 @@ class ParametrValueController extends Controller
         dd($id);
         $result = ValuesParameters::where('ParametersID', $id)->get();
     }
-public function getByBlog($factoryId, $current, $ChangeID)
-{
-    $current = Carbon::parse($current)->toDateString();
-    $currentMonth = Carbon::parse($current)->month;
-    $currentYear = Carbon::parse($current)->year;
+    public function getByBlog($factoryId, $current, $ChangeID)
+    {
+        $current = Carbon::parse($current)->toDateString();
+        $currentMonth = Carbon::parse($current)->month;
+        $currentYear = Carbon::parse($current)->year;
 
-    $idArray = explode(',', $factoryId);
+        $idArray = explode(',', $factoryId);
 
-   $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
-    ->where('ChangeID', $ChangeID)
-    ->where(function ($query) use ($current, $currentMonth, $currentYear) {
-        $query->where(function ($q1) use ($currentMonth, $currentYear) {
-            $q1->where('TermID', 1)
-                ->whereMonth('Created', $currentMonth)
-                ->whereYear('Created', $currentYear);
-        })
-        ->orWhereRaw("((TermID != 1 OR TermID IS NULL) AND (CAST(Created AS DATE) = ? OR CAST(Changed AS DATE) = ?))", [$current, $current]);
-    })
-    ->get();
+        $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
+            ->where('ChangeID', $ChangeID)
+            ->where(function ($query) use ($current, $currentMonth, $currentYear) {
+                $query->where(function ($q1) use ($currentMonth, $currentYear) {
+                    $q1->where('TermID', 1)
+                        ->whereMonth('Created', $currentMonth)
+                        ->whereYear('Created', $currentYear);
+                })
+                    ->orWhereRaw("((TermID != 1 OR TermID IS NULL) AND (CAST(Created AS DATE) = ? OR CAST(Changed AS DATE) = ?))", [$current, $current]);
+            })
+            ->get();
 
 
-    return $result;
-}
+        return $result;
+    }
 
 
 
@@ -80,7 +80,7 @@ public function getByBlog($factoryId, $current, $ChangeID)
                 'ParametersID' => $request->ParametersID,
                 'SourcesID' => $request->SourceID,
                 'TimeID' => $request->GTid,
-                'TimeStr'=>$request->GTName,
+                'TimeStr' => $request->GTName,
                 'Created' => $request->daySelect,
                 'TermID' => $request->TMid,
                 'GraphicsTimesID' => $request->GrapicsID,
@@ -93,7 +93,7 @@ public function getByBlog($factoryId, $current, $ChangeID)
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
                     'TimeID' => $request->GTid,
-                    'TimeStr'=>$request->GTName,
+                    'TimeStr' => $request->GTName,
                     'ChangeID' => $request->change,
                     'Value' => $request->Value,
                     'GraphicsTimesID' => $request->GrapicsID,
@@ -115,7 +115,7 @@ public function getByBlog($factoryId, $current, $ChangeID)
                     'FactoryStructureID' => $request->FactoryStructureID,
                     'Comment' => $request->Comment,
                     'updated_at' => now(),
-                    'Changed' =>$request->daySelect,
+                    'Changed' => $request->daySelect,
                     'Changer' => $request->userId  // Faqat 'Updater' yangilanadi
                 ]);
                 $uuidString = $existingRecord->id; // Mavjud yozuvning id-si saqlanadi
@@ -201,13 +201,6 @@ public function getByBlog($factoryId, $current, $ChangeID)
 
     public function update(Request $request)
     {
-        // dd($request);
-        // $request->validate([
-        //     'id' => 'required|integer|exists:units,id',
-        //     'Name' => 'required|string|max:255',
-        //     'ShortName' => 'required|string|max:255',
-        //     'Comment' => 'nullable|string|max:255',
-        // ]);
 
         $unit = ValuesParameters::find($request->id);
         $unit->update([
@@ -226,14 +219,62 @@ public function getByBlog($factoryId, $current, $ChangeID)
     }
     public function vparamsGetValue($id)
     {
+        // Agar $id string ko'rinishda bo'lsa, uni massivga aylantiring
+        if (is_string($id)) {
+            $id = explode(',', $id);
+            // ixtiyoriy: har bir elementni tozalash va int ga o'tkazish
+            $id = array_map('trim', $id);
+            $id = array_map('intval', $id);
+        }
 
         return ValuesParameters::join('parameters', 'values_parameters.ParametersID', '=', 'parameters.id')
-            ->where('BlogID', $id)
-            ->where('TimeID', NULL)
-            ->whereDate('values_parameters.created_at', Carbon::today()) // Filter for current day
+            ->whereIn('BlogID', $id)
+            ->whereNull('TimeID')
+            ->whereDate('values_parameters.created_at', Carbon::today())
             ->select('parameters.id as Pid', 'parameters.Min', 'parameters.Max', 'parameters.Name', 'parameters.NameRus', 'values_parameters.*')
             ->get();
+    }
+    public function selectResultBlogs($selectedDate)
+    {
+        // Formatlash kerak bo'lsa (masalan, 14.04.2025 → 2025-04-14)
+        $date = \Carbon\Carbon::createFromFormat('d.m.Y', $selectedDate)->format('Y-m-d');
 
+        $results = DB::table('values_parameters as vp')
+            ->join('graphics_paramenters as gp', function ($join) {
+                $join->on('gp.ParametersID', '=', 'vp.ParametersID')
+                    ->on('gp.FactoryStructureID', '=', 'vp.FactoryStructureID');
+            })
+            ->join('groups as g', 'g.id', '=', 'gp.GroupID')
+            ->join('changes as ch', 'ch.id', '=', 'vp.ChangeID')
+            ->join('graphic_times as gt', 'gt.id', '=', 'vp.TimeID')
+            ->join('parameters as p', 'p.id', '=', 'vp.ParametersID')
+            ->where('vp.FactoryStructureID', 15)
+            ->whereDate('vp.Created', $date)
+            ->select([
+                'g.id as group_id',
+                'g.Name as group_name',
+                'ch.id as change_id',
+                'ch.Change as smena',
+                'gt.id as time_id',
+                'gt.Name as time_name',
+                'p.id as parameter_id',
+                'p.ShortName as parameter_name',
+                'p.ShortName as parameter_name_rus',
+                'p.Min as Min',
+                'p.Max as Max',
+                'vp.Value',
+                'gp.OrderNumber',
+            ])
+            ->orderBy('g.id')
+            ->orderBy('ch.Change')
+            ->orderBy('gt.Name')
+            ->orderBy('gp.OrderNumber')
+            ->get();
+
+        // Natijani group, smena, time_name bo'yicha group qilib json qaytarish
+        $grouped = $results->groupBy(['group_id', 'change_id', 'time_id']);
+
+        return response()->json($grouped->toArray());
     }
     public function delete(Request $request, $id)
     {

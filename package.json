@@ -20,6 +20,8 @@
         "vue": "^3.2.37"
     },
     "dependencies": {
+        "@handsontable/vue3": "^16.0.1",
+        "@jspreadsheet/vue": "^11.23.6",
         "@vuestic/tailwind": "^0.1.5",
         "ag-grid-vue3": "^31.3.2",
         "animejs": "^3.2.2",
@@ -29,9 +31,15 @@
         "devextreme-vue": "^24.1.7",
         "exceljs": "^4.4.0",
         "file-saver": "^2.0.5",
+        "handsontable": "^16.0.1",
         "highcharts": "^12.2.0",
         "highcharts-vue": "^2.0.1",
         "html2pdf.js": "^0.10.3",
+        "jquery": "^3.7.1",
+        "jquery-mousewheel": "^3.2.2",
+        "jspreadsheet": "^8.7.13",
+        "jspreadsheet-ce": "^4.15.0",
+        "luckysheet": "^2.1.13",
         "material-icons": "^1.13.12",
         "material-symbols": "^0.25.3",
         "sweetalert2": "^11.6.13",
@@ -48,5 +56,10 @@
         "vuex": "^4.0.2",
         "xlsx": "^0.18.5",
         "xlsx-js-style": "^1.2.0"
+    },
+    "overrides": {
+        "luckysheet": {
+            "jquery": "3.7.1"
+        }
     }
 }

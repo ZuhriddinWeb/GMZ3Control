@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        ValuesParameters::observe(ValuesParametersObserver::class);
+        // ValuesParameters::observe(ValuesParametersObserver::class);
         // \App\Models\GraphicTimes::observe(\App\Observers\GraphicTimesObserver::class);
     }
 }

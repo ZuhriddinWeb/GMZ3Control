@@ -15,7 +15,6 @@
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <VaSelect v-model="result.ParameterID" value-by="value" class="mb-1 w-full" :label="t('menu.params')"
               :options="params" searchable clearable />
-
             <VaInput class="w-full" v-model="result.Value"
               :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.value')" />
             <div class="flex gap-5 flex-wrap w-full mt-4">
@@ -96,10 +95,8 @@ const columnDefs = computed(() => {
     { headerName: t("table.value"), field: "value" },
     { headerName: t("table.startingDay"), field: "period_start_date" },
     { headerName: t("table.endingDay"), field: "period_end_date" },
-
     { headerName: t("table.comment"), field: "Comment", flex: 1 },
   ];
-
   if (canUpdate.value) {
     cols.push({
       cellClass: ['px-0'],
@@ -109,7 +106,6 @@ const columnDefs = computed(() => {
       cellRenderer: EditParam,
     });
   }
-
   if (canDelete.value) {
     cols.push({
       cellClass: ['px-0'],
@@ -119,16 +115,12 @@ const columnDefs = computed(() => {
       cellRenderer: DeleteParam,
     });
   }
-
   return cols;
 });
-
-
 const defaultColDef = {
   sortable: true,
   filter: true
 };
-
 const fetchData = async () => {
   try {
     const response = await axios.get('/static');
@@ -137,7 +129,6 @@ const fetchData = async () => {
     console.error('Error fetching data:', error);
   }
 };
-
 const fetchParams = async () => {
   try {
     const response = await axios.get('/param');
@@ -151,9 +142,6 @@ const fetchParams = async () => {
       value: graphic.id,
       text: graphic.name
     }));
-
-
-
   } catch (error) {
     console.error('Error fetching graphics data:', error);
   }
@@ -166,7 +154,7 @@ const formatDateLocal = (date) => {
 };
 
 const onSubmit = async () => {
- 
+
   try {
     const payload = {
       ...result,

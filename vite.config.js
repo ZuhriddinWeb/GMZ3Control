@@ -29,6 +29,7 @@ export default defineConfig({
     optimizeDeps: {
         // include: ['xlsx-style', 'cptable']
         exclude: ['xlsx-js-style'], // ⚠️ exclude qilish
+        include: ['jquery', 'jquery-mousewheel', 'luckysheet']
         
       },
       ssr: {

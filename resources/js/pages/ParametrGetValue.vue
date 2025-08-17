@@ -16,7 +16,7 @@
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
             <div class="grid grid-cols-1 md:grid-cols-1 gap-1 items-end w-full">
               <VaSelect v-model="result.ParametersID" value-by="value" class="mb-1" label="Parametr turini tanlang"
-                :options="ParamOptions" clearable />
+                :options="ParamOptions" searchable clearable />
               <!-- <VaSelect v-model="result.UnitsID" class="mb-1" label="Manbani tanlang" :options="SourceOptions"
                 clearable /> -->
               <!-- <VaSelect v-model="result.GTime" class="mb-1" label="Grafik vaqtini tanlang" :options="TimesOptions"
@@ -126,44 +126,13 @@ const columnDefs = ref([
     width: 80,
     headerClass: 'header-center',
   },
-  // {
-  //   headerName: t('table.change'),
-  //   field: "Change",
-  //   width: 80,
-  //   headerClass: 'header-center',
-  // },
-  // {
-  //   headerName: t('table.OrderNumber'),
-  //   field: "OrderNumber",
-  //   width: 80,
-  //   headerClass: 'header-center',
-  // },
   {
     headerName: t('table.parameters'),
     field: computed(() => locale.value === 'ru' ? 'NameRus' : 'Name'),
     flex: 1,
     headerClass: 'header-center',
   },
-  // {
-  //   headerName: t('table.graphictimes'),
-  //   headerClass: 'header-center',
-  //   children: [
-  //     {
-  //       headerName: t('table.startingTime'),
-  //       field: 'STime',
-  //       width: 120,
-  //       valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-  //       headerClass: 'header-center',
-  //     },
-  //     {
-  //       headerName: t('table.endingTime'),
-  //       field: 'ETime',
-  //       width: 120,
-  //       valueFormatter: (params) => format(new Date(`1970-01-01T${params.value}`), 'HH:mm'),
-  //       headerClass: 'header-center',
-  //     }
-  //   ]
-  // },
+
   {
     headerName: t('table.interval'),
     headerClass: 'header-center',
@@ -253,12 +222,6 @@ const gridOptions = {
   columnDefs: columnDefs.value,
   getRowClass,
   headerHeight: 43,
-  // onCellDoubleClicked : (params) => {
-  //   const { colDef, data } = params; // Get the entire row data
-  //   if (colDef.field === 'Value' && data.Value) {
-  //     openEditModal(params);
-  //   }
-  // },
 };
 const onCellDoubleClicked = (params) => {
   const { colDef, data } = params; // Get the entire row data
@@ -301,92 +264,16 @@ const determineChange = () => {
 
 
 const goToRoute = () => {
-  // variableValue.value = variableValue.value === 1 ? 0 : 1; 
   router.push('/vparams');
 };
 
 result.Change = determineChange();
 const currentChange = computed(() => determineChange());
-// const fetchData = async () => {
-//   try {
-//     const currentChange = result.Change;
-//     const currentTime = format(day.value, dateFormat);
 
-//     const [paramsResponse, valuesResponse] = await axios.all([
-//       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}`),
-//       // axios.get(`/vparamsuser/${store.state.user.structure_id}/${currentChange}/${currentTime}`)
-//       axios.get(`/vparams/${store.state.user.structure_id}`)
-
-//     ]);
-
-//     // Log response to debug
-//     // console.log('paramsResponse:', paramsResponse);
-//     // console.log('valuesResponse:', valuesResponse);
-
-//     // Ensure paramsResponse.data is an array
-//     const paramsData = Array.isArray(paramsResponse.data) ? paramsResponse.data : [];
-
-//     const firstIds = paramsData.map(item => `${item.ParametersID}_${item.GTid}`);
-//     const secondIds = oldTableData.value.map(item => `${item.ParametersID}_${item.GTid}`);
-
-//     const arrayOne = new Set(firstIds);
-//     const arrayTwo = new Set(secondIds);
-
-//     const first = [...arrayOne].filter(x => !arrayTwo.has(x));
-//     const second = [...arrayTwo].filter(x => !arrayOne.has(x));
-
-//     const diffs = [...first, ...second];
-
-//     const newItemsGrid = diffs.map(difference => {
-//       return paramsData.find(item => difference === `${item.ParametersID}_${item.GTid}`);
-//     }).filter(item => item !== undefined); // Filter out undefined items
-
-//     const values = valuesResponse.data;
-
-//     newItemsGrid.forEach((parametr, index) => {
-//       const select = values.find(val => val.TimeID === parametr.GTid && val.ParametersID === parametr.ParametersID);
-//       if (select) {
-//         newItemsGrid[index] = { ...parametr, ...select };
-//       }
-//     });
-
-//     gridApi.value.applyTransaction({
-//       add: newItemsGrid,
-//       addIndex: 0,
-//     });
-
-//     oldTableData.value = paramsData;
-//   } catch (error) {
-//     console.error('Error fetching data:', error);
-//   }
-// };
-// const fetchData = async () => {
-//   const currentChange = result.Change;
-//   const currentTime = format(day.value, dateFormat);
-//   const currentHour = new Date().getHours();
-//   const change = (currentHour >= 8 && currentHour < 20) ? 1 : 2;
-//   try {
-//     axios.all([
-//       axios.get(`/get-params-for-user/${store.state.user.structure_id}/${currentChange}/${currentTime}/${variableValue.value}`),
-//       axios.get(`/vparams/${store.state.user.structure_id}`)
-//     ])
-//       .then(axios.spread(({ data: params }, { data: values }) => {
-//         params.forEach((parametr, index) => {
-//           const select = values.find((val) => val.TimeID == parametr.GTid && val.ParametersID == parametr.ParametersID);
-//           if (select) {
-//             params[index] = { ...parametr, ...select };
-//           }
-//         });
-//         // params.sort((a, b) => (a.Value ? 1 : -1));
-//         rowData.value = params;
-//       }));
-//   } catch (error) {
-//     console.error('Error fetching data:', error);
-//   }
-// };
 const fetchData = async () => {
-    const currentChange = result.Change;
-    const currentTime = format(day.value, dateFormat);
+
+  const currentChange = result.Change;
+  const currentTime = format(day.value, dateFormat);
   try {
     const response = await axios.get(`/vparamsGetValue/${store.state.user.structure_id}`);
     rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
@@ -394,6 +281,7 @@ const fetchData = async () => {
     console.error('Error fetching data:', error);
   }
 };
+
 const onCellValueChanged = async (event) => {
   const { data, colDef, newValue, oldValue } = event;
   if (newValue !== oldValue) {
@@ -417,7 +305,7 @@ const onRowClicked = (event) => {
 const saveDataToServer = async (data) => {
   // console.log(data);
   try {
-    const response = await axios.post('/vparams', { ...data, userId,structureID });
+    const response = await axios.post('/vparams', { ...data, userId, structureID });
     removeFocusFromGrid();
     // focusOnMinColumn();
     fetchData()
@@ -426,11 +314,13 @@ const saveDataToServer = async (data) => {
     console.error('Error saving data', error);
   }
 };
+
 const removeFocusFromGrid = () => {
   if (gridApi.value) {
     gridApi.value.clearFocusedCell(); // Clear focus from all cells
   }
 };
+
 const focusOnMinColumn = () => {
   if (gridApi.value) {
     const allNodes = gridApi.value.getDisplayedRowAtIndex(0); // Get the first row node
@@ -503,7 +393,7 @@ const startIntervals = () => {
 
 const onSubmit = async () => {
   try {
-    const { data } = await axios.post("/vparams", {...result});
+    const { data } = await axios.post("/vparams", { ...result });
     if (data.status === 200) {
       showModal.value = false;
       result.ParametersID = "",
@@ -514,7 +404,7 @@ const onSubmit = async () => {
       result.BlogsID = '';
 
       await fetchData();
-      window.location.reload()
+      // window.location.reload()
 
     } else {
       console.error('Error saving data:', data.message);
@@ -528,14 +418,15 @@ const onSubmitEdit = async (rowNode) => {
     const { data } = await axios.post("/vparamsEdit", resultEdit);
     if (data.status === 200) {
       showModal.value = false;
-
       resultEdit.id = "";
       resultEdit.Comment = '';
       resultEdit.Value = '';
       resultEdit.userId = '';
+      if (gridApi.value) {
+        rowNode.setData(data.updatedRowData);
+        gridApi.value.refreshCells({ rowNodes: [rowNode] });
+      }
 
-      rowNode.setData(data.updatedRowData);
-      gridOptions.api.refreshCells();
     } else {
       console.error('Error saving data:', data.message);
     }
@@ -543,6 +434,7 @@ const onSubmitEdit = async (rowNode) => {
     console.error('Error saving data:', error);
   }
 };
+
 const stopIntervals = () => {
   if (dataIntervalId) {
     clearInterval(dataIntervalId);

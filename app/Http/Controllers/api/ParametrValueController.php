@@ -8,7 +8,7 @@ use App\Models\ValuesParameters;
 use DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\VPChangeSync;
 use App\Events\TimeUpdated;
 use Carbon\Carbon;
 class ParametrValueController extends Controller
@@ -50,7 +50,7 @@ class ParametrValueController extends Controller
 
         $idArray = explode(',', $factoryId);
 
-        $result = ValuesParameters::whereIn('FactoryStructureID', $idArray)
+        $result = VPChangeSync::whereIn('FactoryStructureID', $idArray)
             ->where('ChangeID', $ChangeID)
             ->where(function ($query) use ($current, $currentMonth, $currentYear) {
                 $query->where(function ($q1) use ($currentMonth, $currentYear) {
@@ -76,7 +76,7 @@ class ParametrValueController extends Controller
         $uuidString = (string) Str::uuid();
         try {
             // Yangi yoki mavjud yozuvni topish
-            $existingRecord = ValuesParameters::where([
+            $existingRecord = VPChangeSync::where([
                 'ParametersID' => $request->ParametersID,
                 'SourcesID' => $request->SourceID,
                 'TimeID' => $request->GTid,
@@ -88,7 +88,7 @@ class ParametrValueController extends Controller
 
             // Agar yozuv mavjud bo'lmasa, yangi yozuv qo'shiladi
             if (!$existingRecord) {
-                ValuesParameters::create([
+                VPChangeSync::create([
                     'id' => $uuidString,
                     'ParametersID' => $request->ParametersID,
                     'SourcesID' => $request->SourceID,
@@ -121,7 +121,7 @@ class ParametrValueController extends Controller
                 $uuidString = $existingRecord->id; // Mavjud yozuvning id-si saqlanadi
             }
 
-            $unit = ValuesParameters::where('id', $uuidString)->first();
+            $unit = VPChangeSync::where('id', $uuidString)->first();
 
             return response()->json([
                 'status' => 200,

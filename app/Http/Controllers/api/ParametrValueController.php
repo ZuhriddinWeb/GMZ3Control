@@ -248,7 +248,7 @@ class ParametrValueController extends Controller
             ->join('changes as ch', 'ch.id', '=', 'vp.ChangeID')
             ->join('graphic_times as gt', 'gt.id', '=', 'vp.TimeID')
             ->join('parameters as p', 'p.id', '=', 'vp.ParametersID')
-            ->where('vp.FactoryStructureID', 15)
+            ->where('vp.FactoryStructureID', 5)
             ->whereDate('vp.Created', $date)
             ->select([
                 'g.id as group_id',

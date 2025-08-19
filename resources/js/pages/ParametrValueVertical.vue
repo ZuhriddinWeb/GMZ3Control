@@ -27,9 +27,10 @@
         <div class="flex justify-end">
           <VaButton @click="exportToExcelReal" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
             icon="file_download">
-            Export Excel 
+            Export Excel
           </VaButton>
-          <VaButton @click="printTable" icon="print" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10">Pechat</VaButton>
+          <VaButton @click="printTable" icon="print" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10">
+            Pechat</VaButton>
           <VaButton @click="toggleFullScreen" class="btn btn-primary items-center justify-center mt-3 ml-3 w-10"
             icon="fullscreen" />
 
@@ -41,7 +42,7 @@
         <VaTabs v-model="selectedTab" stateful grow @keydown="handleTabKey" tabindex="0">
           <template #tabs>
             <VaTab v-for="page in pagesValue" :key="page.NumberPage" :name="page.NumberPage">
-              {{ page.Name }}
+             <span @contextmenu.prevent.stop="openDashboardFor(page)">{{ page.Name }}</span>
             </VaTab>
           </template>
         </VaTabs>
@@ -51,11 +52,13 @@
       </div>
       <EditValue v-if="showModalEdit" :showModalEdit="showModalEdit" :resultEdit="resultEdit" @update="handleUpdate" />
     </main>
+    <DashboardModal v-model="dashboardVisible" :page="dashboardPage" :day="day.day" :smena="day.smena"
+      :factory-id="props.id" :structure-id="store.state.user.structure_id" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch, onBeforeUnmount,defineProps } from 'vue';
+import { ref, reactive, computed, onMounted, watch, onBeforeUnmount, defineProps } from 'vue';
 import axios from 'axios';
 import { useI18n } from 'vue-i18n';
 import { format, parse } from 'date-fns';
@@ -68,6 +71,16 @@ import { useStore } from 'vuex';
 const store = useStore();
 import * as XLSX from 'xlsx';
 import { VueShiftCalendar } from 'vue-shift-calendar';
+import DashboardModal from '@/components/DashboardModal.vue' // yo‘lni loyihangizga moslang
+
+const dashboardVisible = ref(false)
+const dashboardPage = ref(null)
+
+const openDashboardFor = (page) => {
+  dashboardPage.value = page
+  dashboardVisible.value = true
+}
+
 const props = defineProps({
   id: Number
 })
@@ -541,7 +554,7 @@ async function getPages(newTab) {
       if (select) {
         params[index] = { ...parametr, ...select };
       }
-      
+
     });
 
     // ✅ Saqlashdan oldin ham tekshirib qo'yish mumkin

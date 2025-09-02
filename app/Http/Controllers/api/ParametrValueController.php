@@ -234,48 +234,244 @@ class ParametrValueController extends Controller
             ->select('parameters.id as Pid', 'parameters.Min', 'parameters.Max', 'parameters.Name', 'parameters.NameRus', 'values_parameters.*')
             ->get();
     }
-    public function selectResultBlogs($selectedDate)
-    {
-        // Formatlash kerak bo'lsa (masalan, 14.04.2025 → 2025-04-14)
-        $date = \Carbon\Carbon::createFromFormat('d.m.Y', $selectedDate)->format('Y-m-d');
+public function selectResultBlogs($docId, $date)
+{
+    $forDate = \Carbon\Carbon::createFromFormat('d.m.Y', $date)->format('Y-m-d');
 
-        $results = DB::table('values_parameters as vp')
-            ->join('graphics_paramenters as gp', function ($join) {
-                $join->on('gp.ParametersID', '=', 'vp.ParametersID')
-                    ->on('gp.FactoryStructureID', '=', 'vp.FactoryStructureID');
-            })
-            ->join('groups as g', 'g.id', '=', 'gp.GroupID')
-            ->join('changes as ch', 'ch.id', '=', 'vp.ChangeID')
-            ->join('graphic_times as gt', 'gt.id', '=', 'vp.TimeID')
-            ->join('parameters as p', 'p.id', '=', 'vp.ParametersID')
-            ->where('vp.FactoryStructureID', 5)
-            ->whereDate('vp.Created', $date)
-            ->select([
-                'g.id as group_id',
-                'g.Name as group_name',
-                'ch.id as change_id',
-                'ch.Change as smena',
-                'gt.id as time_id',
-                'gt.Name as time_name',
-                'p.id as parameter_id',
-                'p.ShortName as parameter_name',
-                'p.ShortName as parameter_name_rus',
-                'p.Min as Min',
-                'p.Max as Max',
-                'vp.Value',
-                'gp.OrderNumber',
-            ])
-            ->orderBy('g.id')
-            ->orderBy('ch.Change')
-            ->orderBy('gt.Name')
-            ->orderBy('gp.OrderNumber')
-            ->get();
+    $sql = <<<SQL
+DECLARE @DocId   INT  = :doc_id;
+DECLARE @ForDate DATE = :for_date;
 
-        // Natijani group, smena, time_name bo'yicha group qilib json qaytarish
-        $grouped = $results->groupBy(['group_id', 'change_id', 'time_id']);
+;WITH D AS (
+  SELECT TOP (1)
+    dnp.IdNumberPage,
+    dnp.FactoryStructureID,
+    dnp.NumberPageBlogs,
+    dnp.GroupBlogs,
+    dnp.ParameterBlogs
+  FROM dbo.document_number_pages dnp
+  WHERE dnp.IdNumberPage = @DocId
+),
+-- JSON ni tozalash (agar tashqi qo‘shtirnoq va \" bo‘lsa)
+J AS (
+  SELECT
+    FSRC = CASE WHEN LEFT(FactoryStructureID,1)='"'
+                THEN REPLACE(SUBSTRING(FactoryStructureID,2,LEN(FactoryStructureID)-2), '\"','"')
+                ELSE FactoryStructureID END,
+    NPB  = CASE WHEN LEFT(NumberPageBlogs,1)='"'
+                THEN REPLACE(SUBSTRING(NumberPageBlogs,2,LEN(NumberPageBlogs)-2), '\"','"')
+                ELSE NumberPageBlogs END,
+    GB   = CASE WHEN LEFT(GroupBlogs,1)='"'
+                THEN REPLACE(SUBSTRING(GroupBlogs,2,LEN(GroupBlogs)-2), '\"','"')
+                ELSE GroupBlogs END,
+    PB   = CASE WHEN LEFT(ParameterBlogs,1)='"'
+                THEN REPLACE(SUBSTRING(ParameterBlogs,2,LEN(ParameterBlogs)-2), '\"','"')
+                ELSE ParameterBlogs END
+  FROM D
+),
+-- 1) sex -> (sexIdx, sexId)
+FS AS (
+  SELECT sexIdx = TRY_CONVERT(int, jfs.[key]),
+         sexId  = TRY_CONVERT(int, jfs.[value])
+  FROM J CROSS APPLY OPENJSON(J.FSRC) jfs
+),
+-- 2) pages -> (sexIdx,pageIdx,pageId)
+PAGES AS (
+  SELECT sexIdx  = TRY_CONVERT(int, jpb.[key]),
+         pageIdx = TRY_CONVERT(int, jp.[key]),
+         pageId  = TRY_CONVERT(int, jp.[value])
+  FROM J
+  CROSS APPLY OPENJSON(J.NPB) jpb
+  CROSS APPLY OPENJSON(jpb.[value]) jp
+),
+-- 3) groups -> (sexIdx,pageIdx,groupIdx,groupId)
+GRPS AS (
+  SELECT sexIdx   = TRY_CONVERT(int, jg1.[key]),
+         pageIdx  = TRY_CONVERT(int, jg.[key]),
+         groupIdx = TRY_CONVERT(int, jg2.[key]),
+         groupId  = TRY_CONVERT(int, jg2.[value])
+  FROM J
+  CROSS APPLY OPENJSON(J.GB) jg1
+  CROSS APPLY OPENJSON(jg1.[value]) jg
+  CROSS APPLY OPENJSON(jg.[value])  jg2
+),
+-- 4) params -> (sexIdx,pageIdx,groupIdx,paramId)
+PB AS (
+  SELECT sexIdx   = TRY_CONVERT(int, j1.[key]),
+         pageIdx  = TRY_CONVERT(int, j2.[key]),
+         groupIdx = TRY_CONVERT(int, j3.[key]),
+         paramId  = TRY_CONVERT(uniqueidentifier, jpid.[value])
+  FROM J
+  CROSS APPLY OPENJSON(J.PB) j1
+  CROSS APPLY OPENJSON(j1.[value]) j2
+  CROSS APPLY OPENJSON(j2.[value]) j3
+  CROSS APPLY OPENJSON(j3.[value]) jpid
+),
+-- 5) indekslar bo‘yicha bog‘lash va GrapicsID’ni olish
+XP AS (
+  SELECT
+    FS.sexId, PAGES.pageId, GRPS.groupId, PB.paramId,
+    gp.GrapicsID
+  FROM FS
+  JOIN PAGES ON PAGES.sexIdx = FS.sexIdx
+  JOIN GRPS  ON GRPS.sexIdx  = FS.sexIdx  AND GRPS.pageIdx = PAGES.pageIdx
+  JOIN PB    ON PB.sexIdx    = FS.sexIdx  AND PB.pageIdx   = PAGES.pageIdx AND PB.groupIdx = GRPS.groupIdx
+  JOIN dbo.graphics_paramenters gp
+       ON gp.ParametersID = PB.paramId
+      AND gp.GroupID      = GRPS.groupId
+      AND gp.PageId       = PAGES.pageId
+),
+-- 6) barcha vaqt slotlari (graphic_times)
+T AS (
+  SELECT
+    XP.sexId, XP.pageId, XP.groupId, XP.paramId, XP.GrapicsID,
+    gt.id        AS gt_id,
+    gt.Change    AS change_id,
+    gt.Name      AS gt_name,
+    gt.StartTime AS gt_start,
+    gt.EndTime   AS gt_end
+  FROM XP
+  JOIN dbo.graphic_times gt
+    ON gt.GraphicsID = XP.GrapicsID
+),
+-- 7) real qiymatlar (LEFT JOIN — bo‘sh bo‘lishi mumkin)
+REALV AS (
+  SELECT
+    T.groupId, T.pageId, T.sexId, T.paramId, T.change_id, T.gt_id, T.gt_start, T.gt_end,
+    vp.TimeID    AS time_id,
+    vp.TimeStr   AS time_str,
+    TRY_CONVERT(float, vp.Value) AS real_val
+  FROM T
+  LEFT JOIN dbo.values_parameters vp
+    ON vp.ParametersID    = T.paramId
+   AND vp.GraphicsTimesID = T.gt_id
+   AND CAST(vp.Created AS date) = @ForDate
+),
+/* 8) FORMULA — dbo.param_formulas (jadval nomini o‘zingiznikiga almashtiring)
+   tokens: ["Pid=<GUID>|agg=DAY|func=VALUE|scope=CURRENT", "*", "2"]
+   qo'llangan qoida: kun bo‘yicha oxirgi qiymatni olib, operator va sondan foyd. */
+PF0 AS (  -- shu doc sahifa uchun faqat mos formulalar
+  SELECT pf.*
+  FROM dbo.svodka_formulas pf
+  WHERE pf.page_id_blog = @DocId
+),
+PF_TOK AS (  -- tokenlarni pozitsiya bilan ochish
+  SELECT
+    pf.param_id,
+    pf.sex_id,
+    pf.page_id,
+    pf.group_id,
+    t.[key]  AS tok_pos,
+    t.[value] AS tok_val
+  FROM PF0 pf
+  CROSS APPLY OPENJSON(pf.tokens) t
+),
+PF_PARSED AS ( -- 0-pozitsiya: Pid=..., 1-pozitsiya: operator, 2-pozitsiya: son
+  SELECT
+    p0.param_id, p0.sex_id, p0.page_id, p0.group_id,
+    TRY_CONVERT(uniqueidentifier,
+      SUBSTRING(p0.tok_val, CHARINDEX('Pid=', p0.tok_val) + 4, 36)
+    ) AS ref_pid,
+    p1.tok_val AS op,
+    TRY_CONVERT(float, p2.tok_val) AS num
+  FROM PF_TOK p0
+  LEFT JOIN PF_TOK p1 ON p1.param_id = p0.param_id AND p1.sex_id=p0.sex_id AND p1.page_id=p0.page_id AND p1.group_id=p0.group_id AND p1.tok_pos = 1
+  LEFT JOIN PF_TOK p2 ON p2.param_id = p0.param_id AND p2.sex_id=p0.sex_id AND p2.page_id=p0.page_id AND p2.group_id=p0.group_id AND p2.tok_pos = 2
+  WHERE p0.tok_pos = 0
+),
+PF_REF AS ( -- kun bo‘yicha reference parametrning oxirgi qiymati
+  SELECT
+    pp.param_id, pp.sex_id, pp.page_id, pp.group_id,
+    pp.ref_pid, pp.op, pp.num,
+    (SELECT TOP (1) TRY_CONVERT(float, vp.Value)
+     FROM dbo.values_parameters vp
+     WHERE vp.ParametersID = pp.ref_pid
+       AND CAST(vp.Created AS date) = @ForDate
+     ORDER BY vp.Created DESC, vp.id DESC) AS ref_val
+  FROM PF_PARSED pp
+),
+PF_VAL AS ( -- formulani hisoblash
+  SELECT
+    pr.param_id, pr.sex_id, pr.page_id, pr.group_id,
+    CASE pr.op
+      WHEN '+' THEN pr.ref_val + pr.num
+      WHEN '-' THEN pr.ref_val - pr.num
+      WHEN '*' THEN pr.ref_val * pr.num
+      WHEN '/' THEN CASE WHEN pr.num = 0 THEN NULL ELSE pr.ref_val / pr.num END
+      ELSE pr.ref_val
+    END AS f_val
+  FROM PF_REF pr
+),
+-- 9) REAL + FORMULA ni birlashtirish: real yo‘q bo‘lsa formula
+FINAL AS (
+  SELECT
+    rv.groupId,
+    rv.pageId,
+    rv.sexId,
+    rv.paramId           AS parameter_id,
+    rv.change_id,
+    rv.gt_id,
+    rv.gt_start,
+    rv.gt_end,
+    rv.time_id,
+    rv.time_str,
+    COALESCE(rv.real_val, pf.f_val) AS out_val,
+    CASE WHEN rv.real_val IS NULL AND pf.f_val IS NOT NULL THEN 1 ELSE 0 END AS WithFormula
+  FROM REALV rv
+  LEFT JOIN PF_VAL pf
+    ON pf.param_id = rv.paramId
+   AND pf.sex_id   = rv.sexId
+   AND pf.page_id  = rv.pageId
+   AND pf.group_id = rv.groupId
+)
 
-        return response()->json($grouped->toArray());
+SELECT 
+  f.groupId,
+  g.Name AS group_name,
+  f.change_id AS change_no,
+  f.time_id,
+  COALESCE(f.time_str, CONVERT(varchar(8), f.gt_start, 108)) AS time_name,
+  f.parameter_id,
+  p.Name AS parameter_name,
+  p.Min  AS [Min],
+  p.Max  AS [Max],
+  f.out_val AS [Value],
+  f.WithFormula
+FROM FINAL f
+LEFT JOIN dbo.[groups]     g ON g.id = f.groupId
+LEFT JOIN dbo.[parameters] p ON p.id = f.parameter_id
+ORDER BY f.groupId, f.change_id, f.gt_start, f.time_id;
+SQL;
+
+    $rows = DB::select($sql, [
+        'doc_id'   => (int) $docId,
+        'for_date' => $forDate,
+    ]);
+
+    // groupId -> changeId -> timeId -> [items]
+    $out = [];
+    foreach ($rows as $r) {
+        $gId  = (string) $r->groupId;
+        $chId = (string) ($r->change_no ?? 0);
+        $tKey = (string) ($r->time_id ?? 0);
+
+        $out[$gId][$chId][$tKey][] = [
+            'parameter_id'   => $r->parameter_id,
+            'parameter_name' => $r->parameter_name,
+            'Value'          => $r->Value,
+            'Min'            => $r->Min,
+            'Max'            => $r->Max,
+            'time_name'      => $r->time_name,
+            'group_name'     => $r->group_name,
+            'WithFormula'    => (string) ($r->WithFormula ?? 0),
+        ];
     }
+
+    return response()->json($out);
+}
+
+
+
     public function delete(Request $request, $id)
     {
         try {

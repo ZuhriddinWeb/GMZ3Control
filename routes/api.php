@@ -9,6 +9,7 @@ use App\Http\Controllers\api\ServersController;
 
 use App\Http\Controllers\api\StaticParametersController;
 
+use App\Http\Controllers\api\SvodkaFormulaController;
 use App\Http\Controllers\api\TermController;
 
 use Illuminate\Http\Request;
@@ -78,6 +79,8 @@ Route::match(['get', 'post', 'put', 'delete'], '/documents/{id?}', [DocumentsCon
 Route::match(['get', 'post', 'put', 'delete'], '/servers/{id?}', [ServersController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/static/{id?}', [StaticParametersController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/svodkaFormula/{id?}', [SvodkaFormulaController::class, 'handle']);
+
 
 
 Route::get('/structures-number', [DocumentNumberPageController::class, 'getStructures']);
@@ -110,8 +113,8 @@ Route::get('get-params-for-user-horizontal/{user_id}/{change_id}/{date}/{tabId}'
 Route::get('get-params-for-id/{param_id}', [ParametrValueController::class, 'getParamsForId']);
 Route::post('vparamsEdit', [ParametrValueController::class, 'update']);
 Route::get('vparams-value/{factoryId}/{cuurent_date}/{currnetchange}', [ParametrValueController::class, 'getByBlog']);
-Route::get('selectResultBlogs/{date}', [ParametrValueController::class, 'selectResultBlogs']);
-
+Route::get('selectResultBlogs/{doc_id}/{date}', [ParametrValueController::class, 'selectResultBlogs']);
+Route::get('calculator-structure/{id}', [DocumentNumberPageController::class, 'getCalculator']);
 
 Route::get('restart-password/{user_id}', [UserController::class, 'restart']);
 Route::get('/broadcast-time', [ParametrValueController::class, 'sendTimeUpdate']);

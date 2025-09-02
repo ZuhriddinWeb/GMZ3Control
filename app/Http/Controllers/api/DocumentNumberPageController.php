@@ -12,6 +12,8 @@ use App\Models\NumberPage;
 use App\Models\Groups;
 use App\Models\GraphicsParamenters;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use App\Models\Parameters;
 use Closure;
 class DocumentNumberPageController extends Controller
 {
@@ -214,6 +216,154 @@ class DocumentNumberPageController extends Controller
 
         return response()->json($pages);
     }
+    public function getBlogsTree($docId)
+{
+    $record = DocumentNumberPage::where('IdNumberPage', $docId)->first();
+
+    // Agar topilmasa, bo'sh daraxt qaytariladi
+    if (!$record) {
+        return response()->json([
+            'tree' => $this->getFullTree(),
+            'selected' => [],
+        ]);
+    }
+
+    $structureIds = json_decode($record->FactoryStructureID ?? '[]', true);
+    $pageIds = json_decode($record->NumberPageBlogs ?? '[]', true);
+    $groupIds = json_decode($record->GroupBlogs ?? '[]', true);
+    $parameterIds = json_decode($record->ParameterBlogs ?? '[]', true);
+
+    return response()->json([
+        'tree' => $this->getFullTree(), // barcha daraxt
+        'selected' => array_merge($structureIds, $pageIds, $groupIds, $parameterIds),
+    ]);
+}
+public function getCalculator($docId): JsonResponse
+{
+    // $docId=167;
+    /** @var DocumentNumberPage|null $doc */
+    $doc = DocumentNumberPage::where('IdNumberPage', $docId)->first();
+
+    if (!$doc) {
+        return response()->json([
+            'docId' => $docId,
+            'items' => [],
+            'message' => 'Doc topilmadi',
+        ]);
+    }
+
+    // ---------- JSON ni xavfsiz ochish (double-encoded holatlar uchun) ----------
+    $toArray = function ($val) {
+        // allaqachon array bo‘lsa
+        if (is_array($val)) return $val;
+
+        // bo‘sh yoki null bo‘lsa
+        if ($val === null || $val === '') return [];
+
+        // ba’zan DB da "\"[[...]]\"" ko‘rinishda saqlangan bo‘ladi
+        // uni ketma-ket json_decode qilib array bo‘lguncha ochamiz
+        $decoded = $val;
+        $guard = 0;
+        while (!is_array($decoded) && is_string($decoded) && $guard < 5) {
+            $decoded = json_decode($decoded, true);
+            // json_decode xatolik bersa — to‘xtaymiz
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return [];
+            }
+            $guard++;
+        }
+        return is_array($decoded) ? $decoded : [];
+    };
+
+    $factoryStructureIDs = $toArray($doc->FactoryStructureID); // [sid, sid, ...]
+    $numberPageBlogs     = $toArray($doc->NumberPageBlogs);     // [[pageId,...],[...],...]
+    $groupBlogs          = $toArray($doc->GroupBlogs);          // [[[groupId,...]], [[...]], ...]
+    $parameterBlogs      = $toArray($doc->ParameterBlogs);      // [[[[paramGuid,...]]], [[[...]]], ...]
+
+    // ---------- Oldindan nomlarni olib qo‘yamiz (bitta so‘rov bilan) ----------
+    // Groups (id larini tekis qilib yig‘amiz)
+    $groupIds = collect($groupBlogs)->flatten(2)->filter()->unique()->values(); // 2 qatlamga qadar
+    $groupMap = $groupIds->isNotEmpty()
+        ? Groups::whereIn('id', $groupIds)->pluck('Name', 'id')
+        : collect();
+
+    // Parameters (GUID larni tekis yig‘amiz)
+    $paramIds = collect($parameterBlogs)->flatten(3)->filter()->unique()->values();
+    $paramMap = $paramIds->isNotEmpty()
+        ? Parameters::whereIn('id', $paramIds)->pluck('Name', 'id')
+        : collect();
+
+    // FactoryStructure nomlari
+    $fsMap = !empty($factoryStructureIDs)
+        ? FactoryStructure::whereIn('id', $factoryStructureIDs)->pluck('Name', 'id')
+        : collect();
+
+    // NumberPage nomlari — E’TIBOR: sizda "NumberPageBlogs" ichida saqlanayotgan ID — bu
+    // haqiqiy "number_pages" jadvalidagi PK bo‘lsa, shuni pluck qilamiz.
+    $pageIds = collect($numberPageBlogs)->flatten(1)->filter()->unique()->values();
+    $pageMap = $pageIds->isNotEmpty()
+        ? NumberPage::whereIn('id', $pageIds)->pluck('Name', 'id')
+        : collect();
+
+    // ---------- Daraxtni yig‘amiz: sex -> pages -> groups -> parameters ----------
+    $items = [];
+
+    foreach ($factoryStructureIDs as $sIdx => $sexId) {
+        $sexName = $fsMap[$sexId] ?? null;
+
+        $pagesForSex = $numberPageBlogs[$sIdx] ?? [];   // [pageId, pageId, ...]
+        $groupsForSex = $groupBlogs[$sIdx] ?? [];       // [[groupId,...], [groupId,...], ...] — har bir sahifa uchun
+        $paramsForSex = $parameterBlogs[$sIdx] ?? [];    // [[[paramGuid,...]], [[paramGuid,...]], ...] — sahifa->group bo‘yicha
+
+        $pageNodes = [];
+
+        foreach ($pagesForSex as $pIdx => $pageId) {
+            $pageName = $pageMap[$pageId] ?? null;
+
+            $groupIdsForPage = $groupsForSex[$pIdx] ?? [];     // [groupId, groupId, ...]
+            $paramsGroupsForPage = $paramsForSex[$pIdx] ?? []; // [[paramGuid,...], [paramGuid,...], ...]
+
+            $groupNodes = [];
+
+            foreach ($groupIdsForPage as $gIdx => $groupId) {
+                $groupName = $groupMap[$groupId] ?? null;
+
+                $paramIdsForGroup = $paramsGroupsForPage[$gIdx] ?? []; // [guid, guid, ...]
+                $parameterNodes = [];
+
+                foreach ($paramIdsForGroup as $pid) {
+                    $parameterNodes[] = [
+                        'id'   => $pid,
+                        'name' => $paramMap[$pid] ?? null,
+                    ];
+                }
+
+                $groupNodes[] = [
+                    'groupId'   => $groupId,
+                    'groupName' => $groupName,
+                    'parameters'=> $parameterNodes,
+                ];
+            }
+
+            $pageNodes[] = [
+                'pageId'   => $pageId,
+                'pageName' => $pageName,
+                'groups'   => $groupNodes,
+            ];
+        }
+
+        $items[] = [
+            'sexId'   => $sexId,
+            'sexName' => $sexName,
+            'pages'   => $pageNodes,
+        ];
+    }
+
+    return response()->json([
+        'docId' => (int)$doc->IdNumberPage,
+        'items' => $items,
+    ]);
+}
     public function getGroups(int $sexId, int $pageId): JsonResponse
     {
         $groups = Groups::where('StructureID', $sexId)

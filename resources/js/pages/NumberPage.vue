@@ -47,6 +47,7 @@ import 'vuestic-ui/dist/vuestic-ui.css';
 import DeleteBlog from '../components/NumberPage/DeleteBlog.vue';
 import EditBlog from '../components/NumberPage/EditBlog.vue';
 import AddForDocuments from '../components/NumberPage/AddForDocuments.vue';
+import ParamsControl from '../components/NumberPage/ParamsControl.vue';
 
 import { useI18n } from 'vue-i18n';
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
@@ -101,6 +102,15 @@ const columnDefs = computed(() => {
     { headerName: t('table.comment'), field: getFieldShortName() },
   ];
  if (props.id==22) {
+    cols.push({
+      cellClass: ['px-0'],
+      headerName: "",
+      field: "",
+      width: 70,
+      cellRenderer: ParamsControl,
+    });
+  }
+   if (props.id==22) {
     cols.push({
       cellClass: ['px-0'],
       headerName: "",

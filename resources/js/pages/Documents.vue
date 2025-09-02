@@ -23,15 +23,14 @@ const rowData = ref([]);
 // VUE o'zgaruvchilar
 
 let jexcel = null
-
+const docId = 167 // yoki props/route’dan oling
 const fetchData = async (date) => {
   try {
-    const response = await axios.get(`/selectResultBlogs/${formatDate(date)}`)
-    // Faqat API dan kelgan natijani BEVOSITA yozing!
-    rowData.value = response.data // Faqat shu!
-    console.log('API dan kelgan natija:', rowData.value)
-  } catch (error) {
-    console.error('Error fetching data:', error)
+    const { data } = await axios.get(`/selectResultBlogs/${docId}/${formatDate(date)}`)
+    rowData.value = data     // Backenddan kelgan nested JSON ni bevosita yozing
+    // console.log('API natija:', rowData.value)
+  } catch (e) {
+    console.error(e)
   }
 }
 
@@ -149,6 +148,7 @@ function formatDate(date) {
 // }
 
 onMounted(() => {
+  fetchData(value.value)
   // Boshlang'ich data (faqat birinchi qator)
   const data = [
     [formatDate(value.value), ...Array(18).fill('')],
@@ -197,6 +197,7 @@ function formatShortTime(timeStr) {
   const parts = timeStr.split(':')
   return parts[0] + ':' + parts[1]
 }
+
 function roundValue(val) {
   const n = Number(val)
   if (isNaN(n)) return val
@@ -256,117 +257,133 @@ watch(rowData, () => {
 
   let currentStartRow = 2;
   let currentStartCol = 0;
-  let maxColInRow = 0; // Har bir qatordagi eng ko‘p ustun soni (eng keng jadval uchun)
-  let jadvallarInRow = 0; // Qator (yani row) ichida nechta jadval yonma-yon chiqadi
+  let jadvallarInRow = 0;
 
-  groupIds.forEach((groupId, groupIdx) => {
+  groupIds.forEach((groupId) => {
     const group = rowData.value[groupId];
     const changeIds = Object.keys(group);
-    let groupMaxRowCount = 0; // 🟩 Shu group ichida maksimal rowCount saqlanadi
 
-    changeIds.forEach((changeId, changeIdx) => {
+    // Har bir group uchun maksimal balandlikni hisoblab boramiz
+    let groupMaxRowCount = 0;
+
+    changeIds.forEach((changeId) => {
       const change = group[changeId];
       const timeIds = Object.keys(change);
-      const paramsSample = change[timeIds[0]] || [];
-      if (!paramsSample.length) return;
-      const parameterNames = paramsSample.map(x => x.parameter_name);
-      const timeNames = timeIds.map(tid => change[tid][0]?.time_name);
 
-      const colCount = parameterNames.length + 1;
-      const rowCount = timeNames.length + 3;
+      // 1) Header uchun unikal parametrlar (faqat birinchi time’dan emas, butun change’dan)
+      const allParams = new Set();
+      timeIds.forEach(tid => {
+        const arr = change[tid] || [];
+        arr.forEach(x => allParams.add(x.parameter_name));
+      });
+      const parameterNames = Array.from(allParams);
 
-      // 🟩 Max rowCount yangilab boriladi
-      if (rowCount > groupMaxRowCount) groupMaxRowCount = rowCount;
+      // 2) Vaqtlarni unikal qilib, sortlab olamiz (08:00 bir marta)
+      const uniqueTimes = Array.from(new Set(
+        timeIds.map(tid => {
+          const arr = change[tid] || [];
+          return arr[0]?.time_name || '';
+        })
+      )).sort(); // kerak bo‘lsa o‘z sortingiz
 
-      jexcel.setValueFromCoords(currentStartCol, currentStartRow, paramsSample[0]?.group_name || '');
-      jexcel.setValueFromCoords(currentStartCol, currentStartRow + 1, changeId + '-Smena');
+      const colCount = parameterNames.length + 1;      // +1 — “Vaqt” ustuni
+      const rowCount = uniqueTimes.length + 3;         // 3 — group/smena/header qatorlari
 
+      groupMaxRowCount = Math.max(groupMaxRowCount, rowCount);
 
-      // group rang
-      let groupStyle = {};
+      // 3) Sarlavha qismi
+      jexcel.setValueFromCoords(currentStartCol, currentStartRow, change[timeIds[0]]?.[0]?.group_name || '');
+      jexcel.setValueFromCoords(currentStartCol, currentStartRow + 1, `${changeId}-Smena`);
+
+      // ranglar
+      const headerStyle = {};
       for (let i = 0; i < colCount; i++) {
-        const cell = `${getColLetter(currentStartCol + i)}${currentStartRow + 1}`;
-        groupStyle[cell] = 'background: #c7efc4; font-weight: bold;';
+        const gCell = `${getColLetter(currentStartCol + i)}${currentStartRow + 1}`;
+        headerStyle[gCell] = 'background: #c7efc4; font-weight: bold;';
+        const sCell = `${getColLetter(currentStartCol + i)}${currentStartRow + 2}`;
+        headerStyle[sCell] = 'background: #cfe2f3; font-weight: bold;';
+        const hCell = `${getColLetter(currentStartCol + i)}${currentStartRow + 3}`;
+        headerStyle[hCell] = 'background: #c9b2d6; font-weight: bold;';
       }
-      setTimeout(() => jexcel.setStyle(groupStyle), 20);
-      // smena rang
-      let shiftStyle = {};
-      for (let i = 0; i < colCount; i++) {
-        const cell = `${getColLetter(currentStartCol + i)}${currentStartRow + 2}`;
-        shiftStyle[cell] = 'background: #cfe2f3; font-weight: bold;';
-      }
-      setTimeout(() => jexcel.setStyle(shiftStyle), 20);
+      setTimeout(() => jexcel.setStyle(headerStyle), 10);
 
-      let paramStyle = {};
-      for (let i = 0; i < colCount; i++) {
-        const cell = `${getColLetter(currentStartCol + i)}${currentStartRow + 3}`;
-        paramStyle[cell] = 'background: #c9b2d6; font-weight: bold;';
-      }
-      setTimeout(() => jexcel.setStyle(paramStyle), 20);
-
+      // 4) Header hujayralari: “Vaqt” + parametr nomlari
       jexcel.setValueFromCoords(currentStartCol, currentStartRow + 2, "Vaqt");
-      parameterNames.forEach((paramName, colIdx) => {
-        jexcel.setValueFromCoords(currentStartCol + 1 + colIdx, currentStartRow + 2, paramName);
+      parameterNames.forEach((p, i) => {
+        jexcel.setValueFromCoords(currentStartCol + 1 + i, currentStartRow + 2, p);
       });
 
-      timeNames.forEach((timeName, rowIdx) => {
-        const row = currentStartRow + 3 + rowIdx;
+      // 5) Parametr nomidan kolonkaga index xarita
+      const colIndexByParam = new Map();
+      parameterNames.forEach((p, i) => colIndexByParam.set(p, i));
 
-        // Vaqtni birinchi ustunga yozish
-        jexcel.setValueFromCoords(currentStartCol, row, formatShortTime(timeName));
+      // 6) Vaqt qatorlarini to‘ldirish
+      uniqueTimes.forEach((tName, rIdx) => {
+        const row = currentStartRow + 3 + rIdx;
+
+        // Vaqt ustuni (format qisqartirilgan)
+        jexcel.setValueFromCoords(currentStartCol, row, formatShortTime(tName));
         const vaqtCell = jexcel.getCellFromCoords(currentStartCol, row);
         if (vaqtCell) {
           vaqtCell.style.backgroundColor = "#bbfcc1";
           vaqtCell.style.fontWeight = "bold";
         }
-        const rowParams = change[timeIds[rowIdx]] || [];
 
-        // 🔁 Endi rowParams dan barcha parameter_name larni dinamik olamiz
-        rowParams.forEach((paramObj, colIdx) => {
-          const paramName = paramObj.parameter_name;
-          const col = currentStartCol + 1 + colIdx;
+        // Shu vaqtga tegishli barcha yozuvlar (bir nechta timeId bo‘lishi mumkin — birlashtiramiz)
+        const itemsForTime = [];
+        timeIds.forEach(tid => {
+          const arr = change[tid] || [];
+          if (arr[0]?.time_name === tName) itemsForTime.push(...arr);
+        });
 
-          const cellVal = Number(paramObj.Value);
-          const minVal = Number(paramObj.Min);
+        // 7) Har bir parametrni o‘z ustuniga qo‘yish
+        itemsForTime.forEach(item => {
+          const pName = item.parameter_name;
+          const idx = colIndexByParam.get(pName);
+          if (idx === undefined) return;
+          const col = currentStartCol + 1 + idx;
 
-          // Qiymatni yozish
-          jexcel.setValueFromCoords(col, row, cellVal);
+          const nVal = Number(item.Value);
+          jexcel.setValueFromCoords(col, row, isNaN(nVal) ? item.Value : nVal);
 
-          // DOM cell ni olish
+          const minVal = Number(item.Min);
           const cellEl = jexcel.getCellFromCoords(col, row);
 
-          // Ranglash sharti
-          if (cellEl && !isNaN(cellVal) && !isNaN(minVal) && cellVal < minVal) {
+          // Min’dan kichik bo‘lsa — sariq/qizil
+          if (cellEl && !isNaN(nVal) && !isNaN(minVal) && nVal < minVal) {
             cellEl.style.backgroundColor = "yellow";
             cellEl.style.color = "red";
             cellEl.style.fontWeight = "bold";
-            console.log(`✅ ${paramName} (${col}, ${row}) = ${cellVal} < ${minVal}`);
+          }
+
+          // Formula bilan bo‘lsa — hoshiyalash (ixtiyoriy)
+          if (item.WithFormula === "1" && cellEl) {
+            cellEl.style.border = "1px dashed #444";
           }
         });
       });
 
       setTimeout(() => setTableBorder(jexcel, currentStartRow, currentStartCol, rowCount, colCount, '#d10000'), 10);
 
-      maxColInRow = Math.max(maxColInRow, colCount);
+      // 8) Keyingi jadval pozitsiyasi
       jadvallarInRow += 1;
       if (jadvallarInRow % 2 === 0) {
-        currentStartRow += groupMaxRowCount + 2; // 🟩 Pastga o‘tish max rowCount asosida
+        currentStartRow += groupMaxRowCount + 2;
         currentStartCol = 0;
-        maxColInRow = 0;
       } else {
         currentStartCol += colCount + 2;
       }
     });
 
+    // Agar qator oxirida bitta jadval qolib ketsa — pastga tushiramiz
     if (jadvallarInRow % 2 !== 0) {
-      currentStartRow += groupMaxRowCount + 2; // 🟩 groupMaxRowCount ishlatiladi
+      currentStartRow += groupMaxRowCount + 2;
       currentStartCol = 0;
-      maxColInRow = 0;
       jadvallarInRow = 0;
     }
   });
-
 });
+
 
 
 

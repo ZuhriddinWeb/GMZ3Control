@@ -1,0 +1,253 @@
+<template>
+  <main class="h-full w-full">
+    <VaButton icon="star" round preset="primary" @click="openModal" />
+
+    <VaModal
+      v-model="modalOpen"
+      :ok-text="t('modals.apply')"
+      :cancel-text="t('modals.cancel')"
+      @ok="onSubmit"
+      @close="modalOpen = false"
+      close-button
+      max-width="1000px"
+    >
+      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>
+
+      <DxDataGrid
+        v-if="rows.length"
+        :data-source="rows"
+        :key-expr="'rowId'"
+        :selected-row-keys="selectedKeys"
+        @selection-changed="onSelection"
+        :repaint-changes-only="true"
+        show-borders
+        row-alternation-enabled
+        column-auto-width
+        word-wrap-enabled
+        :pager="pagerCfg"
+      >
+        <DxSelection mode="multiple" show-check-boxes-mode="always" />
+
+        <DxColumn data-field="sexName" :caption="t('form.structureName')" :group-index="0" />
+        <DxColumn data-field="pageName" :caption="t('form.numberpage')" :group-index="1" />
+        <DxColumn data-field="groupName" :caption="t('menu.groups')" :group-index="2" />
+
+        <!-- Parametr nomi + formula tugmasi -->
+        <DxColumn
+          data-field="paramName"
+          :caption="t('form.name')"
+          cell-template="paramCell"
+          :min-width="320"
+          :allow-sorting="false"
+        />
+        <!-- DevExtreme Vue sloti: cellTemplate uchun -->
+        <template #paramCell="{ data: cell }">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-2">
+              <span v-if="selectedKeys.includes(cell.data.rowId)" class="text-green-600">✅</span>
+              <span>{{ cell.data.paramName }}</span>
+            </div>
+            <VaButton
+              size="small"
+              icon="calculate"
+              color="info"
+              class="ml-2"
+              round
+              :aria-label="t('form.createFormula')"
+              @click="openFormulaModal(cell.data,props.params.data.id)"
+            />
+            
+          </div>
+        </template>
+      </DxDataGrid>
+    </VaModal>
+
+    <!-- FORMULA MODAL -->
+   <FormulaModal
+      v-model="formulaModalOpen"
+      :parameter="parameterForFormula"
+      :formula="formulaText"
+      @save="handleFormulaSave"
+      @close="handleFormulaClose"
+    />
+  </main>
+</template>
+
+<script setup>
+import { ref, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
+import axios from 'axios'
+import { VaButton, VaModal, useToast, VaInput } from 'vuestic-ui'
+import { DxDataGrid, DxColumn, DxSelection } from 'devextreme-vue/data-grid'
+import FormulaModal from './FormulaModal.vue'
+const { t } = useI18n()
+const { init } = useToast()
+
+const props = defineProps(['params'])
+const onupdated = inject('onupdated')
+
+const modalOpen = ref(false)
+const rows = ref([])         // parametr qatorlari
+const selectedKeys = ref([]) // tanlangan rowId’lar (GUID’lar)
+
+const pagerCfg = {
+  visible: true,
+  showInfo: true,
+  showPageSizeSelector: true,
+  allowedPageSizes: [10, 20, 50],
+}
+
+// Formula modal holati
+const formulaModalOpen = ref(false)
+const parameterForFormula = ref(null)
+const formulaText = ref('')
+
+/** --- FORMULA MODAL HOLATI --- */
+function openFormulaModal(row,id) {
+  
+  parameterForFormula.value = {
+    ...row,   // row ichidagi barcha maydonlarni qo‘shadi
+    id: id    // alohida id ni ham qo‘shib yuboradi
+  }
+  formulaText.value = '' // mavjudini backenddan olib kelsangiz shu yerda set qiling
+  formulaModalOpen.value = true
+}
+// Formula saqlash (demo)
+// Backendga ulashni o‘zingizning endpointingizga moslang
+
+
+/* ---------------- Modalni ochish va ma’lumot yuklash ---------------- */
+const openModal = async () => {
+  modalOpen.value = true
+  selectedKeys.value = []
+
+  try {
+    const { data } = await axios.get(`/addfordoc/${props.params.data.id}`)
+
+    rows.value = flattenTreeToRows(data.tree)
+    // selected massivini flatten qilib, DataGrid’ga beramiz
+    selectedKeys.value = flattenSelected(data.selected)
+  } catch (err) {
+    console.error(err)
+    init({ message: 'Maʼlumotni olishda xatolik', color: 'danger' })
+  }
+}
+
+// nested massivni xavfsiz flatten qilish
+function flattenSelected(selected) {
+  if (!Array.isArray(selected)) return []
+  // selected odatda 3-4 qatlam bo‘ladi; qo‘shimcha xavfsizlik uchun 5 qatlam qildik
+  return selected.flat(5).filter(Boolean)
+}
+
+/* ---------------- Tree → flat rows ---------------- */
+function flattenTreeToRows(tree) {
+  const out = []
+  if (!Array.isArray(tree)) return out
+
+  tree.forEach(sex => {
+    const sexId = parseInt(String(sex.key).split('-')[1])
+    const sexTitle = sex.title
+
+    sex.children?.forEach(page => {
+      const pageId = parseInt(String(page.key).split('-')[2])
+      const pageTitle = page.title
+
+      page.children?.forEach(group => {
+        const groupId = parseInt(String(group.key).split('-')[3])
+        const groupTitle = group.title
+
+        group.children?.forEach(param => {
+          out.push({
+            rowId: param.ParameterID ?? `param-${param.key}`, // DevExtreme keyExpr = 'rowId'
+            sexName: sexTitle,
+            sexId,
+            pageName: pageTitle,
+            pageId,
+            groupName: groupTitle,
+            groupId,
+            paramName: param.title,
+            ParameterID: param.ParameterID, // GUID
+          })
+        })
+      })
+    })
+  })
+  return out
+}
+
+/* ---------------- Checkbox selection ---------------- */
+const onSelection = ({ selectedRowKeys }) => {
+  selectedKeys.value = selectedRowKeys
+}
+
+/* ---------------- Saqlash (POST /addfordoc) ---------------- */
+const onSubmit = async () => {
+  const selectedRows = rows.value.filter(r => selectedKeys.value.includes(r.rowId))
+
+  // 1) Sexlar (FactoryStructureID)
+  const factoryStructures = [...new Set(selectedRows.map(r => r.sexId))]
+
+  // 2) Har bir sex bo‘yicha sahifalar
+  const numberPageBlogs = factoryStructures.map(sexId => {
+    const pages = selectedRows.filter(r => r.sexId === sexId).map(r => r.pageId)
+    return [...new Set(pages)]
+  })
+
+  // 3) Har bir sex → sahifa bo‘yicha group’lar
+  const groupBlogs = factoryStructures.map(sexId => {
+    const sexPages = selectedRows.filter(r => r.sexId === sexId)
+    const uniquePages = [...new Set(sexPages.map(r => r.pageId))]
+    return uniquePages.map(pageId => {
+      const groups = sexPages.filter(r => r.pageId === pageId).map(r => r.groupId)
+      return [...new Set(groups)]
+    })
+  })
+
+  // 4) Har bir sex → sahifa → group bo‘yicha parametr GUID’lari
+  const parameterBlogs = factoryStructures.map(sexId => {
+    const sexPages = selectedRows.filter(r => r.sexId === sexId)
+    const uniquePages = [...new Set(sexPages.map(r => r.pageId))]
+    return uniquePages.map(pageId => {
+      const pageGroups = sexPages.filter(r => r.pageId === pageId)
+      const uniqueGroups = [...new Set(pageGroups.map(r => r.groupId))]
+      return uniqueGroups.map(groupId => {
+        const params = pageGroups
+          .filter(r => r.groupId === groupId)
+          .map(r => r.ParameterID)
+          .filter(Boolean)
+        return params
+      })
+    })
+  })
+
+  try {
+    const { data } = await axios.post('/addfordoc', {
+      doc_id: props.params.data.id,
+      FactoryStructureID: factoryStructures,
+      NumberPageBlogs: numberPageBlogs,
+      GroupBlogs: groupBlogs,
+      ParameterBlogs: parameterBlogs,
+    })
+
+    if (data.status === 200) {
+      onupdated?.()
+      modalOpen.value = false
+      init({ message: t('login.successMessage'), color: 'success' })
+    } else {
+      throw new Error(data.message || 'Unknown error')
+    }
+  } catch (err) {
+    console.error(err)
+    init({ message: t('errors.saveFailed'), color: 'danger' })
+  }
+}
+</script>
+
+<style scoped>
+/* ixtiyoriy: satrlar siqiqroq ko‘rinsin */
+.dx-datagrid .dx-row > td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+</style>

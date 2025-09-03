@@ -92,7 +92,8 @@ class DocumentNumberPageController extends Controller
 
     public function getRowUnit(int $docId): JsonResponse
     {
-        ini_set('max_execution_time',3600);
+        // dd($docId);
+        ini_set('max_execution_time', 3600);
         /** @var DocumentNumberPage|null $doc */
         // $doc = DocumentNumberPage::find($docId);
         $doc = DocumentNumberPage::where('IdNumberPage', $docId)->first();
@@ -217,153 +218,287 @@ class DocumentNumberPageController extends Controller
         return response()->json($pages);
     }
     public function getBlogsTree($docId)
-{
-    $record = DocumentNumberPage::where('IdNumberPage', $docId)->first();
+    {
+        $record = DocumentNumberPage::where('IdNumberPage', $docId)->first();
 
-    // Agar topilmasa, bo'sh daraxt qaytariladi
-    if (!$record) {
-        return response()->json([
-            'tree' => $this->getFullTree(),
-            'selected' => [],
-        ]);
-    }
-
-    $structureIds = json_decode($record->FactoryStructureID ?? '[]', true);
-    $pageIds = json_decode($record->NumberPageBlogs ?? '[]', true);
-    $groupIds = json_decode($record->GroupBlogs ?? '[]', true);
-    $parameterIds = json_decode($record->ParameterBlogs ?? '[]', true);
-
-    return response()->json([
-        'tree' => $this->getFullTree(), // barcha daraxt
-        'selected' => array_merge($structureIds, $pageIds, $groupIds, $parameterIds),
-    ]);
-}
-public function getCalculator($docId): JsonResponse
-{
-    // $docId=167;
-    /** @var DocumentNumberPage|null $doc */
-    $doc = DocumentNumberPage::where('IdNumberPage', $docId)->first();
-
-    if (!$doc) {
-        return response()->json([
-            'docId' => $docId,
-            'items' => [],
-            'message' => 'Doc topilmadi',
-        ]);
-    }
-
-    // ---------- JSON ni xavfsiz ochish (double-encoded holatlar uchun) ----------
-    $toArray = function ($val) {
-        // allaqachon array bo‘lsa
-        if (is_array($val)) return $val;
-
-        // bo‘sh yoki null bo‘lsa
-        if ($val === null || $val === '') return [];
-
-        // ba’zan DB da "\"[[...]]\"" ko‘rinishda saqlangan bo‘ladi
-        // uni ketma-ket json_decode qilib array bo‘lguncha ochamiz
-        $decoded = $val;
-        $guard = 0;
-        while (!is_array($decoded) && is_string($decoded) && $guard < 5) {
-            $decoded = json_decode($decoded, true);
-            // json_decode xatolik bersa — to‘xtaymiz
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return [];
-            }
-            $guard++;
+        // Agar topilmasa, bo'sh daraxt qaytariladi
+        if (!$record) {
+            return response()->json([
+                'tree' => $this->getFullTree(),
+                'selected' => [],
+            ]);
         }
-        return is_array($decoded) ? $decoded : [];
-    };
 
-    $factoryStructureIDs = $toArray($doc->FactoryStructureID); // [sid, sid, ...]
-    $numberPageBlogs     = $toArray($doc->NumberPageBlogs);     // [[pageId,...],[...],...]
-    $groupBlogs          = $toArray($doc->GroupBlogs);          // [[[groupId,...]], [[...]], ...]
-    $parameterBlogs      = $toArray($doc->ParameterBlogs);      // [[[[paramGuid,...]]], [[[...]]], ...]
+        $structureIds = json_decode($record->FactoryStructureID ?? '[]', true);
+        $pageIds = json_decode($record->NumberPageBlogs ?? '[]', true);
+        $groupIds = json_decode($record->GroupBlogs ?? '[]', true);
+        $parameterIds = json_decode($record->ParameterBlogs ?? '[]', true);
 
-    // ---------- Oldindan nomlarni olib qo‘yamiz (bitta so‘rov bilan) ----------
-    // Groups (id larini tekis qilib yig‘amiz)
-    $groupIds = collect($groupBlogs)->flatten(2)->filter()->unique()->values(); // 2 qatlamga qadar
-    $groupMap = $groupIds->isNotEmpty()
-        ? Groups::whereIn('id', $groupIds)->pluck('Name', 'id')
-        : collect();
+        return response()->json([
+            'tree' => $this->getFullTree(), // barcha daraxt
+            'selected' => array_merge($structureIds, $pageIds, $groupIds, $parameterIds),
+        ]);
+    }
+    public function selectTree(int $docId): JsonResponse
+    {
+        // dd($docId);
+        ini_set('max_execution_time', 3600);
 
-    // Parameters (GUID larni tekis yig‘amiz)
-    $paramIds = collect($parameterBlogs)->flatten(3)->filter()->unique()->values();
-    $paramMap = $paramIds->isNotEmpty()
-        ? Parameters::whereIn('id', $paramIds)->pluck('Name', 'id')
-        : collect();
+        /** @var DocumentNumberPage|null $doc */
+        $doc = DocumentNumberPage::where('IdNumberPage', $docId)->first();
 
-    // FactoryStructure nomlari
-    $fsMap = !empty($factoryStructureIDs)
-        ? FactoryStructure::whereIn('id', $factoryStructureIDs)->pluck('Name', 'id')
-        : collect();
+        // Tanlangan parametrlar (UI da chek bo‘lib ko‘rinishi uchun)
+        $selected = [];
+        if ($doc && $doc->ParameterBlogs) {
+            $selected = is_array($doc->ParameterBlogs)
+                ? $doc->ParameterBlogs
+                : $this->decodeLoosely($doc->ParameterBlogs);
+        }
 
-    // NumberPage nomlari — E’TIBOR: sizda "NumberPageBlogs" ichida saqlanayotgan ID — bu
-    // haqiqiy "number_pages" jadvalidagi PK bo‘lsa, shuni pluck qilamiz.
-    $pageIds = collect($numberPageBlogs)->flatten(1)->filter()->unique()->values();
-    $pageMap = $pageIds->isNotEmpty()
-        ? NumberPage::whereIn('id', $pageIds)->pluck('Name', 'id')
-        : collect();
+        // ⚠️ MUHIM: ruxsat etilgan sexlar
+        $allowedStructureIds = [];
+        if ($doc && $doc->FactoryStructureID) {
+            $allowedStructureIds = is_array($doc->FactoryStructureID)
+                ? array_values($doc->FactoryStructureID)
+                : $this->decodeLoosely($doc->FactoryStructureID);
+        }
+        $allowedStructureIds = array_values(array_filter(array_map('intval', $allowedStructureIds)));
 
-    // ---------- Daraxtni yig‘amiz: sex -> pages -> groups -> parameters ----------
-    $items = [];
+        if (empty($allowedStructureIds)) {
+            // hech narsa ruxsat berilmagan — bo‘sh daraxt
+            return response()->json(['tree' => [], 'selected' => $selected]);
+        }
 
-    foreach ($factoryStructureIDs as $sIdx => $sexId) {
-        $sexName = $fsMap[$sexId] ?? null;
+        // 1) Ruxsat berilgan sexlar
+        $structures = FactoryStructure::whereIn('id', $allowedStructureIds)
+            ->orderBy('id')
+            ->get()
+            ->keyBy('id');
 
-        $pagesForSex = $numberPageBlogs[$sIdx] ?? [];   // [pageId, pageId, ...]
-        $groupsForSex = $groupBlogs[$sIdx] ?? [];       // [[groupId,...], [groupId,...], ...] — har bir sahifa uchun
-        $paramsForSex = $parameterBlogs[$sIdx] ?? [];    // [[[paramGuid,...]], [[paramGuid,...]], ...] — sahifa->group bo‘yicha
+        // 2) Shu sexlarga tegishli sahifalar
+        $pages = $this->chunkedWhereInQuery(NumberPage::class, 'StructureID', $allowedStructureIds);
+        $pagesBySid = $pages->groupBy('StructureID');
 
-        $pageNodes = [];
+        // 3) Shu sexlar + ularning sahifalari bo‘yicha guruhlar
+        $flatPages = $pages->pluck('NumberPage')->unique()->values()->all();
 
-        foreach ($pagesForSex as $pIdx => $pageId) {
-            $pageName = $pageMap[$pageId] ?? null;
+        $groups = $this->chunkedWhereDoubleInQuery(
+            Groups::class,
+            'StructureID',
+            $allowedStructureIds,
+            'PageID',
+            $flatPages
+        )->groupBy(fn($g) => $g->StructureID . '-' . $g->PageID);
 
-            $groupIdsForPage = $groupsForSex[$pIdx] ?? [];     // [groupId, groupId, ...]
-            $paramsGroupsForPage = $paramsForSex[$pIdx] ?? []; // [[paramGuid,...], [paramGuid,...], ...]
+        // 4) Shu sexlar + sahifalar bo‘yicha parametrlar
+        $params = $this->chunkedWhereDoubleInQuery(
+            GraphicsParamenters::class,
+            'FactoryStructureID',
+            $allowedStructureIds,
+            'PageId',
+            $flatPages,
+            function ($query) {
+                return $query->with('parameter:id,Name');
+            }
+        );
+        $paramsByGroup = $params->groupBy(
+            fn($p) => $p->FactoryStructureID . '-' . $p->PageId . '-' . $p->GroupID
+        );
 
-            $groupNodes = [];
+        // 5) Daraxtni qurish (faqat ruxsat berilgan sexlar bo‘yicha)
+        $tree = collect($allowedStructureIds)->map(function ($sid) use ($structures, $pagesBySid, $groups, $paramsByGroup) {
+            $sexNode = [
+                'key' => "sex-$sid",
+                'title' => $structures[$sid]->Name ?? "Structure #$sid",
+                'type' => 'sex',
+                'children' => [],
+            ];
 
-            foreach ($groupIdsForPage as $gIdx => $groupId) {
-                $groupName = $groupMap[$groupId] ?? null;
+            foreach (($pagesBySid[$sid] ?? collect()) as $page) {
+                $pageNum = $page->NumberPage;
+                $pageNode = [
+                    'key' => "page-$sid-$pageNum",
+                    'title' => $page->Name,
+                    'type' => 'page',
+                    'children' => [],
+                ];
 
-                $paramIdsForGroup = $paramsGroupsForPage[$gIdx] ?? []; // [guid, guid, ...]
-                $parameterNodes = [];
+                foreach (($groups["$sid-$pageNum"] ?? collect()) as $g) {
+                    $gKey = "$sid-$pageNum-{$g->id}";
+                    $paramColl = $paramsByGroup[$gKey] ?? collect();
 
-                foreach ($paramIdsForGroup as $pid) {
-                    $parameterNodes[] = [
-                        'id'   => $pid,
-                        'name' => $paramMap[$pid] ?? null,
+                    $groupNode = [
+                        'key' => "grp-$gKey",
+                        'title' => $g->Name,
+                        'type' => 'group',
+                        'children' => $paramColl->map(fn($p) => [
+                            'key' => "prm-{$p->id}",
+                            'title' => $p->parameter->Name ?? "Param #{$p->id}",
+                            'ParameterID' => (string) $p->ParametersID,
+                            'type' => 'param',
+                        ])->values(),
+                    ];
+
+                    $pageNode['children'][] = $groupNode;
+                }
+
+                $sexNode['children'][] = $pageNode;
+            }
+
+            return $sexNode;
+        })->values();
+
+        return response()->json([
+            'tree' => $tree,
+            'selected' => $selected,
+        ]);
+    }
+
+    private function decodeLoosely(?string $raw): array
+    {
+        if (!$raw)
+            return [];
+        $s = trim($raw);
+
+        // Ba’zan butun JSON satr sifatida saqlangan bo‘ladi:  "\"[1,2,3]\""
+        if (strlen($s) >= 2 && $s[0] === '"' && substr($s, -1) === '"') {
+            $s = substr($s, 1, -1);          // tashqi qo‘shtirnoqni olib tashlaymiz
+            $s = str_replace('\"', '"', $s);  // ichki escape’larni tozalaymiz
+        }
+
+        $arr = json_decode($s, true);
+        return json_last_error() === JSON_ERROR_NONE && is_array($arr) ? $arr : [];
+    }
+
+    public function getCalculator($docId): JsonResponse
+    {
+        // dd($docId);
+        // $docId=167;
+        /** @var DocumentNumberPage|null $doc */
+        $doc = DocumentNumberPage::where('IdNumberPage', $docId)->first();
+
+        if (!$doc) {
+            return response()->json([
+                'docId' => $docId,
+                'items' => [],
+                'message' => 'Doc topilmadi',
+            ]);
+        }
+
+        // ---------- JSON ni xavfsiz ochish (double-encoded holatlar uchun) ----------
+        $toArray = function ($val) {
+            // allaqachon array bo‘lsa
+            if (is_array($val))
+                return $val;
+
+            // bo‘sh yoki null bo‘lsa
+            if ($val === null || $val === '')
+                return [];
+
+            // ba’zan DB da "\"[[...]]\"" ko‘rinishda saqlangan bo‘ladi
+            // uni ketma-ket json_decode qilib array bo‘lguncha ochamiz
+            $decoded = $val;
+            $guard = 0;
+            while (!is_array($decoded) && is_string($decoded) && $guard < 5) {
+                $decoded = json_decode($decoded, true);
+                // json_decode xatolik bersa — to‘xtaymiz
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return [];
+                }
+                $guard++;
+            }
+            return is_array($decoded) ? $decoded : [];
+        };
+
+        $factoryStructureIDs = $toArray($doc->FactoryStructureID); // [sid, sid, ...]
+        $numberPageBlogs = $toArray($doc->NumberPageBlogs);     // [[pageId,...],[...],...]
+        $groupBlogs = $toArray($doc->GroupBlogs);          // [[[groupId,...]], [[...]], ...]
+        $parameterBlogs = $toArray($doc->ParameterBlogs);      // [[[[paramGuid,...]]], [[[...]]], ...]
+
+        // ---------- Oldindan nomlarni olib qo‘yamiz (bitta so‘rov bilan) ----------
+        // Groups (id larini tekis qilib yig‘amiz)
+        $groupIds = collect($groupBlogs)->flatten(2)->filter()->unique()->values(); // 2 qatlamga qadar
+        $groupMap = $groupIds->isNotEmpty()
+            ? Groups::whereIn('id', $groupIds)->pluck('Name', 'id')
+            : collect();
+
+        // Parameters (GUID larni tekis yig‘amiz)
+        $paramIds = collect($parameterBlogs)->flatten(3)->filter()->unique()->values();
+        $paramMap = $paramIds->isNotEmpty()
+            ? Parameters::whereIn('id', $paramIds)->pluck('Name', 'id')
+            : collect();
+
+        // FactoryStructure nomlari
+        $fsMap = !empty($factoryStructureIDs)
+            ? FactoryStructure::whereIn('id', $factoryStructureIDs)->pluck('Name', 'id')
+            : collect();
+
+        // NumberPage nomlari — E’TIBOR: sizda "NumberPageBlogs" ichida saqlanayotgan ID — bu
+        // haqiqiy "number_pages" jadvalidagi PK bo‘lsa, shuni pluck qilamiz.
+        $pageIds = collect($numberPageBlogs)->flatten(1)->filter()->unique()->values();
+        $pageMap = $pageIds->isNotEmpty()
+            ? NumberPage::whereIn('id', $pageIds)->pluck('Name', 'id')
+            : collect();
+
+        // ---------- Daraxtni yig‘amiz: sex -> pages -> groups -> parameters ----------
+        $items = [];
+
+        foreach ($factoryStructureIDs as $sIdx => $sexId) {
+            $sexName = $fsMap[$sexId] ?? null;
+
+            $pagesForSex = $numberPageBlogs[$sIdx] ?? [];   // [pageId, pageId, ...]
+            $groupsForSex = $groupBlogs[$sIdx] ?? [];       // [[groupId,...], [groupId,...], ...] — har bir sahifa uchun
+            $paramsForSex = $parameterBlogs[$sIdx] ?? [];    // [[[paramGuid,...]], [[paramGuid,...]], ...] — sahifa->group bo‘yicha
+
+            $pageNodes = [];
+
+            foreach ($pagesForSex as $pIdx => $pageId) {
+                $pageName = $pageMap[$pageId] ?? null;
+
+                $groupIdsForPage = $groupsForSex[$pIdx] ?? [];     // [groupId, groupId, ...]
+                $paramsGroupsForPage = $paramsForSex[$pIdx] ?? []; // [[paramGuid,...], [paramGuid,...], ...]
+
+                $groupNodes = [];
+
+                foreach ($groupIdsForPage as $gIdx => $groupId) {
+                    $groupName = $groupMap[$groupId] ?? null;
+
+                    $paramIdsForGroup = $paramsGroupsForPage[$gIdx] ?? []; // [guid, guid, ...]
+                    $parameterNodes = [];
+
+                    foreach ($paramIdsForGroup as $pid) {
+                        $parameterNodes[] = [
+                            'id' => $pid,
+                            'name' => $paramMap[$pid] ?? null,
+                        ];
+                    }
+
+                    $groupNodes[] = [
+                        'groupId' => $groupId,
+                        'groupName' => $groupName,
+                        'parameters' => $parameterNodes,
                     ];
                 }
 
-                $groupNodes[] = [
-                    'groupId'   => $groupId,
-                    'groupName' => $groupName,
-                    'parameters'=> $parameterNodes,
+                $pageNodes[] = [
+                    'pageId' => $pageId,
+                    'pageName' => $pageName,
+                    'groups' => $groupNodes,
                 ];
             }
 
-            $pageNodes[] = [
-                'pageId'   => $pageId,
-                'pageName' => $pageName,
-                'groups'   => $groupNodes,
+            $items[] = [
+                'sexId' => $sexId,
+                'sexName' => $sexName,
+                'pages' => $pageNodes,
             ];
         }
 
-        $items[] = [
-            'sexId'   => $sexId,
-            'sexName' => $sexName,
-            'pages'   => $pageNodes,
-        ];
+        return response()->json([
+            'docId' => (int) $doc->IdNumberPage,
+            'items' => $items,
+        ]);
     }
-
-    return response()->json([
-        'docId' => (int)$doc->IdNumberPage,
-        'items' => $items,
-    ]);
-}
     public function getGroups(int $sexId, int $pageId): JsonResponse
     {
         $groups = Groups::where('StructureID', $sexId)
@@ -404,30 +539,30 @@ public function getCalculator($docId): JsonResponse
     //     $unit = DocumentNumberPage::where('IdNumberPage',$id)->get();
     //     return response()->json($unit);
     // }
-private function create(Request $request)
-{
-    $docId = $request->input('doc_id');
+    private function create(Request $request)
+    {
+        $docId = $request->input('doc_id');
 
-    $unit = DocumentNumberPage::updateOrCreate(
-        ['IdNumberPage' => $docId], // mavjud bo‘lsa yangilaydi
-        [
-            'IdBlog'             => $request->IdBlog,
-            'Name'               => $request->Name,
-            'NameRus'            => $request->NameRus,
-            'Comment'            => $request->Comment,
-            'FactoryStructureID' => json_encode($request->FactoryStructureID ?? []),
-            'NumberPageBlogs'    => json_encode($request->NumberPageBlogs ?? []),
-            'GroupBlogs'         => json_encode($request->GroupBlogs ?? []),
-            'ParameterBlogs'     => json_encode($request->ParameterBlogs ?? []),
-        ]
-    );
+        $unit = DocumentNumberPage::updateOrCreate(
+            ['IdNumberPage' => $docId], // mavjud bo‘lsa yangilaydi
+            [
+                'IdBlog' => $request->IdBlog,
+                'Name' => $request->Name,
+                'NameRus' => $request->NameRus,
+                'Comment' => $request->Comment,
+                'FactoryStructureID' => json_encode($request->FactoryStructureID ?? []),
+                'NumberPageBlogs' => json_encode($request->NumberPageBlogs ?? []),
+                'GroupBlogs' => json_encode($request->GroupBlogs ?? []),
+                'ParameterBlogs' => json_encode($request->ParameterBlogs ?? []),
+            ]
+        );
 
-    return response()->json([
-        'status' => 200,
-        'message' => 'Maʼlumot yangilandi yoki yaratildi',
-        'unit' => $unit
-    ]);
-}
+        return response()->json([
+            'status' => 200,
+            'message' => 'Maʼlumot yangilandi yoki yaratildi',
+            'unit' => $unit
+        ]);
+    }
 
 
     private function update(Request $request)

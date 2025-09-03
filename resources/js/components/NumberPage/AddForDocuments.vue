@@ -4,7 +4,7 @@
 
     <VaModal v-model="modalOpen" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="modalOpen = false" close-button max-width="1000px">
-      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>
+      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>{{ props.params.data.NumberPage }}
 
       <DxDataGrid v-if="rows.length" :data-source="rows" :key-expr="'rowId'" :selected-row-keys="selectedKeys"
         @selection-changed="onSelection" show-borders row-alternation-enabled column-auto-width word-wrap-enabled
@@ -56,7 +56,7 @@ const openModal = async () => {
   selectedKeys.value = []
 
   try {
-    const { data } = await axios.get(`/addfordoc/${props.params.data.id}`)
+    const { data } = await axios.get(`/addfordoc/${props.params.data.NumberPage}`)
 
     rows.value = flattenTreeToRows(data.tree)
     selectedKeys.value = flattenSelected(data.selected ?? [])
@@ -178,7 +178,7 @@ const parameterBlogs = factoryStructures.map(sexId => {
 
   try {
     const { data } = await axios.post('/addfordoc', {
-      doc_id: props.params.data.id,
+      doc_id: props.params.data.NumberPage,
       FactoryStructureID: factoryStructures,
       NumberPageBlogs: numberPageBlogs,
       GroupBlogs: groupBlogs,

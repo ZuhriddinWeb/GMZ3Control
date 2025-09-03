@@ -36,7 +36,7 @@
 
       <!-- O‘NG: SEX → SAHIFA → GURUH → PARAMETR -->
       <div class="flex-1 min-w-[420px]">
-        <div class="mb-2 text-xs text-gray-500">Sex → Sahifa → Guruh{{ props }}</div>
+        <div class="mb-2 text-xs text-gray-500">Sex → Sahifa → Guruh</div>
         <!-- UNIVERSAL VAQT/AGREGAT SOZLAMALARI (sana yo'q) -->
         <div class="rounded border p-2 mb-3">
           <div class="mb-2 text-xs text-gray-500">Agregatsiya va oynaviy qoida</div>
@@ -122,7 +122,7 @@ import anime from 'animejs/lib/anime.es.js'
 const props = defineProps({
   parameter: { type: [Number, String], required: true },
   modelValue: { type: Boolean, default: false },
-  docId: { type: [Number, String], required: true },
+  docId: { type: [Number], required: true },
 })
 
 const emit = defineEmits(['update:modelValue', 'save'])
@@ -253,16 +253,25 @@ const equal = () => { addOp('=', 'equal'); const expr = result.Calculate.map(t =
 function selectSex(i) { sel.sex = i; sel.page = 0; sel.group = 0 }
 function selectPage(j) { sel.page = j; sel.group = 0 }
 function selectGroup(k) { sel.group = k }
+  console.log(props);
 
 /* Daraxtni yuklash */
-async function loadTree() {
+const loadedOnce = ref(false)      // shu sessiyada yukladikmi?
+const loading = ref(false)         // hozir so‘rov ketayaptimi?
+
+async function loadTree () {
+  if (loading.value) return
+  loading.value = true
   try {
-    const { data } = await axios.get(`/calculator-structure/${167}`)
+    const id = props.parameter?.id ?? props.parameter
+    const { data } = await axios.get(`/calculator-structure/${id}`)
     items.value = Array.isArray(data.items) ? data.items : []
-    // agar items bo‘sh bo‘lsa, computed’lar bo‘sh qoladi — UI ham shuni ko‘rsatadi
+    loadedOnce.value = true
   } catch (e) {
     console.error(e)
     init({ message: 'Strukturani yuklashda xatolik', color: 'danger' })
+  } finally {
+    loading.value = false
   }
 }
 
@@ -282,7 +291,14 @@ async function emitSave () {
 
   await axios.post('/svodkaFormula', payload)
   // yoki sizdagi eski endpoint: await axios.post('/calculator', payload)
-
+try {
+    const { data } = await axios.get(`/calculator-structure/${props.parameter.id}`)
+    items.value = Array.isArray(data.items) ? data.items : []
+    // agar items bo‘sh bo‘lsa, computed’lar bo‘sh qoladi — UI ham shuni ko‘rsatadi
+  } catch (e) {
+    console.error(e)
+    init({ message: 'Strukturani yuklashda xatolik', color: 'danger' })
+  }
   emit('save', payload)        // ota sahifaga xabar
   openLocal.value = false
 }
@@ -290,7 +306,16 @@ async function emitSave () {
 
 /* Lifecycle */
 onMounted(loadTree)
-watch(() => props.docId, loadTree)
+/* Modal OCHILGANDAgina yukla */
+watch(openLocal, async (isOpen) => {
+  if (isOpen && !loadedOnce.value) {
+    await loadTree()
+  }
+})
+watch(
+  () => [props.docId, props.parameter?.id ?? props.parameter],
+  () => { loadedOnce.value = false }
+)
 </script>
 
 <style scoped>

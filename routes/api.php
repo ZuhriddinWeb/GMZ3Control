@@ -95,6 +95,7 @@ Route::get('/document/{id}/{start}', [DocumentsController::class, 'generate']);
 Route::get('/structures/{id}', [FactoryStructureController::class, 'getForUser']);
 Route::get('/structureTree', [FactoryStructureController::class, 'tree']);
 Route::get('/addfordoc/selected/{doc_id}', [DocumentNumberPageController::class, 'selected']);
+Route::get('/addfordocSelect/{doc_id}', [DocumentNumberPageController::class, 'selectTree']);
 
 Route::get('/doc/tree/{id}', [DocumentNumberPageController::class, 'treeFlat']);   // ↑ rows
 Route::get('/doc/selected/{id}', [DocumentNumberPageController::class, 'selected']);   // GUID[]

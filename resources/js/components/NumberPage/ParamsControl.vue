@@ -2,74 +2,85 @@
   <main class="h-full w-full">
     <VaButton icon="star" round preset="primary" @click="openModal" />
 
-    <VaModal
-      v-model="modalOpen"
-      :ok-text="t('modals.apply')"
-      :cancel-text="t('modals.cancel')"
-      @ok="onSubmit"
-      @close="modalOpen = false"
-      close-button
-      max-width="1000px"
-    >
-      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>
+    <VaModal v-model="modalOpen" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
+      @close="modalOpen = false" close-button max-width="1000px">
+      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>{{ props.params.data }}
 
-      <DxDataGrid
-        v-if="rows.length"
-        :data-source="rows"
-        :key-expr="'rowId'"
-        :selected-row-keys="selectedKeys"
-        @selection-changed="onSelection"
-        :repaint-changes-only="true"
-        show-borders
-        row-alternation-enabled
-        column-auto-width
-        word-wrap-enabled
-        :pager="pagerCfg"
-      >
-        <DxSelection mode="multiple" show-check-boxes-mode="always" />
+      <DxDataGrid v-if="rows.length" :data-source="rows" :key-expr="'rowId'" :selected-row-keys="selectedKeys"
+        @selection-changed="onSelection" :repaint-changes-only="true" show-borders row-alternation-enabled
+        column-auto-width word-wrap-enabled :pager="pagerCfg">
+        <!-- <DxSelection mode="multiple" show-check-boxes-mode="always" /> -->
 
         <DxColumn data-field="sexName" :caption="t('form.structureName')" :group-index="0" />
         <DxColumn data-field="pageName" :caption="t('form.numberpage')" :group-index="1" />
         <DxColumn data-field="groupName" :caption="t('menu.groups')" :group-index="2" />
 
         <!-- Parametr nomi + formula tugmasi -->
-        <DxColumn
-          data-field="paramName"
-          :caption="t('form.name')"
-          cell-template="paramCell"
-          :min-width="320"
-          :allow-sorting="false"
-        />
+        <DxColumn data-field="paramName" :caption="t('form.name')" cell-template="paramCell" :min-width="320"
+          :allow-sorting="false" />
+
         <!-- DevExtreme Vue sloti: cellTemplate uchun -->
         <template #paramCell="{ data: cell }">
           <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center w-5/6">
               <span v-if="selectedKeys.includes(cell.data.rowId)" class="text-green-600">✅</span>
               <span>{{ cell.data.paramName }}</span>
             </div>
-            <VaButton
-              size="small"
-              icon="calculate"
-              color="info"
-              class="ml-2"
-              round
-              :aria-label="t('form.createFormula')"
-              @click="openFormulaModal(cell.data,props.params.data.id)"
-            />
-            
+
+            <div class="flex justify-between items-center w-1/6">
+              <!-- CREATE -->
+              <VaButton round color="info" class="m-1" :style="{
+                '--va-button-height': '30px',
+                '--va-button-padding': '0',
+                width: '30px',
+                minWidth: '30px',
+                borderRadius: '9999px',
+              }" @click="openFormulaModal(cell.data, props.params.data.id)">
+                <VaIcon name="calculate" size="16px" />
+              </VaButton>
+
+              <!-- EDIT -->
+              <VaButton round color="primary" class="m-1" :style="{
+                '--va-button-height': '30px',
+                '--va-button-padding': '0',
+                width: '30px',
+                minWidth: '30px',
+                borderRadius: '9999px'
+              }" @click="onEdit(cell.data)">
+                <VaIcon name="edit" size="16px" />
+              </VaButton>
+
+              <!-- DELETE -->
+              <VaButton  round color="danger" class="m-1" :style="{
+                '--va-button-height': '30px',
+                '--va-button-padding': '0',
+                width: '30px',
+                minWidth: '30px',
+                borderRadius: '9999px'
+              }" @click="deleteFormula(cell.data)">
+                <VaIcon name="delete" size="16px" />
+              </VaButton>
+            </div>
           </div>
         </template>
+
+
+
+
       </DxDataGrid>
     </VaModal>
 
     <!-- FORMULA MODAL -->
-   <FormulaModal
-      v-model="formulaModalOpen"
-      :parameter="parameterForFormula"
-      :formula="formulaText"
-      @save="handleFormulaSave"
-      @close="handleFormulaClose"
-    />
+    <!-- <FormulaModal v-model="formulaModalOpen" :parameter="parameterForFormula" :formula="formulaText"
+      @save="handleFormulaSave" @close="handleFormulaClose" /> -->
+      <FormulaModal
+  v-if="formulaModalOpen"
+  v-model="formulaModalOpen"
+  :parameter="parameterForFormula"
+  :formula="formulaText"
+  @save="handleFormulaSave"
+  @close="handleFormulaClose"
+/>
   </main>
 </template>
 
@@ -103,8 +114,8 @@ const parameterForFormula = ref(null)
 const formulaText = ref('')
 
 /** --- FORMULA MODAL HOLATI --- */
-function openFormulaModal(row,id) {
-  
+function openFormulaModal(row, id) {
+
   parameterForFormula.value = {
     ...row,   // row ichidagi barcha maydonlarni qo‘shadi
     id: id    // alohida id ni ham qo‘shib yuboradi
@@ -122,7 +133,7 @@ const openModal = async () => {
   selectedKeys.value = []
 
   try {
-    const { data } = await axios.get(`/addfordoc/${props.params.data.id}`)
+    const { data } = await axios.get(`/addfordocSelect/${props.params.data.NumberPage}`)
 
     rows.value = flattenTreeToRows(data.tree)
     // selected massivini flatten qilib, DataGrid’ga beramiz
@@ -246,8 +257,12 @@ const onSubmit = async () => {
 
 <style scoped>
 /* ixtiyoriy: satrlar siqiqroq ko‘rinsin */
-.dx-datagrid .dx-row > td {
+.dx-datagrid .dx-row>td {
   padding-top: 6px;
   padding-bottom: 6px;
 }
+
+/* global style (scoped bo‘lmasin) */
+.btn-xxs.va-button { --va-button-height:30px; --va-button-padding:0; width:30px; min-width:30px; border-radius:9999px; }
+.btn-xxs .va-icon { font-size:16px; width:16px; height:16px; }
 </style>

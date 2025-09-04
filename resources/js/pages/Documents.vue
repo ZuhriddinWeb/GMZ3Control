@@ -3,6 +3,16 @@
     <main></main>
     <main class="flex-grow mt-10">
       <VaDateInput v-model="value" class="mb-10" onchange="fetchData(value)" />
+      <VaTabs v-model="activeTab" class="mb-6" >
+        <VaTab
+          v-for="p in pages"
+          :key="p.NumberPage"
+          :name="p.NumberPage"
+          @click="onTabClick(p.NumberPage)"
+        >
+          {{ p.Name }}
+        </VaTab>
+      </VaTabs>
       <div ref="sheetEl" style="width:100vw;height:100vh;"></div>
     </main>
   </div>
@@ -19,22 +29,40 @@ import 'jsuites/dist/jsuites.css'
 const value = ref(new Date())
 const sheetEl = ref(null)
 const rowData = ref([]);
-
+const pages = ref([])               // [{ Name, NumberPage }, ...]
+const activeTab = ref(null)         // hozirgi NumberPage
 // VUE o'zgaruvchilar
 
 let jexcel = null
-const docId = 167 // yoki props/route’dan oling
-const fetchData = async (date) => {
+const docId = 300 // yoki props/route’dan oling
+
+
+const fetchDataPages = async () => {
   try {
-    const { data } = await axios.get(`/selectResultBlogs/${docId}/${formatDate(date)}`)
-    rowData.value = data     // Backenddan kelgan nested JSON ni bevosita yozing
-    // console.log('API natija:', rowData.value)
+    const { data } = await axios.get(`/getRowPage/${22}`)
+    // backend: massiv { Name, NumberPage }
+    pages.value = Array.isArray(data) ? data : (data.items || [])
+    if (pages.value.length && !activeTab.value) {
+      activeTab.value = pages.value[0].NumberPage
+      await fetchData(activeTab.value, value.value)
+    }
   } catch (e) {
-    console.error(e)
+    console.error('getRowPage error', e)
   }
 }
-
-
+fetchDataPages()
+const fetchData = async (numberPage, date) => {
+  try {
+    const { data } = await axios.get(`/selectResultBlogs/${numberPage}/${formatDate(date)}`)
+    rowData.value = data
+  } catch (e) {
+    console.error('selectResultBlogs error', e)
+  }
+}
+const onTabClick = async (numberPage) => {
+  activeTab.value = numberPage
+  await fetchData(activeTab.value, value.value)
+}
 function getFirstGroupName() {
   // JSON kelmagan bo‘lsa yoki bo‘sh bo‘lsa
   if (!rowData.value || typeof rowData.value !== 'object') return ''
@@ -236,10 +264,15 @@ function setTableBorder(jexcel, startRow, startCol, rowCount, colCount, borderCo
 
 //fetchData(value.value)
 // Agar a1 yoki d1 o‘zgarsa, excelda ham o‘zgaradi
+// watch(value, (val) => {
+//   if (jexcel) {
+//     jexcel.setValue('A1', formatDate(val))
+//     fetchData(val)
+//   }
+// })
 watch(value, (val) => {
-  if (jexcel) {
-    jexcel.setValue('A1', formatDate(val))
-    fetchData(val)
+  if (activeTab.value) {
+    fetchData(activeTab.value, val)
   }
 })
 watch(rowData, () => {

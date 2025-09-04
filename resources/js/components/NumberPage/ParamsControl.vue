@@ -51,7 +51,7 @@
               </VaButton>
 
               <!-- DELETE -->
-              <VaButton round color="danger" class="m-1" :style="{
+              <VaButton  round color="danger" class="m-1" :style="{
                 '--va-button-height': '30px',
                 '--va-button-padding': '0',
                 width: '30px',

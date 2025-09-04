@@ -184,11 +184,12 @@ const parameterBlogs = factoryStructures.map(sexId => {
       GroupBlogs: groupBlogs,
       ParameterBlogs: parameterBlogs
     })
-
+    console.log(data);
+    
     if (data.status === 200) {
       onupdated?.()
       modalOpen.value = false
-      init({ message: t('login.successMessage'), color: 'success' })
+     init({ message: t('login.successMessage'), color: 'success' });
     } else {
       throw new Error(data.message || 'Unknown error')
     }

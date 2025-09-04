@@ -35,7 +35,7 @@
                 width: '30px',
                 minWidth: '30px',
                 borderRadius: '9999px',
-              }" @click="openFormulaModal(cell.data, props.params.data.id)">
+              }" @click="openFormulaModal(cell.data, props.params.data.NumberPage)">
                 <VaIcon name="calculate" size="16px" />
               </VaButton>
 
@@ -46,12 +46,12 @@
                 width: '30px',
                 minWidth: '30px',
                 borderRadius: '9999px'
-              }" @click="onEdit(cell.data)">
+              }" @click="onEdit(cell.data, props.params.data.NumberPage)">
                 <VaIcon name="edit" size="16px" />
               </VaButton>
 
               <!-- DELETE -->
-              <VaButton  round color="danger" class="m-1" :style="{
+              <VaButton round color="danger" class="m-1" :style="{
                 '--va-button-height': '30px',
                 '--va-button-padding': '0',
                 width: '30px',
@@ -63,24 +63,14 @@
             </div>
           </div>
         </template>
-
-
-
-
       </DxDataGrid>
     </VaModal>
 
     <!-- FORMULA MODAL -->
-    <!-- <FormulaModal v-model="formulaModalOpen" :parameter="parameterForFormula" :formula="formulaText"
-      @save="handleFormulaSave" @close="handleFormulaClose" /> -->
-      <FormulaModal
-  v-if="formulaModalOpen"
-  v-model="formulaModalOpen"
-  :parameter="parameterForFormula"
-  :formula="formulaText"
-  @save="handleFormulaSave"
-  @close="handleFormulaClose"
-/>
+    <FormulaModalEdit v-if="editModalOpen" v-model="editModalOpen" :parameter="parameterForFormula"
+      :formula="formulaText" @save="handleFormulaSave" @close="handleFormulaClose" />
+    <FormulaModal v-if="formulaModalOpen" v-model="formulaModalOpen" :parameter="parameterForFormula"
+      :formula="formulaText" @save="handleFormulaSave" @close="handleFormulaClose" />
   </main>
 </template>
 
@@ -91,6 +81,8 @@ import axios from 'axios'
 import { VaButton, VaModal, useToast, VaInput } from 'vuestic-ui'
 import { DxDataGrid, DxColumn, DxSelection } from 'devextreme-vue/data-grid'
 import FormulaModal from './FormulaModal.vue'
+import FormulaModalEdit from './FormulaModalEdit.vue'
+
 const { t } = useI18n()
 const { init } = useToast()
 
@@ -110,9 +102,10 @@ const pagerCfg = {
 
 // Formula modal holati
 const formulaModalOpen = ref(false)
+const editModalOpen = ref(false)
+
 const parameterForFormula = ref(null)
 const formulaText = ref('')
-
 /** --- FORMULA MODAL HOLATI --- */
 function openFormulaModal(row, id) {
 
@@ -122,6 +115,14 @@ function openFormulaModal(row, id) {
   }
   formulaText.value = '' // mavjudini backenddan olib kelsangiz shu yerda set qiling
   formulaModalOpen.value = true
+}
+async function onEdit(row, id) {
+  parameterForFormula.value = {
+    ...row,   // row ichidagi barcha maydonlarni qo‘shadi
+    id: id    // alohida id ni ham qo‘shib yuboradi
+  }
+
+  editModalOpen.value = true
 }
 // Formula saqlash (demo)
 // Backendga ulashni o‘zingizning endpointingizga moslang
@@ -239,6 +240,7 @@ const onSubmit = async () => {
       NumberPageBlogs: numberPageBlogs,
       GroupBlogs: groupBlogs,
       ParameterBlogs: parameterBlogs,
+
     })
 
     if (data.status === 200) {
@@ -263,6 +265,17 @@ const onSubmit = async () => {
 }
 
 /* global style (scoped bo‘lmasin) */
-.btn-xxs.va-button { --va-button-height:30px; --va-button-padding:0; width:30px; min-width:30px; border-radius:9999px; }
-.btn-xxs .va-icon { font-size:16px; width:16px; height:16px; }
+.btn-xxs.va-button {
+  --va-button-height: 30px;
+  --va-button-padding: 0;
+  width: 30px;
+  min-width: 30px;
+  border-radius: 9999px;
+}
+
+.btn-xxs .va-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
 </style>

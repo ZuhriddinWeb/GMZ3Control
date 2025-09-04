@@ -52,108 +52,189 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted,nextTick } from 'vue'
 import axios from 'axios'
 import { VaModal, VaButton, VaTextarea, VaSelect, VaInput, useToast } from 'vuestic-ui'
 import anime from 'animejs/lib/anime.es.js'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
+
+/* Props */
 const props = defineProps({
-  parameter: { type: Object, required: true },     // { …, ParameterID, formulaId? … }
+  parameter: { type: [Object, Number, String], required: true }, // parentdan keladi (row + id)
   modelValue: { type: Boolean, default: false },
   docId: { type: [Number, String], required: true },
-  initialTokens: { type: Array, default: () => [] },
-  initialComment:{ type: String, default: null },
 })
+
 const emit = defineEmits(['update:modelValue', 'save'])
 
+/* Modal v-model */
 const openLocal = computed({
   get: () => props.modelValue,
   set: v => emit('update:modelValue', v),
 })
+
 const { init } = useToast()
 
-/* Daraxtni yuklash – xuddi create’dagi kabi */
-const items = ref([])
-/* … aggOptions/funcOptions/scopeOptions/applyMode/agg – xuddi create’dagi kabi … */
-
-const sel = reactive({ sex: 0, page: 0, group: 0 })
-const pages = computed(() => items.value?.[sel.sex]?.pages ?? [])
-const groups = computed(() => pages.value?.[sel.page]?.groups ?? [])
-const parameters = computed(() => groups.value?.[sel.group]?.parameters ?? [])
+/* UI holati */
+const items = ref([])                            // strukturadagi daraxt
+const loadedOnce = ref(false)                    // daraxtni bir marta yukladikmi?
+const loadingTree = ref(false)
+const loadingFormula = ref(false)
+const formulaId = ref(null)                      // backenddagi formula ID (edit payti kerak bo‘lishi mumkin)
 
 /* Kalkulyator holati */
 const logList = ref('')
-const current  = ref('')
-const answer   = ref('')
+const current = ref('')
+const answer = ref('')
 const operatorClicked = ref(true)
 const result = reactive({ Calculate: [], Comment: '' })
 
-/* === EDIT: mavjud formulani oldindan to‘ldirish === */
-function hydrateFromTokens(tokens = []) {
-  result.Calculate = [...tokens]
-  // ko‘rinishi uchun oddiy string yasab qo‘yamiz
-  current.value = result.Calculate.join(' ')
-  answer.value = ''
-}
-watch(
-  () => [props.initialTokens, props.initialComment, props.modelValue],
-  ([tok, com, isOpen]) => {
-    if (isOpen) {
-      hydrateFromTokens(Array.isArray(tok) ? tok : [])
-      result.Comment = com || ''
-    }
-  },
-  { immediate: true }
-)
-
-/* Kalkulyator amallari – xuddi create’dagi kabi */
-function anim(id) { const tl = anime.timeline({ targets: `#${id}`, duration: 220, easing: 'easeInOutCubic' }); tl.add({ backgroundColor: '#c1e3ff' }).add({ backgroundColor: '#f4faff' }) }
-function append(v) { if (operatorClicked.value) { current.value=''; operatorClicked.value=false } anim(typeof v==='string'?`n${v}`:'nX'); result.Calculate.push(String(v)); current.value += String(v) }
-function addOp(op,id){ anim(id); if(!operatorClicked.value){ logList.value += `${current.value} ${op} `; current.value=''; operatorClicked.value=true; result.Calculate.push(op) } }
-const clear   = () => { addOp('', 'clear'); logList.value=''; current.value=''; answer.value=''; result.Calculate=[]; operatorClicked.value=false }
-const sign    = () => addOp('±','sign')
-const percent = () => addOp('%','percent')
-const dot     = () => { if (!current.value.includes('.')) append('.') }
-const plus    = () => addOp('+','plus')
-const minus   = () => addOp('-','minus')
-const times   = () => addOp('*','times')
-const divide  = () => addOp('/','divide')
-const equal   = () => { addOp('=','equal'); const expr = result.Calculate.map(t => (t.startsWith('Pid=')||t.startsWith('Static=')) ? '1' : t).join(''); try { answer.value = eval(expr) } catch { answer.value = 'Error' } }
-
-/* Parametr token qo‘shish – create’dagi kabi meta bilan… (xohlasangiz aynan o‘sha kodni ko‘chiring) */
-
-/* Daraxtni yuklash */
-async function loadTree() {
+/** ---------- Daraxtni faqat modal ochilganda yuklash ---------- */
+async function loadTree () {
+  if (loadingTree.value) return
+  loadingTree.value = true
   try {
-    const { data } = await axios.get(`/calculator-structure/${167}`)
+    const pageIdBlog = typeof props.parameter === 'object' ? (props.parameter.id ?? props.parameter.page_id_blog) : props.parameter
+    const { data } = await axios.get(`/calculator-structure/${pageIdBlog}`)
     items.value = Array.isArray(data.items) ? data.items : []
+    loadedOnce.value = true
   } catch (e) {
     console.error(e)
     init({ message: 'Strukturani yuklashda xatolik', color: 'danger' })
+  } finally {
+    loadingTree.value = false
   }
 }
 
-/* Saqlash (UPDATE) */
-async function emitSave() {
+/** ---------- FORMULANI YUKLASH (EDIT) ---------- */
+function findParamNameById(guid) {
+  // items daraxtidan parametr nomini topib beradi
+  for (const sex of items.value || []) {
+    for (const page of sex.pages || []) {
+      for (const group of page.groups || []) {
+        for (const p of group.parameters || []) {
+          if (String(p.id) === String(guid)) return p.name || guid
+        }
+      }
+    }
+  }
+  return guid
+}
+
+function prettyFromTokens(tokens=[]) {
+  // Display uchun chiroyli matn: [Param nomi] ⟨Agg • Func • Scope⟩ yoki oddiy belgi/son
+  const chunks = []
+  for (const tok of tokens) {
+    if (typeof tok === 'string' && tok.startsWith('Pid=')) {
+      const parts = tok.split('|')        // Pid=GUID|agg=DAY|func=VALUE|scope=CURRENT|n=2...
+      const guid = parts.find(x=>x.startsWith('Pid='))?.split('=')[1]
+      const agg  = parts.find(x=>x.startsWith('agg='))?.split('=')[1]
+      const func = parts.find(x=>x.startsWith('func='))?.split('=')[1]
+      const scope= parts.find(x=>x.startsWith('scope='))?.split('=')[1]
+      const n    = parts.find(x=>x.startsWith('n='))?.split('=')[1]
+      const name = findParamNameById(guid)
+      const scopeLabel = scope === 'PREV' ? `oldingi ${n}` : scope === 'ROLLING' ? `oxirgi ${n}` : 'joriy'
+      chunks.push(`[${name}] ⟨${agg ?? ''} • ${func ?? ''} • ${scopeLabel}⟩`)
+    } else {
+      chunks.push(String(tok))
+    }
+  }
+  return chunks.join(' ')
+}
+
+async function loadExistingFormula() {
+  if (loadingFormula.value) return
+  loadingFormula.value = true
+  try {
+    // param GUID row ichida bo‘lishi kerak (ParameterID). Yo‘q bo‘lsa parentdan jo‘natib qo‘ying.
+    const paramGuid = typeof props.parameter === 'object' ? props.parameter.ParameterID : null
+
+    if (!paramGuid) { loadingFormula.value = false; return }
+    const { data } = await axios.get('/svodkaFormula/by-param', {
+      params: { doc_id: props.docId, param_id: paramGuid },
+    })
+    // kutilgan format: { id, tokens: string[], comment: string }
+    if (data) {
+      formulaId.value = data.id ?? null
+      result.Calculate = Array.isArray(data.tokens) ? [...data.tokens] : []
+      result.Comment = data.comment ?? ''
+      // display’ni to‘ldiramiz
+      current.value = ''
+      logList.value = prettyFromTokens(result.Calculate)
+      operatorClicked.value = true
+    }
+  } catch (e) {
+    // formulasi bo‘lmasa jim
+    console.warn('Formula topilmadi yoki yuklab bo‘lmadi', e)
+  } finally {
+    loadingFormula.value = false
+  }
+}
+async function emitSave () {
   const payload = {
-    id: props.parameter?.formulaId ?? undefined,  // ⚠️ muhim: update uchun
-    page_id_blog: props.parameter?.id,
+    page_id_blog: (typeof props.parameter === 'object' ? props.parameter.id : props.parameter),
     doc_id: props.docId,
-    param_id: props.parameter?.ParameterID,
-    sex_id: props.parameter?.sexId,
-    page_id: props.parameter?.pageId,
+    param_id: typeof props.parameter === 'object' ? props.parameter?.ParameterID : null,
+    sex_id:   props.parameter?.sexId,
+    page_id:  props.parameter?.pageId,
     group_id: props.parameter?.groupId,
-    tokens: [...result.Calculate],
-    comment: result.Comment || null,
+    tokens:   [...result.Calculate],
+    comment:  result.Comment || null,
+    // Agar backend edit va create ni farqlasa:
+    // formula_id: formulaId.value, 
   }
 
-  await axios.post('/svodkaFormula', payload)
-  emit('save', payload)
-  openLocal.value = false
+  try {
+    const { data } = await axios.post('/svodkaFormula', payload)
+    if (data?.status === 200) {
+      init({ message: t('login.successMessage'), color: 'success' })
+      emit('save', payload)
+      openLocal.value = false
+    } else {
+      console.error('Save error:', data)
+      init({ message: t('errors.saveFailed'), color: 'danger' })
+    }
+  } catch (e) {
+    console.error(e)
+    init({ message: t('errors.saveFailed'), color: 'danger' })
+  }
 }
+/** ---------- Modal ochilganda: avval daraxt, so‘ng formula ---------- */
+watch(
+  () => props.modelValue,                  // openLocal emas, asl prop’ni kuzatamiz
+  async (isOpen) => {
+    if (!isOpen) return
 
-onMounted(loadTree)
+    // parent set qilgan parameter to‘liq kelib olishiga imkon bering
+    await nextTick()
+
+    if (!loadedOnce.value) {
+      await loadTree()
+    }
+    await loadExistingFormula()
+  }
+)
+watch(
+  () => [props.parameter?.id ?? props.parameter, props.docId],
+  () => { loadedOnce.value = false }       // keyingi ochishda loadTree qayta ishlaydi
+)
+onMounted(async () => {
+  if (props.modelValue) {
+    await nextTick()
+    if (!loadedOnce.value) await loadTree()
+    await loadExistingFormula()
+  }
+})
+
+
+/* … sizdagi kalkulyator funksiyalari (append, addOp, equal, …) aynan qoladi … */
+
+/** ---------- Saqlash ---------- */
+
 </script>
+
 
 <style scoped>
 /* kalkulyator uslubi – create’dagi kabi */

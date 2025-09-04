@@ -117,7 +117,8 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { VaModal, VaButton, VaTextarea, VaSelect, VaInput, useToast } from 'vuestic-ui'
 import anime from 'animejs/lib/anime.es.js'
-
+import { useI18n } from 'vue-i18n';
+const { locale, t } = useI18n();
 /* Props/Emits */
 const props = defineProps({
   parameter: { type: [Number, String], required: true },
@@ -289,7 +290,18 @@ async function emitSave () {
     comment: result.Comment || null,
   }
 
-  await axios.post('/svodkaFormula', payload)
+   try {
+    const { data } =await axios.post('/svodkaFormula', payload);
+    if (data.status === 200) {
+      loadTree()
+      init({ message: t('login.successMessage'), color: 'success' });
+
+    } else {
+      console.error('Error saving data:', data.message);
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
   // yoki sizdagi eski endpoint: await axios.post('/calculator', payload)
 try {
     const { data } = await axios.get(`/calculator-structure/${props.parameter.id}`)

@@ -4,7 +4,7 @@
 
     <VaModal v-model="modalOpen" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
       @close="modalOpen = false" close-button max-width="1000px">
-      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>{{ props.params.data }}
+      <h3 class="va-h3 mb-4">{{ t('modals.editFactory') }}</h3>
 
       <DxDataGrid v-if="rows.length" :data-source="rows" :key-expr="'rowId'" :selected-row-keys="selectedKeys"
         @selection-changed="onSelection" :repaint-changes-only="true" show-borders row-alternation-enabled
@@ -82,6 +82,7 @@ import { VaButton, VaModal, useToast, VaInput } from 'vuestic-ui'
 import { DxDataGrid, DxColumn, DxSelection } from 'devextreme-vue/data-grid'
 import FormulaModal from './FormulaModal.vue'
 import FormulaModalEdit from './FormulaModalEdit.vue'
+import DeleteFormula from './DeleteFormula.vue'
 
 const { t } = useI18n()
 const { init } = useToast()
@@ -103,6 +104,7 @@ const pagerCfg = {
 // Formula modal holati
 const formulaModalOpen = ref(false)
 const editModalOpen = ref(false)
+const deleteModalOpen = ref(false)
 
 const parameterForFormula = ref(null)
 const formulaText = ref('')
@@ -118,8 +120,9 @@ function openFormulaModal(row, id) {
 }
 async function onEdit(row, id) {
   parameterForFormula.value = {
-    ...row,   // row ichidagi barcha maydonlarni qo‘shadi
-    id: id    // alohida id ni ham qo‘shib yuboradi
+    ...row,
+    id: id,   // ✅
+    ParameterID: row.ParameterID || row.param_id || null  // ⬅️ Qo‘shing!
   }
 
   editModalOpen.value = true
@@ -142,6 +145,29 @@ const openModal = async () => {
   } catch (err) {
     console.error(err)
     init({ message: 'Maʼlumotni olishda xatolik', color: 'danger' })
+  }
+}
+async function deleteFormula(row) {
+  const paramGuid = row.ParameterID
+  if (!paramGuid) return
+
+  if (!confirm('Formulani o‘chirmoqchimisiz?')) return
+
+  try {
+    // Agar backendda doc_id kerak bo‘lsa, params bilan bering:
+    // await axios.delete(`/svodkaFormula/by-param/${paramGuid}`, { params: { doc_id: props.params.data.id } })
+
+    await axios.delete(`/svodkaFormula/${paramGuid}`)
+
+    init({ message: t('common.deleted'), color: 'success' })
+
+    // UI ni yangilash: shu satrga belgi qo‘yilsa olib tashlaymiz
+    rows.value = rows.value.map(r =>
+      r.rowId === row.rowId ? { ...r, hasFormula: false, formulaId: null } : r
+    )
+  } catch (e) {
+    console.error(e)
+    init({ message: t('errors.saveFailed'), color: 'danger' })
   }
 }
 

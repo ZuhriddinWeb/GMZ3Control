@@ -80,6 +80,9 @@ Route::match(['get', 'post', 'put', 'delete'], '/servers/{id?}', [ServersControl
 Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/static/{id?}', [StaticParametersController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/svodkaFormula/{id?}', [SvodkaFormulaController::class, 'handle']);
+Route::get('/svodkaFormulaEdit/{param_id}', [SvodkaFormulaController::class, 'getByParam']);
+
+
 
 
 

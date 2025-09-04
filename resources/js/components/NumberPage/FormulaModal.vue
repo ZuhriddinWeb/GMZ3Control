@@ -34,7 +34,6 @@
         <div @click="append(')')" id="rb" class="btn p-4">)</div>
       </div>
 
-      <!-- O‘NG: SEX → SAHIFA → GURUH → PARAMETR -->
       <div class="flex-1 min-w-[420px]">
         <div class="mb-2 text-xs text-gray-500">Sex → Sahifa → Guruh</div>
         <!-- UNIVERSAL VAQT/AGREGAT SOZLAMALARI (sana yo'q) -->

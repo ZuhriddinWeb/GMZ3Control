@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Parameters;
 use Illuminate\Http\Request;
 use App\Models\SvodkaFormula;
+use Illuminate\Support\Str;
 class SvodkaFormulaController extends Controller
 {
     public function handle(Request $request, $id = null)
@@ -19,9 +21,9 @@ class SvodkaFormulaController extends Controller
             case 'POST':
                 return $this->create($request);
             case 'PUT':
-                return $this->update($request,$id);
+                return $this->update($request, $id);
             case 'DELETE':
-                return $this->delete($request,$id);
+                return $this->delete($request, $id);
             default:
                 return response()->json(['message' => 'Method not allowed'], 405);
         }
@@ -40,6 +42,61 @@ class SvodkaFormulaController extends Controller
             'data' => $row,
         ]);
     }
+
+public function getByParam($paramId)
+{
+    // 1. Validatsiya (ixtiyoriy, agar UUID bo‘lishi shart bo‘lsa)
+    if (!Str::isUuid($paramId)) {
+        return response()->json(['error' => 'param_id must be a valid UUID'], 400);
+    }
+
+    // 2. Formula olish
+    $formula = SvodkaFormula::where('param_id', $paramId)->first();
+
+    if (!$formula) {
+        return response()->json(null, 200); // yoki 404 bilan xatolik
+    }
+
+    // 3. Tokenlarni dekodlash
+    $tokens = $formula->tokens ?? [];
+
+    // 4. Pid= larni ajratish
+    $pids = collect($tokens)
+    ->filter(fn($t) => is_string($t) && Str::startsWith($t, 'Pid='))
+    ->map(function ($t) {
+        preg_match('/Pid=([^|]+)/', $t, $match);
+        return $match[1] ?? null;
+    })
+    ->filter()
+    ->unique();
+
+    // 5. Parametr nomlarini olish
+    $paramNames = Parameters::whereIn('id', $pids)->pluck('Name', 'id');
+
+    // 6. Tushunarli ko‘rinishga keltirish
+    $tokensReadable = collect($tokens)->map(function ($token) use ($paramNames) {
+        if (preg_match('/Pid=([^|]+)\|agg=(\w+)\|func=(\w+)\|scope=(\w+)/', $token, $match)) {
+            $pid = $match[1];
+            $agg = $match[2];
+            $func = $match[3];
+            $scope = $match[4];
+            $name = $paramNames[$pid] ?? 'Nomaʼlum parametr';
+
+            return "{$name} ({$agg} {$func}, {$scope})";
+        }
+
+        return $token;
+    });
+
+    // 7. Javob qaytarish
+    return response()->json([
+        'id' => $formula->id,
+        'tokens' => $tokens,
+        'tokens_readable' => $tokensReadable,
+        'comment' => $formula->comment,
+    ]);
+}
+
     private function create(Request $request)
     {
         // dd($request);
@@ -47,12 +104,12 @@ class SvodkaFormulaController extends Controller
         $row = SvodkaFormula::updateOrCreate(
             ['param_id' => $request['param_id']],
             [
-                'page_id_blog'=>$request['page_id_blog'],
-                'sex_id'   => $request['sex_id'],
-                'page_id'  => $request['page_id'],
+                'page_id_blog' => $request['page_id_blog'],
+                'sex_id' => $request['sex_id'],
+                'page_id' => $request['page_id'],
                 'group_id' => $request['group_id'],
-                'tokens'   => $request['tokens'],   // casts -> json
-                'comment'  => $request['comment'] ?? null,
+                'tokens' => $request['tokens'],   // casts -> json
+                'comment' => $request['comment'] ?? null,
             ]
         );
 
@@ -92,13 +149,8 @@ class SvodkaFormulaController extends Controller
 
     public function delete(Request $request, $id)
     {
-        try {
-            $unit = SvodkaFormula::findOrFail($id);
-            $unit->delete();
-
-            return response()->json(['status' => 200, 'message' => 'Unit deleted successfully']);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Error deleting unit: ' . $e->getMessage()]);
-        }
+            $unit = SvodkaFormula::where('param_id', $id)->delete();
+           return response()->json(['status' => 200, 'deleted' => $unit]);
+        
     }
 }

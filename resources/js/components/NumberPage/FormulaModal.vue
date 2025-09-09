@@ -63,7 +63,6 @@
               @click="applyMode = 'global'">Global</VaButton>
             <VaButton size="small" :color="applyMode === 'next' ? 'primary' : 'secondary'" @click="applyMode = 'next'">
               Keyingi parametr</VaButton>
-
             <span class="text-xs text-gray-500 ml-2">
               {{ aggSummary }}
             </span>
@@ -104,6 +103,33 @@
           </div>
           <div v-else class="text-gray-500 text-sm">Parametrlar topilmadi</div>
         </div>
+        <div class="mt-4">
+          <div class="mb-2 text-xs text-gray-500">Static</div>
+          <div v-if="periodTypes.length" class="mb-2 flex flex-wrap gap-2"> <!-- NEW -->
+            <VaButton
+              v-for="pt in periodTypes"
+              :key="`pt-${pt.id}`"
+              size="small"
+              :color="pt.id === activeStaticPeriodId ? 'primary' : 'secondary'"
+              @click="activeStaticPeriodId = pt.id"
+            >
+              {{ pt.name }}
+            </VaButton>
+          </div>
+          <div v-else class="text-gray-500 text-sm">Period turlari topilmadi</div> <!-- NEW -->
+         <div class="border rounded p-2 min-h-[120px]">
+            <!-- NEW: faqat tanlangan periodga tegishli static tugmalar -->
+            <div v-if="filteredStaticParams.length" class="flex flex-wrap gap-2"> <!-- NEW -->
+              <VaButton v-for="sp in filteredStaticParams" :key="`static-${sp.id}`" color="secondary"
+                :style="{ borderRadius: '0' }" @click="appendStatic(sp)">
+                S: {{ sp.PName || sp.name || sp.id }}
+                <span v-if="sp.UName" class="ml-1 text-xs opacity-70">({{ sp.UName }})</span>
+                <span v-if="sp.PTName" class="ml-1 text-xs opacity-70">[{{ sp.PTName }}]</span>
+              </VaButton>
+            </div>
+            <div v-else class="text-gray-500 text-sm">Tanlangan period uchun static parametr topilmadi</div> <!-- NEW -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -118,6 +144,7 @@ import { VaModal, VaButton, VaTextarea, VaSelect, VaInput, useToast } from 'vues
 import anime from 'animejs/lib/anime.es.js'
 import { useI18n } from 'vue-i18n';
 const { locale, t } = useI18n();
+const staticItems = ref([])
 /* Props/Emits */
 const props = defineProps({
   parameter: { type: [Number, String], required: true },
@@ -190,12 +217,12 @@ const aggSummary = computed(() => {
 })
 function appendParam(p) {
   // Tokenni universal meta-bilan yozamiz (sanasiz)
-  const fVal = typeof agg.func  === 'object' ? agg.func.value  : agg.func
+  const fVal = typeof agg.func === 'object' ? agg.func.value : agg.func
   const sVal = typeof agg.scope === 'object' ? agg.scope.value : agg.scope
   const meta = [
     `Pid=${p.id}`, `agg=${agg.agg}`, `func=${fVal}`, `scope=${sVal}`,
   ]
-  
+
   if (agg.scope !== 'CURRENT') meta.push(`n=${Number(agg.n) || 1}`)
 
   // Faqat keyingi parametrga qo'llash rejimi bo‘lsa — token ichiga yozdik,
@@ -209,10 +236,10 @@ function appendParam(p) {
   // let scopeLabel = 'joriy'
   // if (agg.scope === 'PREV') scopeLabel = `oldingi ${agg.n}`
   // if (agg.scope === 'ROLLING') scopeLabel = `oxirgi ${agg.n}`
- const funcLabel = (funcOptions.find(x => x.value === fVal)?.text) || fVal
- let scopeLabel = 'joriy'
- if (sVal === 'PREV')    scopeLabel = `oldingi ${agg.n}`
- if (sVal === 'ROLLING') scopeLabel = `oxirgi ${agg.n}`
+  const funcLabel = (funcOptions.find(x => x.value === fVal)?.text) || fVal
+  let scopeLabel = 'joriy'
+  if (sVal === 'PREV') scopeLabel = `oldingi ${agg.n}`
+  if (sVal === 'ROLLING') scopeLabel = `oxirgi ${agg.n}`
   // Masalan: [Parametr nomi] ⟨Smenalik • O‘rtacha • joriy⟩
   current.value += `[${p.name || p.id}] ⟨${aggLabel} • ${funcLabel} • ${scopeLabel}⟩`
 }
@@ -253,13 +280,13 @@ const equal = () => { addOp('=', 'equal'); const expr = result.Calculate.map(t =
 function selectSex(i) { sel.sex = i; sel.page = 0; sel.group = 0 }
 function selectPage(j) { sel.page = j; sel.group = 0 }
 function selectGroup(k) { sel.group = k }
-  console.log(props);
+// console.log(props);
 
 /* Daraxtni yuklash */
 const loadedOnce = ref(false)      // shu sessiyada yukladikmi?
 const loading = ref(false)         // hozir so‘rov ketayaptimi?
 
-async function loadTree () {
+async function loadTree() {
   if (loading.value) return
   loading.value = true
   try {
@@ -274,23 +301,74 @@ async function loadTree () {
     loading.value = false
   }
 }
+const staticParams = computed(() => {                        // unikal id bo'yicha
+  const seen = new Set()
+  const out = []
+  for (const x of staticItems.value) {
+    if (!x?.id) continue
+    if (seen.has(x.id)) continue
+    seen.add(x.id)
+    out.push(x)
+  }
+  return out
+})
+const periodTypes = ref([])                                  // NEW
+const activeStaticPeriodId = ref(null)                       // NEW
 
+/* NEW: tanlangan period bo‘yicha static’larni filtrlash */
+const filteredStaticParams = computed(() => {                // NEW
+  if (!activeStaticPeriodId.value) return []
+  return staticParams.value.filter(sp =>
+    String(sp.period_type_id) === String(activeStaticPeriodId.value)
+  )
+})
+function appendStatic (sp) {
+  // Formulaga token: Static=<id>
+  result.Calculate.push(`Static=${sp.id}`)
+  // Displeyga badge ko'rinishida
+  const label = sp.PName || sp.name || sp.id
+  const unit = sp.UName ? ` • ${sp.UName}` : ''
+  const period = sp.PTName ? ` • ${sp.PTName}` : ''
+  current.value += `[S:${label}${unit}${period}] `
+  // kichik anim uchun
+  try { anim('nX') } catch {}
+}
+// --- YANGI: Staticlarni olib kelish
+async function fetchStaticParams () {                        // NEW
+  try {
+    const { data } = await axios.get('/static')
+    staticItems.value = Array.isArray(data) ? data : (data.items || [])
+  } catch (e) {
+    console.error(e)
+    init({ message: 'Static parametrlarni yuklashda xatolik', color: 'danger' })
+  }
+}
+async function fetchPeriodTypes () {                         // NEW
+  try {
+    const { data } = await axios.get('/periodType')
+    periodTypes.value = Array.isArray(data) ? data : (data.items || [])
+    if (!activeStaticPeriodId.value && periodTypes.value.length) {
+      activeStaticPeriodId.value = periodTypes.value[0].id    // default tanlov
+    }
+  } catch (e) {
+    console.error(e)
+    init({ message: 'Period turlarini yuklashda xatolik', color: 'danger' })
+  }
+}
 /* Saqlash */
-async function emitSave () {
+async function emitSave() {
   const payload = {
-    page_id_blog:props.parameter.id,
+    page_id_blog: props.parameter.id,
     doc_id: props.docId,
-    param_id: props.parameter?.ParameterID,   // MUHIM: qaysi parametr
+    param_id: props.parameter?.ParameterID,  
     sex_id: props.parameter?.sexId,
     page_id: props.parameter?.pageId,
     group_id: props.parameter?.groupId,
-
-    tokens: [...result.Calculate],     // formula tokenlari
+    tokens: [...result.Calculate],     
     comment: result.Comment || null,
   }
-
-   try {
-    const { data } =await axios.post('/svodkaFormula', payload);
+  try {
+    const { data } = await axios.post('/svodkaFormula', payload);
     if (data.status === 200) {
       loadTree()
       init({ message: t('login.successMessage'), color: 'success' });
@@ -302,7 +380,7 @@ async function emitSave () {
     console.error('Error saving data:', error);
   }
   // yoki sizdagi eski endpoint: await axios.post('/calculator', payload)
-try {
+  try {
     const { data } = await axios.get(`/calculator-structure/${props.parameter.id}`)
     items.value = Array.isArray(data.items) ? data.items : []
     // agar items bo‘sh bo‘lsa, computed’lar bo‘sh qoladi — UI ham shuni ko‘rsatadi
@@ -313,14 +391,19 @@ try {
   emit('save', payload)        // ota sahifaga xabar
   openLocal.value = false
 }
-
-
 /* Lifecycle */
-onMounted(loadTree)
-/* Modal OCHILGANDAgina yukla */
+onMounted(async () => {
+  await Promise.all([
+    loadTree(),
+   fetchStaticParams(),   // NEW
+    fetchPeriodTypes(),    // NEW
+  ])
+})
 watch(openLocal, async (isOpen) => {
   if (isOpen && !loadedOnce.value) {
     await loadTree()
+   await fetchStaticParams() 
+    await fetchPeriodTypes()  
   }
 })
 watch(

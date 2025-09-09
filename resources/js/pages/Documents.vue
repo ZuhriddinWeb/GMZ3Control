@@ -18,8 +18,6 @@
   </div>
 </template>
 
-
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import jspreadsheet from 'jspreadsheet-ce'
@@ -201,7 +199,7 @@ onMounted(() => {
     data,
     style,
     columns,
-    minDimensions: [300, 150],
+    minDimensions: [150, 500],
     merge: [
       { row: 0, col: 0, rowspan: 1, colspan: 14 }, // A1:N1
       { row: 1, col: 0, rowspan: 1, colspan: 14 }, // A2:N2

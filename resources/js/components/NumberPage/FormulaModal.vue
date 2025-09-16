@@ -334,7 +334,7 @@ function appendStatic (sp) {
   try { anim('nX') } catch {}
 }
 // --- YANGI: Staticlarni olib kelish
-async function fetchStaticParams () {                        // NEW
+async function fetchStaticParams () {// NEW
   try {
     const { data } = await axios.get('/static')
     staticItems.value = Array.isArray(data) ? data : (data.items || [])
@@ -343,6 +343,7 @@ async function fetchStaticParams () {                        // NEW
     init({ message: 'Static parametrlarni yuklashda xatolik', color: 'danger' })
   }
 }
+
 async function fetchPeriodTypes () {                         // NEW
   try {
     const { data } = await axios.get('/periodType')

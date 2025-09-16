@@ -335,6 +335,14 @@ export default [
       guard: "auth",
     },
   },
+    {
+    path: "/gmz3",
+    name: 'gmz3-report',
+    component: () => import('../pages/svodka/GMZ3Report.vue'),
+    meta: {
+      guard: "auth",
+    },
+  },
   {
     path: "/users",
     name: "users",

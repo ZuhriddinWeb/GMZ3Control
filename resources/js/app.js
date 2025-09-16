@@ -23,6 +23,7 @@ import InputMask from 'vue-input-mask';
 import 'material-symbols/outlined.css';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import VueExcelEditor from 'vue3-excel-editor'
 import HighchartsVue from 'highcharts-vue';
 axios.defaults.baseURL = "/api/";
 window.axios = axios;
@@ -68,6 +69,7 @@ async function initApp() {
     .use(i18n)
     .use(useToast)
     .use(HighchartsVue)
+    .use(VueExcelEditor)
     .mount("#app");
 }
 

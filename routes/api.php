@@ -7,6 +7,8 @@ use App\Http\Controllers\api\FormulaController;
 use App\Http\Controllers\api\GroupsController;
 use App\Http\Controllers\api\ServersController;
 
+use App\Http\Controllers\api\SheetController;
+use App\Http\Controllers\api\SheetFormulasController;
 use App\Http\Controllers\api\StaticParametersController;
 
 use App\Http\Controllers\api\SvodkaFormulaController;
@@ -80,6 +82,19 @@ Route::match(['get', 'post', 'put', 'delete'], '/servers/{id?}', [ServersControl
 Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/static/{id?}', [StaticParametersController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/svodkaFormula/{id?}', [SvodkaFormulaController::class, 'handle']);
+Route::get('/static', [StaticParametersController::class, 'index']); // sendagi bor
+
+// Formulalar
+Route::get('/sheet/formula', [SheetController::class, 'getFormulas']);
+Route::post('/sheet/formula', [SheetController::class, 'saveFormula']);
+
+// Kross-sahifa qiymat (B6 kabi)
+Route::get('/sheet/value', [SheetController::class, 'getValue']);
+
+// (ixtiyoriy) katak qiymatini qo'lda saqlash/yangilash
+Route::post('/sheet/value', [SheetController::class, 'saveValue']);
+Route::post('/sheet/values/bulk', [SheetController::class, 'saveValuesBulk']);
+
 Route::get('/svodkaFormulaEdit/{param_id}', [SvodkaFormulaController::class, 'getByParam']);
 
 

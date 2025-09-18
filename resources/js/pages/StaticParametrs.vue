@@ -8,15 +8,21 @@
       </div>
       <VaModal v-model="showModal" :ok-text="t('modals.apply')" :cancel-text="t('modals.cancel')" @ok="onSubmit"
         close-button>
-        <h3 class="va-h3">
+        <h3 class="va-h3" @vue:mounted="fetchParams">
           {{ t('modals.addParamsTitle') }}
         </h3>
         <div>
           <VaForm ref="formRef" class="flex flex-col items-baseline gap-2">
+            <VaSelect v-model="result.FactoryStructureID" value-by="value" class="mb-1 w-full"
+              @update:modelValue="getPages" :label="t('menu.structure')" :options="structureOptions" clearable />
             <VaSelect v-model="result.ParameterID" value-by="value" class="mb-1 w-full" :label="t('menu.params')"
               :options="params" searchable clearable />
-            <VaInput class="w-full" v-model="result.Value"
-              :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.value')" />
+            <VaSelect v-model="result.NumberPage" value-by="value" class="mb-1 w-full" :label="t('table.page')"
+              :options="pageseOptions" @update:modelValue="onPageOrStructureChange" clearable />
+            <VaSelect v-model="result.GroupID" value-by="value" class="mb-1 w-full" :label="t('menu.groups')"
+              :options="GroupsOptions" searchable />
+            <!-- <VaInput class="w-full" v-model="result.Value"
+              :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.value')" /> -->
             <div class="flex gap-5 flex-wrap w-full mt-4">
               <VaDatePicker v-model="result.PeriodStartDate" stateful highlight-weekend :text-input="true" />
               <VaDatePicker v-model="result.PeriodEndDate" stateful highlight-weekend :text-input="true" />
@@ -57,13 +63,19 @@ const showModal = ref(false);
 const paramsOptions = ref([]);
 const serversOptions = ref([]);
 const params = ref([]);
+const structureOptions = ref([]);
+const pageseOptions = ref([]);
+const GroupsOptions = ref([]);
 
 
 const unitsOptions = ref([]);
 
 const result = reactive({
+  FactoryStructureID: "",
   ParameterID: "",
   Value: "",
+  NumberPage: "",
+  GroupID: "",
   PeriodTypeId: "",
   PeriodStartDate: null,
   PeriodEndDate: null,
@@ -133,17 +145,55 @@ const fetchParams = async () => {
   try {
     const response = await axios.get('/param');
     const responseGraphics = await axios.get('/periodType');
+    const responseChanges = await axios.get('/structure');
+    const responsePage = await axios.get(`/pages-svodka/${22}`);
 
     params.value = response.data.map(graphic => ({
       value: graphic.Uuid,
       text: graphic.Name
     }));
+    structureOptions.value = responseChanges.data.map(change => ({
+      value: change.id,
+      text: change.Name
+    }));
     paramsOptions.value = responseGraphics.data.map(graphic => ({
       value: graphic.id,
       text: graphic.name
     }));
+    pageseOptions.value = responsePage.data.map(graphic => ({
+      value: graphic.NumberPage,
+      text: graphic.Name
+    }));
+    if (result.NumberPage) {
+      await onPageOrStructureChange();
+    }
   } catch (error) {
     console.error('Error fetching graphics data:', error);
+  }
+};
+const onPageOrStructureChange = async () => {
+  if (!result.NumberPage ) {
+    GroupsOptions.value = [];
+    result.GroupID = null;
+    return;
+  }
+
+  try {
+    
+    const { data } = await axios.get(`/getRowGroupWith/${result.NumberPage}`);
+
+    GroupsOptions.value = data.map(group => ({
+      value: group.id,
+      text: group.Name,
+    }));
+
+    if (!GroupsOptions.value.some(group => group.value === result.GroupID)) {
+      result.GroupID = null;
+    }
+  } catch (error) {
+    GroupsOptions.value = [];
+    result.GroupID = null;
+    console.error('Error fetching groups:', error);
   }
 };
 const formatDateLocal = (date) => {
@@ -166,9 +216,11 @@ const onSubmit = async () => {
     const { data } = await axios.post("/static", payload);
     if (data.status === 200) {
       showModal.value = false;
+      result.FactoryStructureID = '';
       result.ParameterID = '';
       result.Value = '';
       result.Comment = '';
+      result.NumberPage = "";
       result.PeriodTypeId = '';
       result.PeriodStartDate = null;
       result.PeriodEndDate = null;
@@ -185,7 +237,7 @@ const onSubmit = async () => {
 
 onMounted(() => {
   fetchData()
-  fetchParams()
+  // fetchParams()
 });
 </script>
 

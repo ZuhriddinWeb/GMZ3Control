@@ -83,6 +83,8 @@ Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsControlle
 Route::match(['get', 'post', 'put', 'delete'], '/static/{id?}', [StaticParametersController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/svodkaFormula/{id?}', [SvodkaFormulaController::class, 'handle']);
 Route::get('/static', [StaticParametersController::class, 'index']); // sendagi bor
+Route::get('/static-with-numberpage/{id}', [StaticParametersController::class, 'staticWithNumberPage']); // sendagi bor
+
 
 // Formulalar
 Route::get('/sheet/formula', [SheetController::class, 'getFormulas']);
@@ -99,10 +101,9 @@ Route::get('/svodkaFormulaEdit/{param_id}', [SvodkaFormulaController::class, 'ge
 
 
 
-
-
 Route::get('/structures-number', [DocumentNumberPageController::class, 'getStructures']);
 Route::get('/pages-number/{sexId}', [DocumentNumberPageController::class, 'getPages']);
+
 Route::get('/groups-number/{sexId}/{pageId}', [DocumentNumberPageController::class, 'getGroups']);
 Route::get('/parameters-number/{sexId}/{pageId}/{groupId}', [DocumentNumberPageController::class, 'getParameters']);
 Route::get('/periodType', [StaticParametersController::class, 'periodType']);
@@ -144,9 +145,14 @@ Route::get('/getRowPageResult/{id}', [ParamsGraphController::class, 'getRowPageR
 Route::get('/paramWithId/{id}', [ParamsGraphController::class, 'getRowParamID']);
 Route::get('/pages-select/{id}', [NumberPageController::class, 'getRowPages']);
 Route::get('/getRowPage/{id}', [NumberPageController::class, 'getRowPage']);
+Route::get('/pages-svodka/{id}', [NumberPageController::class, 'getSvodka']);
+
 Route::get('/getRowGroup/{idS}/{idP}', [GroupsController::class, 'getRowGroup']);
 Route::get('/getRowGroupEdit/{id}', [GroupsController::class, 'getRowGroupEdit']);
 Route::get('/getRowGroupWithId/{id}', [GroupsController::class, 'getRowGroupWithId']);
+Route::get('/getRowGroupWith/{id}', [GroupsController::class, 'getRowGroupWith']);
+Route::post('/static-params/upsert', [StaticParametersController::class, 'upsert']);
+
 
 
 

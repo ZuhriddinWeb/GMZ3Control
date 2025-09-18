@@ -58,7 +58,14 @@ class GroupsController extends Controller
             ->select('factory_structures.Name as SName', 'number_pages.Name as NName', 'groups.*')->get();
         return response()->json($unit);
     }
-    
+        public function getRowGroupWith($id)
+    {
+        // dd($id);
+        $unit = Groups::join('number_pages', 'number_pages.NumberPage', '=', 'groups.PageID')
+            ->where('groups.PageID', $id)
+            ->select( 'number_pages.Name as NName', 'groups.*')->get();
+        return response()->json($unit);
+    }
     private function create(Request $request)
     {
         $unit = Groups::create([

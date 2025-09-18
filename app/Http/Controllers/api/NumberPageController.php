@@ -82,7 +82,11 @@ class NumberPageController extends Controller
             'unit' => $unit
         ]);
     }
-
+    public function getSvodka($id)
+    {
+        $unit = NumberPage::where('StructureID',$id)->get();
+        return response()->json($unit);
+    }
     private function update(Request $request)
     {
         // $request->validate([

@@ -89,7 +89,6 @@ class DocumentNumberPageController extends Controller
 
 
 
-
     public function getRowUnit(int $docId): JsonResponse
     {
         // dd($docId);

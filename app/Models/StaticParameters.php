@@ -10,7 +10,10 @@ class StaticParameters extends Model
     use HasFactory;
     protected $fillable = [
         'id',
+        'FactoryStructureID',
         'ParameterID',
+        'NumberPage',
+        'GroupID',
         'value',
         'Comment',
         'period_type_id',

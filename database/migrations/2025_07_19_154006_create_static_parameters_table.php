@@ -19,8 +19,10 @@ return new class extends Migration
 
         Schema::create('static_parameters', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->integer('factory_structure_id')->nullable();
+            $table->integer('FactoryStructureID')->nullable();
             $table->integer('ParameterID')->nullable();
+            $table->integer('NumberPage')->nullable();
+            $table->integer('GroupID')->nullable();
             // $table->string('name');
             $table->double('value');
             $table->foreignId('period_type_id')->constrained('period_types');

@@ -404,41 +404,65 @@ async function fillExistingStaticValues() {
 
 // FS -> Group -> Parametrlar ko‘rinishiga keltirish
 function groupStaticByFSAndGroup(items) {
-    const fsMap = new Map()
-    const seen = new Set()
+  const fsMap = new Map()
+  const seen = new Set()
 
-    items.forEach(x => {
-        const fsId = x?.FactoryStructureID ?? null
-        const fsName = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
+  items.forEach(x => {
+    const fsId   = x?.FactoryStructureID ?? null
+    const fsName = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
 
-        const gId = x?.GroupID ?? null
-        const gName = x?.GName || (gId != null ? `Guruh #${gId}` : null)
+    const gId    = x?.GroupID ?? null
+    const gName  = (gId != null)
+      ? (x?.GName || `Guruh #${gId}`)
+      : null
 
-        const pid = x?.ParameterID ?? x?.id ?? x?.Uuid
-        if (pid && seen.has(`${fsId}:${gId}:${pid}`)) return
-        if (pid) seen.add(`${fsId}:${gId}:${pid}`)
+    const pid    = x?.ParameterID ?? x?.id ?? x?.Uuid
+    if (pid && seen.has(`${fsId}:${gId}:${pid}`)) return
+    if (pid) seen.add(`${fsId}:${gId}:${pid}`)
 
-        const pName = x?.PName || x?.Name || `Param ${pid}`
-        const unit = x?.UName || 'tn.'
+    const pName  = x?.PName || x?.Name || `Param ${pid}`
+    const unit   = x?.UName || 'tn.'
 
-        if (!fsMap.has(fsId)) fsMap.set(fsId, { fsId, fsName, groups: new Map() })
-        const fs = fsMap.get(fsId)
+    if (!fsMap.has(fsId)) fsMap.set(fsId, { fsId, fsName, groups: new Map() })
+    const fs = fsMap.get(fsId)
 
-        const gKey = gId ?? '_nogroup'
-        if (!fs.groups.has(gKey)) fs.groups.set(gKey, { groupId: gId, gName: gName, params: [] })
-        fs.groups.get(gKey).params.push({
-            name: pName, unit, fsId, groupId: gId, parameterId: pid
-        })
+    // 🔑 Guruh key: guruhsiz bo‘lsa oxirida turishi uchun maxsus kalit
+    const gKey = (gId == null) ? 'zzz_nogroup' : `g_${gId}`
+
+    if (!fs.groups.has(gKey)) {
+      fs.groups.set(gKey, {
+        groupId: gId,
+        gName: gName,                // null bo‘lsa ham saqlaymiz — keyin default sarlavha beramiz
+        params: [],
+      })
+    }
+    fs.groups.get(gKey).params.push({
+      name: pName, unit, fsId, groupId: gId, parameterId: pid
     })
+  })
 
-    const fsList = Array.from(fsMap.values())
-        .sort((a, b) => String(a.fsId).localeCompare(String(b.fsId), undefined, { numeric: true }))
-    fsList.forEach(fs => {
-        fs.groups = Array.from(fs.groups.values())
-            .sort((a, b) => String(a.groupId).localeCompare(String(b.groupId), undefined, { numeric: true }))
+  // FS lar tartibi (id bo‘yicha)
+  const fsList = Array.from(fsMap.values())
+    .sort((a, b) => String(a.fsId).localeCompare(String(b.fsId), undefined, { numeric: true }))
+
+  // Guruhlar tartibi: avval nomli/IDli guruhlar, oxirida guruhsiz
+  fsList.forEach(fs => {
+    fs.groups = Array.from(fs.groups.values()).sort((a, b) => {
+      const aNogroup = (a.groupId == null)
+      const bNogroup = (b.groupId == null)
+      if (aNogroup && !bNogroup) return 1
+      if (!aNogroup && bNogroup) return -1
+
+      // ikkalasi ham nomli yoki ikkalasi ham nogroup — tartib
+      const aKey = a.gName ?? a.groupId ?? ''
+      const bKey = b.gName ?? b.groupId ?? ''
+      return String(aKey).localeCompare(String(bKey), undefined, { numeric: true })
     })
-    return fsList
+  })
+
+  return fsList
 }
+
 
 
 // --- QATORLARNI /static dan FS->Group->Param bo‘yicha to‘ldirish

@@ -17,8 +17,8 @@
               @update:modelValue="getPages" :label="t('menu.structure')" :options="structureOptions" clearable />
             <VaSelect v-model="result.ParameterID" value-by="value" class="mb-1 w-full" :label="t('menu.params')"
               :options="params" searchable clearable />
-            <VaSelect v-model="result.NumberPage" value-by="value" class="mb-1 w-full" :label="t('table.page')"
-              :options="pageseOptions" @update:modelValue="onPageOrStructureChange" clearable />
+            <!-- <VaSelect v-model="result.NumberPage" value-by="value" class="mb-1 w-full" :label="t('table.page')"
+              :options="pageseOptions" @update:modelValue="onPageOrStructureChange" clearable /> -->
             <VaSelect v-model="result.GroupID" value-by="value" class="mb-1 w-full" :label="t('menu.groups')"
               :options="GroupsOptions" searchable />
             <!-- <VaInput class="w-full" v-model="result.Value"
@@ -45,7 +45,7 @@
 
 
 <script setup>
-import { ref, reactive, onMounted, provide, computed } from 'vue';
+import { ref, reactive, onMounted, provide, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import 'vuestic-ui/dist/vuestic-ui.css';
@@ -54,6 +54,8 @@ import EditParam from '../components/StaticParamsComponent/EditParam.vue'
 import { useStore } from 'vuex';
 const store = useStore();
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
+import { defineProps } from 'vue'
+const props = defineProps({ id: Number }) // id = NumberPage
 const { init } = useToast();
 const { t } = useI18n();
 const formatDate = (date) => date ? date.toISOString().split('T')[0] : null;
@@ -74,7 +76,7 @@ const result = reactive({
   FactoryStructureID: "",
   ParameterID: "",
   Value: "",
-  NumberPage: "",
+  NumberPage: props.id,
   GroupID: "",
   PeriodTypeId: "",
   PeriodStartDate: null,
@@ -133,14 +135,12 @@ const defaultColDef = {
   sortable: true,
   filter: true
 };
+console.log(props.id);
+
 const fetchData = async () => {
-  try {
-    const response = await axios.get('/static');
-    rowData.value = Array.isArray(response.data) ? response.data : response.data.items;
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
+  const { data } = await axios.get(`/staticCard/${props.id}`) // ← faqat shu sahifa bo‘yicha
+  rowData.value = Array.isArray(data) ? data : data.items
+}
 const fetchParams = async () => {
   try {
     const response = await axios.get('/param');
@@ -171,17 +171,14 @@ const fetchParams = async () => {
     console.error('Error fetching graphics data:', error);
   }
 };
+
+// const { data } = await axios.get(`/getRowGroupWith/${result.NumberPage}`);
 const onPageOrStructureChange = async () => {
-  if (!result.NumberPage ) {
-    GroupsOptions.value = [];
-    result.GroupID = null;
-    return;
-  }
-
   try {
-    
-    const { data } = await axios.get(`/getRowGroupWith/${result.NumberPage}`);
 
+    const page = props.id || result.NumberPage
+    if (!page) { GroupsOptions.value = []; result.GroupID = null; return }
+    const { data } = await axios.get(`/getRowGroupWith/${page}`);
     GroupsOptions.value = data.map(group => ({
       value: group.id,
       text: group.Name,
@@ -236,9 +233,13 @@ const onSubmit = async () => {
 };
 
 onMounted(() => {
+
   fetchData()
+  result.NumberPage = props.id
+  onPageOrStructureChange()
   // fetchParams()
 });
+watch(() => props.id, fetchData)
 </script>
 
 

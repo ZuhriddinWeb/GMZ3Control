@@ -81,6 +81,58 @@ class StaticParametersController extends Controller
 
     return response()->json($units);
     }
+        public function staticCard($id)
+    {
+        //  $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
+        //     ->join('units', 'parameters.UnitsID', '=', 'units.id')
+        //     ->leftJoin('servers', 'parameters.ServerId', '=', 'servers.id') 
+        //     ->select('parameters.id as Uuid','parameters.ShortName as ShName', 'parameters.Name','parameters.WinCC','parameters.ServerId', 'parameters.ShortName', 'parameters.Comment', 'parameters.Min', 'parameters.Max', 'paramenters_types.Name as PName', 'paramenters_types.id as Pid', 'units.Name as UName', 'units.id as Uid','servers.name as IpName', 'servers.id as IpId')
+        //     ->get();
+        // $units = StaticParameters::join('period_types', 'static_parameters.period_type_id', '=', 'period_types.id')
+        //     ->join('parameters', 'static_parameters.ParameterID', '=', 'parameters.id')
+        //     ->join('units', 'parameters.UnitsID', '=', 'units.id')
+        //     ->select('units.Name as UName', 'period_types.name as PTName', 'parameters.Name as PName', 'static_parameters.*')
+        //     ->get();
+        // return response()->json($units);
+
+         $base = DB::table('static_parameters as sp')
+        ->select(
+            'sp.*',
+            DB::raw("
+                ROW_NUMBER() OVER (
+                  PARTITION BY
+                    sp.ParameterID,
+                    sp.FactoryStructureID,
+                    sp.NumberPage,
+                    sp.GroupID
+                  ORDER BY
+                    -- eng yangi deb hisoblash mezoni:
+                    sp.period_end_date DESC,
+                    sp.period_start_date DESC,
+                    sp.updated_at DESC,
+                    sp.created_at DESC
+                ) as rn
+            ")
+        );
+
+    // 2) faqat rn = 1 (ya'ni eng so‘nggi) bo‘lganlarini olib, bog‘liq nomlar bilan birga qaytaramiz
+    $units = DB::query()
+        ->fromSub($base, 'sp')
+        ->join('parameters as p', 'sp.ParameterID', '=', 'p.id')
+        ->join('units as u', 'p.UnitsID', '=', 'u.id')
+        ->leftJoin('period_types as pt', 'sp.period_type_id', '=', 'pt.id')
+        ->where('sp.rn', 1)
+        ->where('sp.NumberPage',$id)
+        ->select([
+            'u.Name as UName',
+            'pt.name as PTName',
+            'p.Name as PName',
+            'sp.*',
+        ])
+        ->get();
+
+    return response()->json($units);
+    }
     public function periodType()
     {
         return DB::table('period_types')->get();

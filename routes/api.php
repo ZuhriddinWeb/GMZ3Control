@@ -152,6 +152,7 @@ Route::get('/getRowGroupEdit/{id}', [GroupsController::class, 'getRowGroupEdit']
 Route::get('/getRowGroupWithId/{id}', [GroupsController::class, 'getRowGroupWithId']);
 Route::get('/getRowGroupWith/{id}', [GroupsController::class, 'getRowGroupWith']);
 Route::post('/static-params/upsert', [StaticParametersController::class, 'upsert']);
+Route::get('/staticCard/{id}', [StaticParametersController::class, 'staticCard']);
 
 
 

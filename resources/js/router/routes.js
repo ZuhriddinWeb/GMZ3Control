@@ -32,12 +32,22 @@ export default [
     },
   },
   {
-    path: "/static",
+    path: "/cardPageStatic",
+    name: "CardDetailPageStatic",
+    component: () => import("../pages/svodka/staticscards/StaticPageCard.vue"),
+    meta: {
+      guard: "auth",
+    },
+    props: true,
+  },
+  {
+    path: "/static/:id",
     name: "static",
     component: () => import("../pages/StaticParametrs.vue"),
     meta: {
       guard: "auth",
     },
+    props: true
   },
   // {
   // 	path: '/blogs',
@@ -123,6 +133,7 @@ export default [
     },
     props: true,
   },
+
   {
     path: "/cardPage/:id",
     name: "CardDetailPage",
@@ -132,6 +143,7 @@ export default [
     },
     props: true,
   },
+
   {
     path: "/card/:id/:page",
     name: "CardDetail",
@@ -335,10 +347,10 @@ export default [
       guard: "auth",
     },
   },
-    {
+  {
     path: "/gmz3",
-    name: 'gmz3-report',
-    component: () => import('../pages/svodka/GMZ3Report.vue'),
+    name: "gmz3-report",
+    component: () => import("../pages/svodka/GMZ3Report.vue"),
     meta: {
       guard: "auth",
     },

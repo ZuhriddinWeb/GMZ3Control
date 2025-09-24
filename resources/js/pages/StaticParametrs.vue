@@ -23,6 +23,9 @@
               :options="GroupsOptions" searchable />
             <!-- <VaInput class="w-full" v-model="result.Value"
               :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.value')" /> -->
+            <VaInput class="w-full" v-model="result.OrderNumber"
+              :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
+              :label="t('table.OrderNumber')" />
             <div class="flex gap-5 flex-wrap w-full mt-4">
               <VaDatePicker v-model="result.PeriodStartDate" stateful highlight-weekend :text-input="true" />
               <VaDatePicker v-model="result.PeriodEndDate" stateful highlight-weekend :text-input="true" />
@@ -78,6 +81,7 @@ const result = reactive({
   Value: "",
   NumberPage: props.id,
   GroupID: "",
+  OrderNumber: "",
   PeriodTypeId: "",
   PeriodStartDate: null,
   PeriodEndDate: null,
@@ -217,6 +221,7 @@ const onSubmit = async () => {
       result.ParameterID = '';
       result.Value = '';
       result.Comment = '';
+      result.OrderNumber = '',
       result.NumberPage = "";
       result.PeriodTypeId = '';
       result.PeriodStartDate = null;

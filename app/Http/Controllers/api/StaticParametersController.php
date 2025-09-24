@@ -44,10 +44,10 @@ class StaticParametersController extends Controller
         //     ->get();
         // return response()->json($units);
 
-         $base = DB::table('static_parameters as sp')
-        ->select(
-            'sp.*',
-            DB::raw("
+        $base = DB::table('static_parameters as sp')
+            ->select(
+                'sp.*',
+                DB::raw("
                 ROW_NUMBER() OVER (
                   PARTITION BY
                     sp.ParameterID,
@@ -62,26 +62,26 @@ class StaticParametersController extends Controller
                     sp.created_at DESC
                 ) as rn
             ")
-        );
+            );
 
-    // 2) faqat rn = 1 (ya'ni eng so‘nggi) bo‘lganlarini olib, bog‘liq nomlar bilan birga qaytaramiz
-    $units = DB::query()
-        ->fromSub($base, 'sp')
-        ->join('parameters as p', 'sp.ParameterID', '=', 'p.id')
-        ->join('units as u', 'p.UnitsID', '=', 'u.id')
-        ->leftJoin('period_types as pt', 'sp.period_type_id', '=', 'pt.id')
-        ->where('sp.rn', 1)
-        ->select([
-            'u.Name as UName',
-            'pt.name as PTName',
-            'p.Name as PName',
-            'sp.*',
-        ])
-        ->get();
+        // 2) faqat rn = 1 (ya'ni eng so‘nggi) bo‘lganlarini olib, bog‘liq nomlar bilan birga qaytaramiz
+        $units = DB::query()
+            ->fromSub($base, 'sp')
+            ->join('parameters as p', 'sp.ParameterID', '=', 'p.id')
+            ->join('units as u', 'p.UnitsID', '=', 'u.id')
+            ->leftJoin('period_types as pt', 'sp.period_type_id', '=', 'pt.id')
+            ->where('sp.rn', 1)
+            ->select([
+                'u.Name as UName',
+                'pt.name as PTName',
+                'p.Name as PName',
+                'sp.*',
+            ])
+            ->get();
 
-    return response()->json($units);
+        return response()->json($units);
     }
-        public function staticCard($id)
+    public function staticCard($id)
     {
         //  $params = Parameters::join('paramenters_types', 'parameters.ParametrTypeID', '=', 'paramenters_types.id')
         //     ->join('units', 'parameters.UnitsID', '=', 'units.id')
@@ -95,10 +95,10 @@ class StaticParametersController extends Controller
         //     ->get();
         // return response()->json($units);
 
-         $base = DB::table('static_parameters as sp')
-        ->select(
-            'sp.*',
-            DB::raw("
+        $base = DB::table('static_parameters as sp')
+            ->select(
+                'sp.*',
+                DB::raw("
                 ROW_NUMBER() OVER (
                   PARTITION BY
                     sp.ParameterID,
@@ -113,25 +113,25 @@ class StaticParametersController extends Controller
                     sp.created_at DESC
                 ) as rn
             ")
-        );
+            );
 
-    // 2) faqat rn = 1 (ya'ni eng so‘nggi) bo‘lganlarini olib, bog‘liq nomlar bilan birga qaytaramiz
-    $units = DB::query()
-        ->fromSub($base, 'sp')
-        ->join('parameters as p', 'sp.ParameterID', '=', 'p.id')
-        ->join('units as u', 'p.UnitsID', '=', 'u.id')
-        ->leftJoin('period_types as pt', 'sp.period_type_id', '=', 'pt.id')
-        ->where('sp.rn', 1)
-        ->where('sp.NumberPage',$id)
-        ->select([
-            'u.Name as UName',
-            'pt.name as PTName',
-            'p.Name as PName',
-            'sp.*',
-        ])
-        ->get();
+        // 2) faqat rn = 1 (ya'ni eng so‘nggi) bo‘lganlarini olib, bog‘liq nomlar bilan birga qaytaramiz
+        $units = DB::query()
+            ->fromSub($base, 'sp')
+            ->join('parameters as p', 'sp.ParameterID', '=', 'p.id')
+            ->join('units as u', 'p.UnitsID', '=', 'u.id')
+            ->leftJoin('period_types as pt', 'sp.period_type_id', '=', 'pt.id')
+            ->where('sp.rn', 1)
+            ->where('sp.NumberPage', $id)
+            ->select([
+                'u.Name as UName',
+                'pt.name as PTName',
+                'p.Name as PName',
+                'sp.*',
+            ])
+            ->get();
 
-    return response()->json($units);
+        return response()->json($units);
     }
     public function periodType()
     {
@@ -156,7 +156,7 @@ class StaticParametersController extends Controller
             'ParameterID' => $request->ParameterID,
             'NumberPage' => $request->NumberPage,
             'GroupID' => $request->GroupID,
-            // 'value' => $request->Value,
+            'OrderNumber' => $request->OrderNumber,
             'period_type_id' => $request->PeriodTypeId,
             'period_start_date' => $request->PeriodStartDate,
             'period_end_date' => $request->PeriodEndDate,
@@ -174,14 +174,12 @@ class StaticParametersController extends Controller
     {
         $unit = StaticParameters::find($request->id);
         $unit->update([
-            'Name' => $request->Name,
-            'NameRus' => $request->NameRus,
-            'value' => $request->Value,
+            'GroupID' => $request->GroupID,
+            'OrderNumber' => $request->OrderNumber,
             'period_type_id' => $request->PeriodTypeId,
             'period_start_date' => $request->PeriodStartDate,
             'period_end_date' => $request->PeriodEndDate,
-            'description' => $request->Description,
-            'unit' => $request->UnitId,
+            'Comment' => $request->Comment,
         ]);
 
         return response()->json([
@@ -234,68 +232,68 @@ class StaticParametersController extends Controller
             ->get();
     }
 
-public function upsert(Request $r)
-{
-    $data = $r->validate([
-        'number_page'          => 'required|integer',
-        'factory_structure_id' => 'nullable',
-        'parameter_id'         => 'required|string',
-        'group_id'             => 'nullable',
-        'period_type_id'       => 'required|integer',
-        'period_start_date'    => 'required|date',
-        'period_end_date'      => 'required|date', // daily uchun ham start=end yuborasiz
-        'value'                => 'nullable|numeric',
-        'comment'              => 'nullable|string',
-    ]);
+    public function upsert(Request $r)
+    {
+        $data = $r->validate([
+            'number_page' => 'required|integer',
+            'factory_structure_id' => 'nullable',
+            'parameter_id' => 'required|string',
+            'group_id' => 'nullable',
+            'period_type_id' => 'required|integer',
+            'period_start_date' => 'required|date',
+            'period_end_date' => 'required|date', // daily uchun ham start=end yuborasiz
+            'value' => 'nullable|numeric',
+            'comment' => 'nullable|string',
+        ]);
 
-    // Bo'sh string bo'lsa nullga aylantiramiz 
-    if (array_key_exists('comment', $data) && $data['comment'] === '') {
-        $data['comment'] = null;
-    }
+        // Bo'sh string bo'lsa nullga aylantiramiz 
+        if (array_key_exists('comment', $data) && $data['comment'] === '') {
+            $data['comment'] = null;
+        }
 
-    // Unikal kalitlar (id NI BU YERGA QO‘YMAYMIZ!)
-    $key = [
-        'FactoryStructureID' => $data['factory_structure_id'],
-        'ParameterID'        => $data['parameter_id'],
-        'NumberPage'         => $data['number_page'],
-        'GroupID'            => $data['group_id'],
-        'period_type_id'     => $data['period_type_id'],
-        'period_start_date'  => $data['period_start_date'],
-        'period_end_date'    => $data['period_end_date'],
-    ];
-
-    // Avval mavjudini topamiz (Comment TEXT bo‘lgani uchun CAST qilamiz)
-    $q = StaticParameters::query()->where($key);
-
-    if (is_null($data['comment'])) {
-        $q->whereNull('Comment');
-    } else {
-        // TEXT -> NVARCHAR(MAX) ga CAST qilib taqqoslash
-        $q->whereRaw('CAST([Comment] AS NVARCHAR(MAX)) = ?', [$data['comment']]);
-    }
-
-    $row = $q->first();
-
-    if ($row) {
-        // UPDATE
-        $row->value = $data['value'];
-        $row->save();
-    } else {
-        // INSERT (shu yerda id ni beramiz, where da EMAS)
-        $payload = $key + [
-            'id'      => (string) Str::uuid(),
-            'Comment' => $data['comment'],
-            'value'   => $data['value'],
+        // Unikal kalitlar (id NI BU YERGA QO‘YMAYMIZ!)
+        $key = [
+            'FactoryStructureID' => $data['factory_structure_id'],
+            'ParameterID' => $data['parameter_id'],
+            'NumberPage' => $data['number_page'],
+            'GroupID' => $data['group_id'],
+            'period_type_id' => $data['period_type_id'],
+            'period_start_date' => $data['period_start_date'],
+            'period_end_date' => $data['period_end_date'],
         ];
-        $row = StaticParameters::create($payload);
-    }
 
-     return response()->json([
+        // Avval mavjudini topamiz (Comment TEXT bo‘lgani uchun CAST qilamiz)
+        $q = StaticParameters::query()->where($key);
+
+        if (is_null($data['comment'])) {
+            $q->whereNull('Comment');
+        } else {
+            // TEXT -> NVARCHAR(MAX) ga CAST qilib taqqoslash
+            $q->whereRaw('CAST([Comment] AS NVARCHAR(MAX)) = ?', [$data['comment']]);
+        }
+
+        $row = $q->first();
+
+        if ($row) {
+            // UPDATE
+            $row->value = $data['value'];
+            $row->save();
+        } else {
+            // INSERT (shu yerda id ni beramiz, where da EMAS)
+            $payload = $key + [
+                'id' => (string) Str::uuid(),
+                'Comment' => $data['comment'],
+                'value' => $data['value'],
+            ];
+            $row = StaticParameters::create($payload);
+        }
+
+        return response()->json([
             'status' => 200,
             'message' => "Javob muvafaqiyatli qo'shildi",
             'item' => $row
         ]);
-}
+    }
 
 
 

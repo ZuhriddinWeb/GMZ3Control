@@ -128,7 +128,10 @@ function resolvePeriodLabels() {
 
     return { dailyLabel, monthlyLabel }
 }
-
+const toNum = (v, fallback = Number.POSITIVE_INFINITY) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? n : fallback
+}
 
 // --- jadvalni chizish
 async function build() {
@@ -412,9 +415,7 @@ function groupStaticByFSAndGroup(items) {
     const fsName = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
 
     const gId    = x?.GroupID ?? null
-    const gName  = (gId != null)
-      ? (x?.GName || `Guruh #${gId}`)
-      : null
+    const gName  = (gId != null) ? (x?.GName || `Guruh #${gId}`) : null
 
     const pid    = x?.ParameterID ?? x?.id ?? x?.Uuid
     if (pid && seen.has(`${fsId}:${gId}:${pid}`)) return
@@ -422,30 +423,37 @@ function groupStaticByFSAndGroup(items) {
 
     const pName  = x?.PName || x?.Name || `Param ${pid}`
     const unit   = x?.UName || 'tn.'
+    const order  = toNum(x?.OrderNumber)   // 🔑 tartib raqami
 
     if (!fsMap.has(fsId)) fsMap.set(fsId, { fsId, fsName, groups: new Map() })
     const fs = fsMap.get(fsId)
 
-    // 🔑 Guruh key: guruhsiz bo‘lsa oxirida turishi uchun maxsus kalit
+    // Guruh key: guruhsizlar oxirida turishi uchun
     const gKey = (gId == null) ? 'zzz_nogroup' : `g_${gId}`
 
     if (!fs.groups.has(gKey)) {
       fs.groups.set(gKey, {
         groupId: gId,
-        gName: gName,                // null bo‘lsa ham saqlaymiz — keyin default sarlavha beramiz
+        gName: gName,
         params: [],
       })
     }
+
     fs.groups.get(gKey).params.push({
-      name: pName, unit, fsId, groupId: gId, parameterId: pid
+      name: pName,
+      unit,
+      fsId,
+      groupId: gId,
+      parameterId: pid,
+      order,            // 🔑 saqlab qo‘ydik
     })
   })
 
-  // FS lar tartibi (id bo‘yicha)
+  // FS lar tartibi
   const fsList = Array.from(fsMap.values())
     .sort((a, b) => String(a.fsId).localeCompare(String(b.fsId), undefined, { numeric: true }))
 
-  // Guruhlar tartibi: avval nomli/IDli guruhlar, oxirida guruhsiz
+  // Guruhlar tartibi: nom/IDli → oxirida nogroup
   fsList.forEach(fs => {
     fs.groups = Array.from(fs.groups.values()).sort((a, b) => {
       const aNogroup = (a.groupId == null)
@@ -453,15 +461,25 @@ function groupStaticByFSAndGroup(items) {
       if (aNogroup && !bNogroup) return 1
       if (!aNogroup && bNogroup) return -1
 
-      // ikkalasi ham nomli yoki ikkalasi ham nogroup — tartib
       const aKey = a.gName ?? a.groupId ?? ''
       const bKey = b.gName ?? b.groupId ?? ''
       return String(aKey).localeCompare(String(bKey), undefined, { numeric: true })
+    })
+
+    // ✅ HAR BIR GURUH ICHIDA OrderNumber bo‘yicha tartiblash
+    fs.groups.forEach(g => {
+      g.params.sort((p1, p2) => {
+        const d = toNum(p1.order) - toNum(p2.order)
+        if (d !== 0) return d
+        // teng bo‘lsa — nomi bo‘yicha
+        return String(p1.name).localeCompare(String(p2.name), undefined, { numeric: true })
+      })
     })
   })
 
   return fsList
 }
+
 
 
 

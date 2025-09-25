@@ -1,4 +1,4 @@
-<<template>
+<template>
   <div class="grid grid-rows-[55px,1fr]">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6 shadow-sm border border-slate-200 mt-24 p-4">
       <div v-for="(card, index) in rowData" :key="index" class="p-4 border-2 bg-white shadow-lg border-slate-400" :style="{ backgroundImage: `url('/bgCard.png')`,backgroundSize: 'cover', backgroundPosition: 'center' }">
@@ -44,9 +44,12 @@
   const gridApi = ref(null);
 
 
+// function goToCardDetail(pageId) {
+//   // id — NumberPage bo‘lib boradi
+//   router.push({ name: 'static', params: { id: pageId } });
+// }
 function goToCardDetail(pageId) {
-  // id — NumberPage bo‘lib boradi
-  router.push({ name: 'static', params: { id: pageId } });
+  router.push({ name: 'CardGroupsPageStatic', params: { page: pageId } })
 }
 
 

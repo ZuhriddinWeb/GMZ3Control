@@ -138,11 +138,44 @@ class StaticParametersController extends Controller
         return DB::table('period_types')->get();
 
     }
-    private function getRowUnit($id)
-    {
-        $unit = StaticParameters::find($id);
-        return response()->json($unit);
+public function getRowUnit($id)
+{
+    $row = \DB::table('static_parameters as sp')
+        ->leftJoin('period_types as pt', 'sp.period_type_id', '=', 'pt.id')
+        ->leftJoin('parameters as p', 'sp.ParameterID', '=', 'p.id')
+        ->leftJoin('units as u', 'p.UnitsID', '=', 'u.id')
+        ->leftJoin('factory_structures as fs', 'sp.FactoryStructureID', '=', 'fs.id')
+        ->leftJoin('groups as g', 'sp.GroupID', '=', 'g.id')
+        // ⚠️ Agar sahifalar jadvali nomi boshqacha bo‘lsa, moslashtiring (masalan: pages_svodka)
+        ->leftJoin('number_pages as pg', 'sp.NumberPage', '=', 'pg.NumberPage')
+        ->where('sp.id', $id)
+        ->select([
+            'sp.*',                                   // ID’lar – v-model uchun
+            'pt.name        as PTName',
+
+            'p.Name         as PName',
+            'p.NameRus      as PNameRus',
+
+            'u.Name         as UName',
+
+            'fs.Name        as FSName',
+            'fs.NameRus     as FSNameRus',
+
+            'g.Name         as GName',
+            'g.NameRus      as GNameRus',
+
+            'pg.Name        as PageName',
+            'pg.NameRus     as PageNameRus',
+        ])
+        ->first();
+
+    if (!$row) {
+        return response()->json(['message' => 'Not found'], 404);
     }
+
+    return response()->json($row);
+}
+
     private function create(Request $request)
     {
         // dd($request);

@@ -41,14 +41,49 @@ export default [
     props: true,
   },
   {
-    path: "/static/:id",
-    name: "static",
-    component: () => import("../pages/StaticParametrs.vue"),
-    meta: {
-      guard: "auth",
-    },
-    props: true
-  },
+  path: "/cardPageStatic/:page/groups",
+  name: "CardGroupsPageStatic",
+  component: () => import("../pages/svodka/staticscards/GroupsCards.vue"),
+  meta: { guard: "auth" },
+  props: r => ({ page: Number(r.params.page) }),
+},
+  // {
+  //   path: "/static/:id",
+  //   name: "static",
+  //   component: () => import("../pages/StaticParametrs.vue"),
+  //   meta: {
+  //     guard: "auth",
+  //   },
+  //   props: true
+  // },
+  {
+  path: "/static/:id/:groupId",
+  name: "staticByGroup",
+  component: () => import("../pages/StaticParametrs.vue"),
+  meta: { guard: "auth" },
+  props: r => ({ id: Number(r.params.id), groupId: Number(r.params.groupId) }),
+},
+// {
+//   path: "/static/:id/group/:groupId",
+//   name: "staticByGroup",
+//   component: () => import("../pages/StaticParametrs.vue"),
+//   meta: { guard: "auth" },
+//   props: r => ({
+//     id: Number(r.params.id),
+//     groupId: Number(r.params.groupId),
+//   }),
+// },
+{
+  path: "/static/:id/group/:groupId?",
+  name: "static",
+  component: () => import("../pages/StaticParametrs.vue"),
+  meta: { guard: "auth" },
+  props: r => ({
+    id: Number(r.params.id),
+    groupId: r.params.groupId != null ? Number(r.params.groupId) : null,
+  }),
+},
+
   // {
   // 	path: '/blogs',
   // 	name:'blogs',

@@ -19,8 +19,8 @@
               :options="params" searchable clearable />
             <!-- <VaSelect v-model="result.NumberPage" value-by="value" class="mb-1 w-full" :label="t('table.page')"
               :options="pageseOptions" @update:modelValue="onPageOrStructureChange" clearable /> -->
-            <VaSelect v-model="result.GroupID" value-by="value" class="mb-1 w-full" :label="t('menu.groups')"
-              :options="GroupsOptions" searchable />
+            <!-- <VaSelect v-model="result.GroupID" value-by="value" class="mb-1 w-full" :label="t('menu.groups')"
+              :options="GroupsOptions" searchable /> -->
             <!-- <VaInput class="w-full" v-model="result.Value"
               :rules="[(value) => (value && value.length > 0) || t('validation.required')]" :label="t('table.value')" /> -->
             <VaInput class="w-full" v-model="result.OrderNumber"
@@ -58,7 +58,11 @@ import { useStore } from 'vuex';
 const store = useStore();
 import { useForm, useToast, VaValue, VaInput, VaButton, VaForm, VaIcon } from 'vuestic-ui';
 import { defineProps } from 'vue'
-const props = defineProps({ id: Number }) // id = NumberPage
+const props = defineProps({
+  id: { type: Number, required: true },              // NumberPage (route'dan)
+  groupId: { type: [Number, String, null], default: null },
+})
+
 const { init } = useToast();
 const { t } = useI18n();
 const formatDate = (date) => date ? date.toISOString().split('T')[0] : null;
@@ -75,21 +79,33 @@ const GroupsOptions = ref([]);
 
 const unitsOptions = ref([]);
 
+
+const userRole = computed(() => store.state.user.roles[10]);
+const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
+const pageId = computed(() => Number(props.id))
+const activeGroupId = computed(() => {
+  // null/undefined/''/'null'/0 → guruhsiz
+  if (
+    props.groupId === null ||
+    props.groupId === undefined ||
+    props.groupId === '' ||
+    props.groupId === 'null'
+  ) return null
+  const n = Number(props.groupId)
+  return Number.isFinite(n) && n !== 0 ? n : null
+})
 const result = reactive({
   FactoryStructureID: "",
   ParameterID: "",
   Value: "",
   NumberPage: props.id,
-  GroupID: "",
+  GroupID: activeGroupId.value,
   OrderNumber: "",
   PeriodTypeId: "",
   PeriodStartDate: null,
   PeriodEndDate: null,
   Comment: "",
 });
-const userRole = computed(() => store.state.user.roles[10]);
-const hasPermission = (permission) => userRole.value?.pivot?.[permission] === "1";
-
 const canCreate = computed(() => hasPermission("create"));
 const canUpdate = computed(() => hasPermission("update"));
 const canDelete = computed(() => hasPermission("delete"));
@@ -139,12 +155,42 @@ const defaultColDef = {
   sortable: true,
   filter: true
 };
-console.log(props.id);
+console.log(props);
+
+
+const isNoGroup = (v) => {
+  // backend ba'zan null/undefined/''/0/'0'/'null' qilib yuborishi mumkin — barchasini "guruhsiz" deb qabul qilamiz
+  return v === null || v === undefined || v === '' || v === 'null' || Number(v) === 0
+}
 
 const fetchData = async () => {
-  const { data } = await axios.get(`/staticCard/${props.id}`) // ← faqat shu sahifa bo‘yicha
-  rowData.value = Array.isArray(data) ? data : data.items
+  const { data } = await axios.get(`/staticCard/${props.id}`)
+  let arr = Array.isArray(data) ? data : (data.items || [])
+
+  if (props.groupId === null || props.groupId === undefined) {
+    // 🔹 Guruhsiz tugmasidan kelingan holat: GroupID yo‘q bo‘lganlarni ko‘rsatamiz
+    arr = arr.filter(r => isNoGroup(r.GroupID ?? r.group_id))
+  } else {
+    // 🔹 Muayyan guruh tanlangan: o‘sha guruhdagilar
+    arr = arr.filter(r => Number(r.GroupID ?? r.group_id) === Number(props.groupId))
+  }
+
+  // 🔹 Har bir guruh ichida OrderNumber bo‘yicha tartib (guruhsizda ham ishlaydi)
+  const getOrder = r => {
+    const o = r.OrderNumber ?? r.order_number ?? r.order
+    const n = Number(o)
+    return Number.isFinite(n) ? n : Infinity
+  }
+  arr.sort((a, b) => {
+    const d = getOrder(a) - getOrder(b)
+    if (d !== 0) return d
+    return String(a.PName ?? a.Name ?? '')
+      .localeCompare(String(b.PName ?? b.Name ?? ''), undefined, { numeric: true })
+  })
+
+  rowData.value = arr
 }
+
 const fetchParams = async () => {
   try {
     const response = await axios.get('/param');
@@ -179,24 +225,24 @@ const fetchParams = async () => {
 // const { data } = await axios.get(`/getRowGroupWith/${result.NumberPage}`);
 const onPageOrStructureChange = async () => {
   try {
-
     const page = props.id || result.NumberPage
     if (!page) { GroupsOptions.value = []; result.GroupID = null; return }
-    const { data } = await axios.get(`/getRowGroupWith/${page}`);
-    GroupsOptions.value = data.map(group => ({
-      value: group.id,
-      text: group.Name,
-    }));
 
-    if (!GroupsOptions.value.some(group => group.value === result.GroupID)) {
-      result.GroupID = null;
+    const { data } = await axios.get(`/getRowGroupWith/${page}`)
+    GroupsOptions.value = [
+      { value: null, text: '— Guruhsiz —' },      // 🔹 shu qatordan boshlab
+      ...data.map(g => ({ value: g.id, text: g.Name }))
+    ]
+
+    if (!GroupsOptions.value.some(g => g.value === result.GroupID)) {
+      result.GroupID = null
     }
-  } catch (error) {
-    GroupsOptions.value = [];
-    result.GroupID = null;
-    console.error('Error fetching groups:', error);
+  } catch (e) {
+    GroupsOptions.value = [{ value: null, text: '— Guruhsiz —' }]
+    result.GroupID = null
   }
-};
+}
+
 const formatDateLocal = (date) => {
   if (!date) return null;
   const d = new Date(date);
@@ -222,7 +268,7 @@ const onSubmit = async () => {
       result.Value = '';
       result.Comment = '';
       result.OrderNumber = '',
-      result.NumberPage = "";
+        result.NumberPage = "";
       result.PeriodTypeId = '';
       result.PeriodStartDate = null;
       result.PeriodEndDate = null;
@@ -244,7 +290,7 @@ onMounted(() => {
   onPageOrStructureChange()
   // fetchParams()
 });
-watch(() => props.id, fetchData)
+watch(() => props.groupId, fetchData)
 </script>
 
 

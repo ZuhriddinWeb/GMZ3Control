@@ -148,7 +148,7 @@ async function build() {
     const needRows = 7 + paramCount + groupHeaderCount + fsHeaderAndBlank + 5
 
     const COLS = 150
-    const ROWS = Math.max(needRows, 150)
+    const ROWS = Math.max(needRows, 300)
     const data = Array.from({ length: ROWS }, () => Array(COLS).fill(''))
 
     if (jexcel) { jexcel.destroy(); jexcel = null }

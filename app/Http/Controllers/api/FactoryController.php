@@ -40,19 +40,20 @@ class FactoryController extends Controller
     }
     private function create(Request $request)
     {
-        $request->validate([
-            'Name' => 'required|string|max:255',
-            'NameRus' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'ShortNameRus' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
+        // $request->validate([
+        //     'Name' => 'required|string|max:255',
+        //     'NameRus' => 'required|string|max:255',
+        //     'ShortName' => 'required|string|max:255',
+        //     'ShortNameRus' => 'required|string|max:255',
+        //     'Comment' => 'nullable|string|max:255',
+        // ]);
 
         $factory = TypeFactory::create([
             'Name' => $request->Name,
             'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
+            'OrderNumberSex'=>$request->OrderNumberSex,
             'Comment' => $request->Comment,
         ]);
 
@@ -65,14 +66,15 @@ class FactoryController extends Controller
 
     private function update(Request $request)
     {
-        $request->validate([
-            'id' => 'required|integer|exists:units,id',
-            'Name' => 'required|string|max:255',
-            'NameRus' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'ShortNameRus' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
+        // $request->validate([
+        //     'id' => 'required|integer|exists:units,id',
+        //     'Name' => 'required|string|max:255',
+        //     'NameRus' => 'required|string|max:255',
+        //     'ShortName' => 'required|string|max:255',
+        //     'ShortNameRus' => 'required|string|max:255',
+            
+        //     'Comment' => 'nullable|string|max:255',
+        // ]);
 
         $factory = TypeFactory::find($request->id);
         $factory->update([
@@ -80,6 +82,8 @@ class FactoryController extends Controller
             'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
+            'OrderNumberSex'=>$request->OrderNumberSex,
+
             'Comment' => $request->Comment,
         ]);
 

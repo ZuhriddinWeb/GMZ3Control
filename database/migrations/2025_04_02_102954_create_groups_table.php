@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('StructureID')->nullable();
             $table->integer('PageID')->nullable();
+            $table->integer('OrderNumberGroup')->nullable();
             $table->string('Name')->nullable();
             $table->string('NameRus')->nullable();
             $table->text('Comment')->nullable();

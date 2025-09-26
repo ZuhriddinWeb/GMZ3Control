@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('ShortName');
             $table->string('NameRus')->nullable();
             $table->string('ShortNameRus')->nullable();
+            $table->integer('OrderNumberSex');
             $table->timestamps();
         });
     }

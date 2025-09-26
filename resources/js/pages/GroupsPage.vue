@@ -18,6 +18,9 @@
             <VaInput class="w-full" v-model="result.NameRus"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.nameRus')" />
+              <VaInput class="w-full" v-model="result.OrderNumberGroup"
+              :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
+              :label="t('table.OrderNumber')" />
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
           </VaForm>
         </div>
@@ -59,6 +62,7 @@ const result = reactive({
   PageID:props.page,
   Name: "",
   NameRus: "",
+  OrderNumberGroup: "",
   Comment: ""
 });
 const userRole = computed(() => store.state.user.roles[22]);
@@ -85,6 +89,8 @@ const columnDefs = computed(() => {
     { headerName: t('table.page'), field: getFielPage(), flex: 1 },
     { headerName: t('table.name'), field: getFieldName(), flex: 1 },
     { headerName: t('table.comment'), field: getFieldShortName() },
+    { headerName: t('table.OrderNumber'), field: 'OrderNumberGroup' },
+
   ];
 
   if (canUpdate.value) {
@@ -159,7 +165,7 @@ const onSubmit = async () => {
       result.Name = '';
       result.NameRus = '';
       result.NumberPage = '';
-
+      result.NameRus='';
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

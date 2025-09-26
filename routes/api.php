@@ -149,6 +149,8 @@ Route::get('/pages-svodka/{id}', [NumberPageController::class, 'getSvodka']);
 
 Route::get('/getRowGroup/{idS}/{idP}', [GroupsController::class, 'getRowGroup']);
 Route::get('/getRowGroupEdit/{id}', [GroupsController::class, 'getRowGroupEdit']);
+Route::get('/getRowGroupEdits/{id}', [GroupsController::class, 'getRowGroupEdits']);
+
 Route::get('/getRowGroupWithId/{id}', [GroupsController::class, 'getRowGroupWithId']);
 Route::get('/getRowGroupWith/{id}', [GroupsController::class, 'getRowGroupWith']);
 Route::post('/static-params/upsert', [StaticParametersController::class, 'upsert']);

@@ -14,6 +14,9 @@
             <VaInput class="w-full" v-model="result.NameRus"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.nameRus')" />
+              <VaInput class="w-full" v-model="result.OrderNumberGroup"
+              :rules="[(value) => (value && value.length > 0) || t('validation.required')]"
+              :label="t('table.OrderNumber')" />
             <VaTextarea class="w-full" v-model="result.Comment" max-length="125" :label="t('form.comment')" />
           </VaForm>
       </div>
@@ -39,16 +42,19 @@ const result = reactive({
   Comment: "",
   StructureID: "",
   PageID: "",
+  OrderNumberGroup:"",
   id: props.params.data['id'],
 });
 const fetchParams = async () => {
-  axios.get(`/getRowGroupEdit/${props.params.data['id']}`)
+  axios.get(`/getRowGroupEdits/${props.params.data['id']}`)
     .then((res) => {
       result.Name = res.data[0].Name;
       result.NameRus = res.data[0].NameRus;
       result.Comment = res.data[0].Comment;
       result.StructureID = res.data[0].StructureID;
       result.PageID = res.data[0].PageID;
+      result.OrderNumberGroup = res.data[0].OrderNumberGroup;
+
     })
     .catch((error) => {
       console.error('Error fetching data:', error);

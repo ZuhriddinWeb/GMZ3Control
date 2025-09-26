@@ -12,6 +12,7 @@ class FactoryStructure extends Model
         'NameRus',
         'ShortName',
         'ShortNameRus',
+        'OrderNumberSex',
         'Comment',
         'Created',
         'Creator',

@@ -15,6 +15,8 @@
             :label="t('form.nameRus')" />
           <VaInput class="w-full" v-model="result.ShortName" :rules="[(value) => !!value || t('validation.required')]"
             :label="t('form.shortName')" />
+            <VaInput class="w-full" v-model="result.OrderNumberSex" :rules="[(value) => !!value || t('validation.required')]"
+            :label="t('table.OrderNumber')" />
           <VaInput class="w-full" v-model="result.ShortNameRus"
             :rules="[(value) => !!value || t('validation.required')]" :label="t('form.shortNameRus')" />
           <VaTextarea class="w-full" v-model="result.Comment" :max-length="125" :label="t('form.comment')" />
@@ -45,6 +47,7 @@ const result = reactive({
   NameRus: "",
   ShortName: "",
   ShortNameRus: "",
+  OrderNumberSex:"",
   Comment: "",
   id: props.params.data['id'],
 });

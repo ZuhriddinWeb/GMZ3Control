@@ -22,6 +22,9 @@
             <VaInput class="w-full" v-model="result.ShortName"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.shortName')" />
+               <VaInput class="w-full" v-model="result.OrderNumberSex"
+              :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
+              :label="t('table.OrderNumber')" />
             <VaInput class="w-full" v-model="result.ShortNameRus"
               :rules="[(value) => (value && value.length > 0) || t('validation.requiredField')]"
               :label="t('form.shortNameRus')" />
@@ -68,6 +71,7 @@ const canDelete = computed(() => hasPermission("delete"));
 const result = reactive({
   Name: "",
   NameRus: "",
+  OrderNumberSex:"",
   ShortNameRus: "",
   ShortName: "",
   Comment: ""
@@ -89,6 +93,8 @@ const columnDefs = computed(() => {
     { headerName: t('table.headerRow'), valueGetter: "node.rowIndex + 1" },
     { headerName: t('table.name'), field: getFieldName(), flex: 1 },
     { headerName: t('table.shortName'), field: getFieldShortName() },
+    { headerName: t('table.OrderNumber'), field: 'OrderNumberSex' },
+
   ];
 
   if (canUpdate.value) {
@@ -146,10 +152,9 @@ const onSubmit = async () => {
       showModal.value = false;
       result.Name = '';
       result.NameRus = '';
-
+      result.OrderNumberSex = '';
       result.ShortName = '';
       result.ShortNameRus = '';
-
       result.Comment = '';
       await fetchData();
       init({ message: t('login.successMessage'), color: 'success' });

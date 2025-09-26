@@ -407,78 +407,137 @@ async function fillExistingStaticValues() {
 
 // FS -> Group -> Parametrlar ko‘rinishiga keltirish
 function groupStaticByFSAndGroup(items) {
+  const toNum = (v) => {
+    const n = Number(String(v).trim())
+    return Number.isFinite(n) ? n : null   // null => yo‘q
+  }
+  const keyCmp = (a, b) => {
+    const len = Math.max(a.length, b.length)
+    for (let i = 0; i < len; i++) {
+      const x = a[i], y = b[i]
+      if (x === y) continue
+      // raqamlar bo‘lsa raqamcha, bo‘lmasa lexicographic
+      if (typeof x === 'number' && typeof y === 'number') return x - y
+      return String(x).localeCompare(String(y), undefined, { numeric: true })
+    }
+    return 0
+  }
+
   const fsMap = new Map()
   const seen = new Set()
 
-  items.forEach(x => {
-    const fsId   = x?.FactoryStructureID ?? null
-    const fsName = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
+  for (const x of (items || [])) {
+    const fsId    = x?.FactoryStructureID ?? null
+    const fsName  = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
+    const fsOrder = toNum(x?.OrderNumberSex)
 
-    const gId    = x?.GroupID ?? null
-    const gName  = (gId != null) ? (x?.GName || `Guruh #${gId}`) : null
+    const gId     = x?.GroupID ?? null
+    const gName   = gId != null ? (x?.GName || `Guruh #${gId}`) : null
+    const gOrder  = toNum(x?.OrderNumberGroup)
 
-    const pid    = x?.ParameterID ?? x?.id ?? x?.Uuid
-    if (pid && seen.has(`${fsId}:${gId}:${pid}`)) return
+    const pid     = x?.ParameterID ?? x?.id ?? x?.Uuid
+    if (pid && seen.has(`${fsId}:${gId}:${pid}`)) continue
     if (pid) seen.add(`${fsId}:${gId}:${pid}`)
 
-    const pName  = x?.PName || x?.Name || `Param ${pid}`
-    const unit   = x?.UName || 'tn.'
-    const order  = toNum(x?.OrderNumber)   // 🔑 tartib raqami
+    const pName   = x?.PName || x?.Name || `Param ${pid}`
+    const unit    = x?.UName || 'tn.'
+    const pOrder  = toNum(x?.OrderNumber)
 
-    if (!fsMap.has(fsId)) fsMap.set(fsId, { fsId, fsName, groups: new Map() })
+    // FS init
+    if (!fsMap.has(fsId)) {
+      fsMap.set(fsId, {
+        fsId, fsName,
+        fsOrder: null,        // faqat mavjud bo‘lsa yozamiz
+        minParamOrder: Infinity,
+        groups: new Map(),
+      })
+    }
     const fs = fsMap.get(fsId)
+    if (fsOrder != null) fs.fsOrder = (fs.fsOrder == null) ? fsOrder : Math.min(fs.fsOrder, fsOrder)
+    if (pOrder != null)  fs.minParamOrder = Math.min(fs.minParamOrder, pOrder)
 
-    // Guruh key: guruhsizlar oxirida turishi uchun
+    // Group init (guruhsiz — alohida kalit)
     const gKey = (gId == null) ? 'zzz_nogroup' : `g_${gId}`
-
     if (!fs.groups.has(gKey)) {
       fs.groups.set(gKey, {
         groupId: gId,
-        gName: gName,
+        gName,
+        gOrder: null,
+        minParamOrder: Infinity,
         params: [],
       })
     }
+    const g = fs.groups.get(gKey)
+    if (gOrder != null) g.gOrder = (g.gOrder == null) ? gOrder : Math.min(g.gOrder, gOrder)
+    if (pOrder != null) g.minParamOrder = Math.min(g.minParamOrder, pOrder)
 
-    fs.groups.get(gKey).params.push({
+    g.params.push({
       name: pName,
       unit,
       fsId,
       groupId: gId,
       parameterId: pid,
-      order,            // 🔑 saqlab qo‘ydik
+      pOrder,
     })
+  }
+
+  // --- FS sort keys
+  const fsList = Array.from(fsMap.values())
+  fsList.sort((a, b) => {
+    const aKey = [
+      a.fsOrder == null ? 1 : 0,                 // 0 = order bor, 1 = yo‘q
+      a.fsOrder == null ? Infinity : a.fsOrder,  // order qiymati
+      a.minParamOrder,                           // fallback
+      a.fsName,                                  // nomi
+    ]
+    const bKey = [
+      b.fsOrder == null ? 1 : 0,
+      b.fsOrder == null ? Infinity : b.fsOrder,
+      b.minParamOrder,
+      b.fsName,
+    ]
+    return keyCmp(aKey, bKey)
   })
 
-  // FS lar tartibi
-  const fsList = Array.from(fsMap.values())
-    .sort((a, b) => String(a.fsId).localeCompare(String(b.fsId), undefined, { numeric: true }))
-
-  // Guruhlar tartibi: nom/IDli → oxirida nogroup
+  // --- Group & params sort
   fsList.forEach(fs => {
-    fs.groups = Array.from(fs.groups.values()).sort((a, b) => {
-      const aNogroup = (a.groupId == null)
-      const bNogroup = (b.groupId == null)
-      if (aNogroup && !bNogroup) return 1
-      if (!aNogroup && bNogroup) return -1
-
-      const aKey = a.gName ?? a.groupId ?? ''
-      const bKey = b.gName ?? b.groupId ?? ''
-      return String(aKey).localeCompare(String(bKey), undefined, { numeric: true })
+    const groups = Array.from(fs.groups.values())
+    groups.sort((a, b) => {
+      const aKey = [
+        a.groupId == null ? 1 : 0,               // 1 = guruhsiz (oxirida)
+        a.gOrder == null ? 1 : 0,                // 0 = order bor
+        a.gOrder == null ? Infinity : a.gOrder,  // order qiymati
+        a.minParamOrder,                         // fallback
+        a.gName ?? a.groupId ?? '',              // nomi/id
+      ]
+      const bKey = [
+        b.groupId == null ? 1 : 0,
+        b.gOrder == null ? 1 : 0,
+        b.gOrder == null ? Infinity : b.gOrder,
+        b.minParamOrder,
+        b.gName ?? b.groupId ?? '',
+      ]
+      return keyCmp(aKey, bKey)
     })
 
-    // ✅ HAR BIR GURUH ICHIDA OrderNumber bo‘yicha tartiblash
-    fs.groups.forEach(g => {
+    // Parametrlar: OrderNumber → nom
+    groups.forEach(g => {
       g.params.sort((p1, p2) => {
-        const d = toNum(p1.order) - toNum(p2.order)
-        if (d !== 0) return d
-        // teng bo‘lsa — nomi bo‘yicha
-        return String(p1.name).localeCompare(String(p2.name), undefined, { numeric: true })
+        const k1 = [p1.pOrder == null ? 1 : 0, p1.pOrder == null ? Infinity : p1.pOrder, p1.name]
+        const k2 = [p2.pOrder == null ? 1 : 0, p2.pOrder == null ? Infinity : p2.pOrder, p2.name]
+        return keyCmp(k1, k2)
       })
     })
+
+    fs.groups = groups
   })
 
   return fsList
 }
+
+
+
+
 
 
 

@@ -13,6 +13,7 @@ class Groups extends Model
         'PageID',
         'Name',
         'NameRus',
+        'OrderNumberGroup',
         'Comment',
     ];
 }

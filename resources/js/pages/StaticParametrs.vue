@@ -268,7 +268,7 @@ const onSubmit = async () => {
       result.Value = '';
       result.Comment = '';
       result.OrderNumber = '',
-        result.NumberPage = "";
+       result.NumberPage = "";
       result.PeriodTypeId = '';
       result.PeriodStartDate = null;
       result.PeriodEndDate = null;

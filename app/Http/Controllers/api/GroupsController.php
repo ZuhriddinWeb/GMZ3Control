@@ -49,6 +49,12 @@ class GroupsController extends Controller
             ->select('factory_structures.Name as SName', 'number_pages.Name as NName', 'groups.*')->get();
         return response()->json($unit);
     }
+        public function getRowGroupEdits($id)
+    {
+        $unit = Groups::where('groups.id', $id)
+            ->get();
+        return response()->json($unit);
+    }
     public function getRowGroupWithId($id)
     {
         // dd($id);
@@ -72,6 +78,7 @@ class GroupsController extends Controller
             'StructureID' => $request->StructureID,
             'PageID' => $request->PageID,
             'Name' => $request->Name,
+            'OrderNumberGroup'=>$request->OrderNumberGroup,
             'NameRus' => $request->NameRus,
             'Comment' => $request->Comment,
         ]);
@@ -91,6 +98,7 @@ class GroupsController extends Controller
             'PageID' => $request->PageID,
             'Name' => $request->Name,
             'NameRus' => $request->NameRus,
+            'OrderNumberGroup'=>$request->OrderNumberGroup,
             'Comment' => $request->Comment,
         ]);
 

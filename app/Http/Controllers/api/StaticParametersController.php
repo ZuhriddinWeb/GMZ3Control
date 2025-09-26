@@ -160,9 +160,11 @@ public function getRowUnit($id)
 
             'fs.Name        as FSName',
             'fs.NameRus     as FSNameRus',
+            'fs.OrderNumberSex     as OrderNumberSex',
 
             'g.Name         as GName',
             'g.NameRus      as GNameRus',
+            'g.OrderNumberGroup      as OrderNumberGroup',
 
             'pg.Name        as PageName',
             'pg.NameRus     as PageNameRus',
@@ -213,6 +215,10 @@ public function getRowUnit($id)
             'period_start_date' => $request->PeriodStartDate,
             'period_end_date' => $request->PeriodEndDate,
             'Comment' => $request->Comment,
+            'ParameterID' => $request->ParameterID,
+            'NumberPage' => $request->NumberPage,
+            
+            
         ]);
 
         return response()->json([
@@ -257,7 +263,10 @@ public function getRowUnit($id)
                 'pt.name as PTName',
                 'p.Name as PName',
                 'fs.Name as FSName',
+                'fs.OrderNumberSex as OrderNumberSex',
                 'g.Name as GName',
+                'g.OrderNumberGroup as OrderNumberGroup',
+
             ])
             ->orderBy('sp.FactoryStructureID')
             ->orderBy('sp.GroupID')

@@ -23,6 +23,8 @@ return new class extends Migration
             $table->integer('ParameterID')->nullable();
             $table->integer('NumberPage')->nullable();
             $table->integer('GroupID')->nullable();
+            $table->integer('OrderNumberSex')->nullable();
+            $table->integer('OrderNumberGroup')->nullable();
             $table->integer('OrderNumber')->nullable();
             // $table->string('name');
             $table->double('value');

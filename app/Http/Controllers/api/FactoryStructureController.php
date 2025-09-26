@@ -126,6 +126,7 @@ class FactoryStructureController extends Controller
             'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
+            'OrderNumberSex' => $request->OrderNumberSex,
             'Comment' => $request->Comment,
         ]);
 
@@ -138,20 +139,13 @@ class FactoryStructureController extends Controller
 
     private function update(Request $request)
     {
-        $request->validate([
-            'Name' => 'required|string|max:255',
-            'NameRus' => 'required|string|max:255',
-            'ShortName' => 'required|string|max:255',
-            'ShortNameRus' => 'required|string|max:255',
-            'Comment' => 'nullable|string|max:255',
-        ]);
-
         $unit = FactoryStructure::find($request->id);
         $unit->update([
             'Name' => $request->Name,
             'NameRus' => $request->NameRus,
             'ShortName' => $request->ShortName,
             'ShortNameRus' => $request->ShortNameRus,
+            'OrderNumberSex' => $request->OrderNumberSex,
             'Comment' => $request->Comment,
         ]);
 

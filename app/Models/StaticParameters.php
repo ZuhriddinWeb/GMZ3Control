@@ -14,6 +14,8 @@ class StaticParameters extends Model
         'ParameterID',
         'NumberPage',
         'GroupID',
+        'OrderNumberSex',
+        'OrderNumberGroup',
         'OrderNumber',
         'value',
         'Comment',

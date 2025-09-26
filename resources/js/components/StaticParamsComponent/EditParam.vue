@@ -25,7 +25,6 @@
           <!-- Guruh (shu sahifaga tegishli) -->
           <VaSelect class="w-full" v-model="result.GroupID" :options="GroupsOptions" value-by="value" text-by="text"
             searchable clearable :label="t('menu.groups')" />
-
           <!-- Tartib raqami -->
           <VaInput class="w-full" v-model="result.OrderNumber" :label="t('table.OrderNumber')" />
 

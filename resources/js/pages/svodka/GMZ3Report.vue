@@ -129,8 +129,8 @@ function resolvePeriodLabels() {
     return { dailyLabel, monthlyLabel }
 }
 const toNum = (v, fallback = Number.POSITIVE_INFINITY) => {
-  const n = Number(v)
-  return Number.isFinite(n) ? n : fallback
+    const n = Number(v)
+    return Number.isFinite(n) ? n : fallback
 }
 
 // --- jadvalni chizish
@@ -171,33 +171,33 @@ async function build() {
             merge('B4:B5'),
             merge('C4:E4'),
         ],
-onchange: async (instance, cell, x, y, value) => {
-  if (applyingFormulas || isBuilding) return
+        onchange: async (instance, cell, x, y, value) => {
+            if (applyingFormulas || isBuilding) return
 
-  const rowIndex = Number(y) + 1
-  const colIndex = Number(x)
-  const addr = `${L(colIndex)}${rowIndex}`
+            const rowIndex = Number(y) + 1
+            const colIndex = Number(x)
+            const addr = `${L(colIndex)}${rowIndex}`
 
-  const meta = paramRowMap.value.get(rowIndex)
-  if (!meta) return
+            const meta = paramRowMap.value.get(rowIndex)
+            if (!meta) return
 
-  const periodKind = colToPeriodType(colIndex)
-  if (!periodKind) return
+            const periodKind = colToPeriodType(colIndex)
+            if (!periodKind) return
 
-  try {
-    if (typeof value === 'string' && value.trim().startsWith('=')) {
-      await saveAndApplyFormula(addr, value.trim())
-      // 🕒 formula hisobini yakunlash uchun
-      await new Promise(r => requestAnimationFrame(r))
-      await postStaticForCell(addr, { toast: true })
-    } else {
-      await postStaticForCell(addr, { toast: true })
-    }
-  } catch (e) {
-    console.error(e)
-    init({ message: 'Saqlashda xatolik', color: 'danger' })
-  }
-}
+            try {
+                if (typeof value === 'string' && value.trim().startsWith('=')) {
+                    await saveAndApplyFormula(addr, value.trim())
+                    // 🕒 formula hisobini yakunlash uchun
+                    await new Promise(r => requestAnimationFrame(r))
+                    await postStaticForCell(addr, { toast: true })
+                } else {
+                    await postStaticForCell(addr, { toast: true })
+                }
+            } catch (e) {
+                console.error(e)
+                init({ message: 'Saqlashda xatolik', color: 'danger' })
+            }
+        }
 
 
     })
@@ -279,7 +279,11 @@ onchange: async (instance, cell, x, y, value) => {
         for (const g of fs.groups) {
             if (g.gName) {
                 jexcel.setValue(`A${r}`, g.gName)
-                spanRowAcrossAtoJ(r, 'background:#fff7e6;font-weight:600;border:1px solid #e0e0e0;text-align:left;padding-left:8px;')
+                // ⬇⬇⬇ merge emas!
+                paintRowAcrossAtoJ(
+                    r,
+                    'background:#fff7e6;font-weight:600;border:1px solid #e0e0e0;text-align:left;padding-left:8px;'
+                )
                 jexcel.setHeight(r - 1, 26)
                 r++
             }
@@ -407,133 +411,98 @@ async function fillExistingStaticValues() {
 
 // FS -> Group -> Parametrlar ko‘rinishiga keltirish
 function groupStaticByFSAndGroup(items) {
-  const toNum = (v) => {
-    const n = Number(String(v).trim())
-    return Number.isFinite(n) ? n : null   // null => yo‘q
-  }
-  const keyCmp = (a, b) => {
-    const len = Math.max(a.length, b.length)
-    for (let i = 0; i < len; i++) {
-      const x = a[i], y = b[i]
-      if (x === y) continue
-      // raqamlar bo‘lsa raqamcha, bo‘lmasa lexicographic
-      if (typeof x === 'number' && typeof y === 'number') return x - y
-      return String(x).localeCompare(String(y), undefined, { numeric: true })
+    const toNum = (v) => {
+        const s = String(v ?? '').trim().toLowerCase()
+        if (s === '' || s === 'null' || s === 'undefined') return null
+        const n = Number(s)
+        return Number.isFinite(n) ? n : null
     }
-    return 0
-  }
 
-  const fsMap = new Map()
-  const seen = new Set()
 
-  for (const x of (items || [])) {
-    const fsId    = x?.FactoryStructureID ?? null
-    const fsName  = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
-    const fsOrder = toNum(x?.OrderNumberSex)
+    let seq = 0
+    const fsMap = new Map()
+    const seen = new Set()
 
-    const gId     = x?.GroupID ?? null
-    const gName   = gId != null ? (x?.GName || `Guruh #${gId}`) : null
-    const gOrder  = toNum(x?.OrderNumberGroup)
+    for (const x of (items || [])) {
+        const seenAt = seq++
 
-    const pid     = x?.ParameterID ?? x?.id ?? x?.Uuid
-    if (pid && seen.has(`${fsId}:${gId}:${pid}`)) continue
-    if (pid) seen.add(`${fsId}:${gId}:${pid}`)
+        // --- SEX
+        const fsId = x?.FactoryStructureID ?? null
+        const fsName = x?.FSName || (fsId != null ? `Struktura #${fsId}` : 'Struktura')
+        const fsOrder = toNum(x?.OrderNumberSex)
 
-    const pName   = x?.PName || x?.Name || `Param ${pid}`
-    const unit    = x?.UName || 'tn.'
-    const pOrder  = toNum(x?.OrderNumber)
+        // --- GROUP (nomi bo‘lmasa guruhsizga tushiramiz)
+        let gId = x?.GroupID ?? null
+        const gNameRaw = x?.GName
+        const gHasName = !!String(gNameRaw ?? '').trim()
+        if (gId != null && !gHasName) gId = null
+        const gName = gHasName ? gNameRaw : null
 
-    // FS init
-    if (!fsMap.has(fsId)) {
-      fsMap.set(fsId, {
-        fsId, fsName,
-        fsOrder: null,        // faqat mavjud bo‘lsa yozamiz
-        minParamOrder: Infinity,
-        groups: new Map(),
-      })
+        const gOrder = toNum(x?.OrderNumberGroup)
+
+        // --- PARAM
+        const pid = x?.ParameterID ?? x?.id ?? x?.Uuid
+        if (pid && seen.has(`${fsId}:${gId}:${pid}`)) continue
+        if (pid) seen.add(`${fsId}:${gId}:${pid}`)
+
+        const pName = x?.PName || x?.Name || `Param ${pid}`
+        const unit = x?.UName || ''
+        const pOrder = toNum(x?.OrderNumber)
+
+        // FS init
+        if (!fsMap.has(fsId)) {
+            fsMap.set(fsId, { fsId, fsName, fsOrder, seq: seenAt, groups: new Map() })
+        }
+        const fs = fsMap.get(fsId)
+        if (fs.fsOrder == null && fsOrder != null) fs.fsOrder = fsOrder
+        fs.seq = Math.min(fs.seq, seenAt)
+
+        // Group init
+        const gKey = (gId == null) ? 'zzz_nogroup' : `g_${gId}`
+        if (!fs.groups.has(gKey)) {
+            fs.groups.set(gKey, { groupId: gId, gName, gOrder, seq: seenAt, params: [] })
+        }
+        const g = fs.groups.get(gKey)
+        if (g.gOrder == null && gOrder != null) g.gOrder = gOrder
+        g.seq = Math.min(g.seq, seenAt)
+
+        g.params.push({ name: pName, unit, fsId, groupId: gId, parameterId: pid, pOrder, seq: seenAt })
     }
-    const fs = fsMap.get(fsId)
-    if (fsOrder != null) fs.fsOrder = (fs.fsOrder == null) ? fsOrder : Math.min(fs.fsOrder, fsOrder)
-    if (pOrder != null)  fs.minParamOrder = Math.min(fs.minParamOrder, pOrder)
 
-    // Group init (guruhsiz — alohida kalit)
-    const gKey = (gId == null) ? 'zzz_nogroup' : `g_${gId}`
-    if (!fs.groups.has(gKey)) {
-      fs.groups.set(gKey, {
-        groupId: gId,
-        gName,
-        gOrder: null,
-        minParamOrder: Infinity,
-        params: [],
-      })
-    }
-    const g = fs.groups.get(gKey)
-    if (gOrder != null) g.gOrder = (g.gOrder == null) ? gOrder : Math.min(g.gOrder, gOrder)
-    if (pOrder != null) g.minParamOrder = Math.min(g.minParamOrder, pOrder)
+    // --- SEX: order bor (asc) -> order yo'q (kelgan tartib)
+    let fsList = Array.from(fsMap.values())
+    const fsWithOrder = fsList.filter(f => f.fsOrder != null).sort((a, b) => a.fsOrder - b.fsOrder || a.seq - b.seq)
+    const fsNoOrder = fsList.filter(f => f.fsOrder == null).sort((a, b) => a.seq - b.seq)
+    fsList = [...fsWithOrder, ...fsNoOrder]
 
-    g.params.push({
-      name: pName,
-      unit,
-      fsId,
-      groupId: gId,
-      parameterId: pid,
-      pOrder,
-    })
-  }
+    // --- GROUP & PARAM ichma-ich sort
+    fsList.forEach(fs => {
+        const groups = Array.from(fs.groups.values())
 
-  // --- FS sort keys
-  const fsList = Array.from(fsMap.values())
-  fsList.sort((a, b) => {
-    const aKey = [
-      a.fsOrder == null ? 1 : 0,                 // 0 = order bor, 1 = yo‘q
-      a.fsOrder == null ? Infinity : a.fsOrder,  // order qiymati
-      a.minParamOrder,                           // fallback
-      a.fsName,                                  // nomi
-    ]
-    const bKey = [
-      b.fsOrder == null ? 1 : 0,
-      b.fsOrder == null ? Infinity : b.fsOrder,
-      b.minParamOrder,
-      b.fsName,
-    ]
-    return keyCmp(aKey, bKey)
-  })
+        const withOrder = groups.filter(g => g.groupId != null && g.gOrder != null).sort((a, b) => a.gOrder - b.gOrder || a.seq - b.seq)
+        const noOrder = groups.filter(g => g.groupId != null && g.gOrder == null).sort((a, b) => a.seq - b.seq)
+        const noGroup = groups.filter(g => g.groupId == null).sort((a, b) => a.seq - b.seq) // doim oxirida
 
-  // --- Group & params sort
-  fsList.forEach(fs => {
-    const groups = Array.from(fs.groups.values())
-    groups.sort((a, b) => {
-      const aKey = [
-        a.groupId == null ? 1 : 0,               // 1 = guruhsiz (oxirida)
-        a.gOrder == null ? 1 : 0,                // 0 = order bor
-        a.gOrder == null ? Infinity : a.gOrder,  // order qiymati
-        a.minParamOrder,                         // fallback
-        a.gName ?? a.groupId ?? '',              // nomi/id
-      ]
-      const bKey = [
-        b.groupId == null ? 1 : 0,
-        b.gOrder == null ? 1 : 0,
-        b.gOrder == null ? Infinity : b.gOrder,
-        b.minParamOrder,
-        b.gName ?? b.groupId ?? '',
-      ]
-      return keyCmp(aKey, bKey)
+        fs.groups = [...withOrder, ...noOrder, ...noGroup]
+
+        fs.groups.forEach(g => {
+            const pWith = g.params.filter(p => p.pOrder != null).sort((a, b) => a.pOrder - b.pOrder || a.seq - b.seq)
+            const pNo = g.params.filter(p => p.pOrder == null).sort((a, b) => a.seq - b.seq)
+            g.params = [...pWith, ...pNo]
+        })
     })
 
-    // Parametrlar: OrderNumber → nom
-    groups.forEach(g => {
-      g.params.sort((p1, p2) => {
-        const k1 = [p1.pOrder == null ? 1 : 0, p1.pOrder == null ? Infinity : p1.pOrder, p1.name]
-        const k2 = [p2.pOrder == null ? 1 : 0, p2.pOrder == null ? Infinity : p2.pOrder, p2.name]
-        return keyCmp(k1, k2)
-      })
-    })
-
-    fs.groups = groups
-  })
-
-  return fsList
+    return fsList
 }
+function paintRowAcrossAtoJ(rowIdx, styleStr) {
+    // B..J ni tozalab, A..J ga style beramiz
+    for (let c = 1; c <= 9; c++) jexcel.setValueFromCoords(c, rowIdx - 1, '')
+    const st = {}
+    for (let c = 0; c <= 9; c++) st[`${L(c)}${rowIdx}`] = styleStr
+    jexcel.setStyle(st)
+}
+
+
 
 
 
@@ -585,38 +554,38 @@ function slotToCol(slot) {
 // Excel ifodasidagi kross-sahifa qismini sonlarga almashtirib, qolganini
 // jSpreadsheet ga formula sifatida beramiz (ichki C7, B4 larni u o‘zi hisoblaydi)
 async function saveAndApplyFormula(cellAddr, expr) {
-  // 1) Local cache
-  formulas.value[cellAddr] = expr
+    // 1) Local cache
+    formulas.value[cellAddr] = expr
 
-  // 2) Ushbu qatorning parametr metasi (param_id yuborish uchun)
-  const m = cellAddr.match(/\d+/)
-  const rowIdx = m ? Number(m[0]) : null
-  const meta = rowIdx ? paramRowMap.value.get(rowIdx) : null
+    // 2) Ushbu qatorning parametr metasi (param_id yuborish uchun)
+    const m = cellAddr.match(/\d+/)
+    const rowIdx = m ? Number(m[0]) : null
+    const meta = rowIdx ? paramRowMap.value.get(rowIdx) : null
 
-  // 3) Backendga saqlash (har ikkala nom bilan jo‘natamiz — moslik uchun)
-  await axios.post('/sheet/formula', {
-    numberPage,
-    number_page: numberPage,          // moslik uchun qo‘shib yuboramiz
-    param_id: meta?.parameterId || null,
-    cell: cellAddr,
-    expr,
-    scope: 'permanent',
-    date: ymd(date.value),            // ishlatilayotgan sana
-    for_date: null,                   // doimiy formula bo‘lsa, null
-  })
+    // 3) Backendga saqlash (har ikkala nom bilan jo‘natamiz — moslik uchun)
+    await axios.post('/sheet/formula', {
+        numberPage,
+        number_page: numberPage,          // moslik uchun qo‘shib yuboramiz
+        param_id: meta?.parameterId || null,
+        cell: cellAddr,
+        expr,
+        scope: 'permanent',
+        date: ymd(date.value),            // ishlatilayotgan sana
+        for_date: null,                   // doimiy formula bo‘lsa, null
+    })
 
-  // 4) Cross-page linklarni sonlarga aylantirib, katakka qo‘yamiz
-  const compiled = await evaluateFormula(expr, date.value)
-  applyingFormulas = true
-  jexcel.setValue(cellAddr, compiled)
-  applyingFormulas = false
+    // 4) Cross-page linklarni sonlarga aylantirib, katakka qo‘yamiz
+    const compiled = await evaluateFormula(expr, date.value)
+    applyingFormulas = true
+    jexcel.setValue(cellAddr, compiled)
+    applyingFormulas = false
 
-  // 📌 Muhim: formula engine hisobini tugatishi uchun bitta frame kutamiz
-  await new Promise(r => requestAnimationFrame(r))
+    // 📌 Muhim: formula engine hisobini tugatishi uchun bitta frame kutamiz
+    await new Promise(r => requestAnimationFrame(r))
 
-  // Ko‘rinish uchun border
-  const st = {}; st[cellAddr] = 'border:1px dashed #444;font-weight:600;'
-  jexcel.setStyle(st)
+    // Ko‘rinish uchun border
+    const st = {}; st[cellAddr] = 'border:1px dashed #444;font-weight:600;'
+    jexcel.setStyle(st)
 }
 
 
@@ -641,57 +610,57 @@ async function loadAndApplyAllFormulas() {
     }
 }
 async function postStaticForCell(addr, { toast = false } = {}) {
-  const m = addr.match(/^([A-Z]+)(\d+)$/)
-  if (!m) return
-  const colLtr = m[1], rowIdx = Number(m[2])
-  const x = ((Ltr) => { let v = 0; for (const ch of Ltr) v = v * 26 + (ch.charCodeAt(0) - 64); return v - 1 })(colLtr)
-  const y = rowIdx - 1
+    const m = addr.match(/^([A-Z]+)(\d+)$/)
+    if (!m) return
+    const colLtr = m[1], rowIdx = Number(m[2])
+    const x = ((Ltr) => { let v = 0; for (const ch of Ltr) v = v * 26 + (ch.charCodeAt(0) - 64); return v - 1 })(colLtr)
+    const y = rowIdx - 1
 
-  const meta = paramRowMap.value.get(rowIdx)
-  if (!meta) return
+    const meta = paramRowMap.value.get(rowIdx)
+    if (!meta) return
 
-  const { dailyId, monthlyId } = resolvePeriodIds()
-  const kind = colToPeriodType(x)
-  const period_type_id = (kind === 'daily') ? dailyId : monthlyId
+    const { dailyId, monthlyId } = resolvePeriodIds()
+    const kind = colToPeriodType(x)
+    const period_type_id = (kind === 'daily') ? dailyId : monthlyId
 
-  // ✅ FORMULA NATIJASINI OLISH (processed = true)
-  let v = jexcel.getValueFromCoords(x, y, true)
-  if (typeof v === 'string') v = v.replace(',', '.')
-  const num = parseFloat(v)
-  const value = Number.isFinite(num) ? num : null
+    // ✅ FORMULA NATIJASINI OLISH (processed = true)
+    let v = jexcel.getValueFromCoords(x, y, true)
+    if (typeof v === 'string') v = v.replace(',', '.')
+    const num = parseFloat(v)
+    const value = Number.isFinite(num) ? num : null
 
-  // Agar natija yo'q bo'lsa, yozmaslik
-  if (value === null) return
+    // Agar natija yo'q bo'lsa, yozmaslik
+    if (value === null) return
 
-  // Period oraliqlari
-  let period_start_date, period_end_date
-  if (kind === 'daily') {
-    const d = ymd(date.value)
-    period_start_date = d
-    period_end_date   = d
-  } else {
-    const { start, end } = monthRange(date.value)
-    period_start_date = start
-    period_end_date   = end
-  }
+    // Period oraliqlari
+    let period_start_date, period_end_date
+    if (kind === 'daily') {
+        const d = ymd(date.value)
+        period_start_date = d
+        period_end_date = d
+    } else {
+        const { start, end } = monthRange(date.value)
+        period_start_date = start
+        period_end_date = end
+    }
 
-  const comment = colToSlot(colLtr)
+    const comment = colToSlot(colLtr)
 
-  const res = await axios.post('/static-params/upsert', {
-    number_page: numberPage,
-    factory_structure_id: meta.fsId,
-    parameter_id: meta.parameterId,
-    group_id: meta.groupId,
-    period_type_id,
-    period_start_date,
-    period_end_date,
-    value,
-    comment,
-  })
-  if (toast && res && res.status >= 200 && res.status < 300) {
-      // i18n ishlatsa:
-      // init({ message: t('login.successMessage'), color: 'success' })
-      init({ message: 'Maʼlumot saqlandi', color: 'success' })
+    const res = await axios.post('/static-params/upsert', {
+        number_page: numberPage,
+        factory_structure_id: meta.fsId,
+        parameter_id: meta.parameterId,
+        group_id: meta.groupId,
+        period_type_id,
+        period_start_date,
+        period_end_date,
+        value,
+        comment,
+    })
+    if (toast && res && res.status >= 200 && res.status < 300) {
+        // i18n ishlatsa:
+        // init({ message: t('login.successMessage'), color: 'success' })
+        init({ message: 'Maʼlumot saqlandi', color: 'success' })
     }
 }
 

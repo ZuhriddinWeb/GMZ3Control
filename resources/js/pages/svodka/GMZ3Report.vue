@@ -324,8 +324,13 @@ async function build() {
     jexcel.setHeight(3, 28)
     jexcel.setHeight(4, 24)
     await fillExistingStaticValues()
-    // Formulalarni qo‘llash
     await loadAndApplyAllFormulas()
+
+    await new Promise(r => requestAnimationFrame(r))
+
+    // Faqat 4–5-qatorni pin qilmoqchi bo‘lsangiz:
+    pinRowsSticky([4, 5])
+    // Formulalarni qo‘llash
     isBuilding = false
 }
 
@@ -609,6 +614,52 @@ async function loadAndApplyAllFormulas() {
         } catch (e) { console.error('Formula error', cell, expr, e) }
     }
 }
+let _unpin = null
+function pinRowsSticky(rows = [4, 5]) {
+    // Eski pin’ni tozalash
+    if (_unpin) { _unpin(); _unpin = null }
+
+    const content = sheetEl.value?.querySelector('.jexcel_content')
+    const tbody = content?.querySelector('tbody')
+    if (!content || !tbody) return
+
+    const trs = rows
+        .map(r => tbody.children[r - 1])
+        .filter(Boolean)
+
+    // Qatorlar balandligiga qarab ketma-ket top hisoblaymiz
+    let top = 0
+    const restore = []
+
+    trs.forEach((tr, i) => {
+        const h = tr.getBoundingClientRect().height || tr.offsetHeight
+        Array.from(tr.children).forEach(td => {
+            // keyin tiklash uchun eski style’ni saqlab qo‘yamiz
+            const old = {
+                position: td.style.position,
+                top: td.style.top,
+                zIndex: td.style.zIndex,
+                bg: td.style.backgroundColor,
+            }
+            restore.push(() => {
+                td.style.position = old.position
+                td.style.top = old.top
+                td.style.zIndex = old.zIndex
+                td.style.backgroundColor = old.bg
+            })
+
+            td.style.position = 'sticky'
+            td.style.top = `${top}px`  // shu paytgacha pin qilingan satrlarning yig‘indi balandligi
+            td.style.zIndex = String(100 + i) // griddan yuqori
+            td.style.backgroundColor = '#eef7ff' // yopishtirilganida oqish ko‘rinsin
+        })
+        top += h
+    })
+
+    _unpin = () => restore.forEach(fn => fn())
+}
+
+
 async function postStaticForCell(addr, { toast = false } = {}) {
     const m = addr.match(/^([A-Z]+)(\d+)$/)
     if (!m) return
@@ -663,11 +714,6 @@ async function postStaticForCell(addr, { toast = false } = {}) {
         init({ message: 'Maʼlumot saqlandi', color: 'success' })
     }
 }
-
-
-
-
-
 
 // yuklash va rebuild
 onMounted(async () => {

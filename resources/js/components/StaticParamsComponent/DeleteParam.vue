@@ -30,9 +30,10 @@ const  props = defineProps(["params"]);
 
 const ondeleted = inject('ondeleted')
 
+
 const onSubmit = async () => {
   try {
-    const { data } = await axios.delete(`/static/${props.params.data['id']}`);
+    const { data } = await axios.delete(`/static/${props.params.data['static_id']}`);
     if (data.status === 200) {
       ondeleted(props.params.data)
       selectedDataDelete.value = false;

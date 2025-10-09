@@ -81,7 +81,7 @@ const pageseOptions = ref([])     // sahifalar
 const GroupsOptions = ref([])     // sahifadagi guruhlar
 
 const result = reactive({
-  id: props?.params?.data?.id ?? null,
+  id: props?.params?.data?.static_id ?? null,
   FactoryStructureID: null,
   ParameterID: null,
   NumberPage: numberPage.value,
@@ -118,7 +118,7 @@ function ensureSelectedOption(optsRef, value, label) {
 
 async function fetchParams() {
   try {
-    const id = props?.params?.data?.id ?? null
+    const id = props?.params?.data?.static_id ?? null
     const page = numberPage.value
 
     const [

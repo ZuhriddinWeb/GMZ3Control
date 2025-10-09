@@ -432,6 +432,7 @@ async function fetchRemoteCell(page, cellAddr, dateObj) {
     })
     return Number(data?.value ?? 0)
 }
+
 function resolvePeriodIds() {
     const map = new Map((periodTypes.value || []).map(pt => [String(pt.id), String(pt.name || '').trim().toLowerCase()]))
     const used = [...new Set((staticItems.value || []).map(x => x?.period_type_id).filter(v => v != null).map(String))]
@@ -447,12 +448,15 @@ function ymd(d) {
     const x = new Date(d)
     return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
 }
+
 function monthRange(d) {
+
     const x = new Date(d)
     const start = new Date(x.getFullYear(), x.getMonth(), 1)
     const end = new Date(x.getFullYear(), x.getMonth() + 1, 0)
     return { start: ymd(start), end: ymd(end) }
 }
+
 function colToPeriodType(colIndex) {
     // 0-based index -> harf
     const Ltr = L(colIndex)

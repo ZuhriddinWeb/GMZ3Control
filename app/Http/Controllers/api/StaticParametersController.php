@@ -90,7 +90,7 @@ public function staticCard($id)
     ->join('period_types', 'static_parameters.period_type_id', '=', 'period_types.id')
     ->where('NumberPage',$id)
     ->select([
-            // 'sp.id as static_id',
+            'static_parameters.id as static_id',
             'static_parameters.NumberPage',
             'static_parameters.FactoryStructureID',
             'static_parameters.GroupID',

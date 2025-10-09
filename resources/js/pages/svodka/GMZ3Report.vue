@@ -1,8 +1,17 @@
 <template>
     <div class="p-3 pt-28">
+        <div class="flex items-center gap-2 mb-2">
+            <VaInput v-model="formulaBar" class="max-w-[700px] w-full" placeholder="" @keyup.enter="applyFormulaBar" />
+            <VaButton size="small" @click="applyFormulaBar" :disabled="!selectedCell">
+                Formula’ni saqla
+            </VaButton>
+            <span v-if="selectedCell" class="text-gray-500 text-sm">Katak: {{ selectedCell }}</span>
+        </div>
         <div class="flex items-center gap-3 mb-3">
             <VaButton preset="secondary" @click="$router.back()">← Orqaga</VaButton>
-            <VaDateInput v-model="date" @update:modelValue="build" />
+            <VaDateInput v-model="date" @update:modelValue="build" :teleport="true" teleport-target="body"
+                placement="bottom-start" :offset="[0, 8]" />
+
             <span class="text-gray-500">GMZ-3 bo‘yicha asosiy ko‘rsatkichlar</span>
         </div>
         <div ref="sheetEl" style="width:100vw;height:85vh;"></div>
@@ -11,7 +20,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { VaButton, VaDateInput, useToast } from 'vuestic-ui'
+import { VaButton, VaDateInput, VaInput, useToast } from 'vuestic-ui' // ⬅️ VaInput qo'shildi
 import axios from 'axios'
 import jspreadsheet from 'jspreadsheet-ce'
 import 'jspreadsheet-ce/dist/jspreadsheet.css'
@@ -23,6 +32,9 @@ const sheetEl = ref(null)
 const date = ref(new Date())
 let jexcel = null
 const periodTypes = ref([])
+const paramIdToRow = ref(new Map())
+const paramNameById = ref(new Map())
+const paramIdByName = ref(new Map())
 // FORMULA SAHIFA
 const numberPage = 303                 // joriy sahifa (GMZ-3)
 const formulas = ref({})               // { 'C7': '=B4 + 304!B6*2', ... }
@@ -30,25 +42,88 @@ let applyingFormulas = false           // jexcel.setValue paytidagi onchange ni 
 // yuqoriga qo‘shing:
 const paramRowMap = ref(new Map()) // rowIndex (1-based) -> { fsId, groupId, parameterId }
 let isBuilding = false
-
+const selectedCell = ref(null)   // masalan: "C9"
+const formulaBar = ref('')     // asl formula (REF/304! …)
 // --- STATIC PARAMETRLAR
 const staticItems = ref([])   // /static dan kelganlar (PName, UName, ...)
 const apiDate = (d) => {
     const x = new Date(d)
     return `${String(x.getDate()).padStart(2, '0')}.${String(x.getMonth() + 1).padStart(2, '0')}.${x.getFullYear()}`
 }
+function rebuildParamNameIndex() {
+    const byId = new Map(), byName = new Map()
+    for (const x of (staticItems.value || [])) {
+        const id = String(x.ParameterID || x.parameter_id || x.id || '').toUpperCase()
+        const name = String(x.PName || x.Name || '').trim()
+        if (!id || !name) continue
+        byId.set(id, name)
+        byName.set(name.toLowerCase(), id)
+    }
+    paramNameById.value = byId
+    paramIdByName.value = byName
+}
+// DBdan kelgan stabil ifodani foydalanuvchiga ko'rsatish uchun (GUID -> nom)
+function toDisplayFormula(exprStable) {
+    return String(exprStable || '').replace(
+        /P\(\s*([0-9A-F-]{8,})\s*(,\s*"(.*?)")?\s*\)/gi,
+        (_, id, _2, slot) => {
+            const name = paramNameById.value.get(String(id).toUpperCase()) || id
+            return `P("${name}"${slot ? `,"${slot}"` : ''})`
+        }
+    )
+}
+
+// Foydalanuvchi P("Nom","slot") yozsa – GUIDga aylantirib olamiz
+function namesToIdsInFormula(expr) {
+    return String(expr || '').replace(
+        /P\(\s*"(.*?)"\s*(,\s*"(.*?)")?\s*\)/gi,
+        (_, name, _2, slot) => {
+            const id = paramIdByName.value.get(String(name).trim().toLowerCase())
+            return id ? `P(${id}${slot ? `,"${slot}"` : ''})` : `P("${name}"${slot ? `,"${slot}"` : ''})`
+        }
+    )
+}
+
+watch(staticItems, rebuildParamNameIndex, { immediate: true })
+async function applyFormulaBar() {
+    const addr = selectedCell.value
+    const exprUi = (formulaBar.value || '').trim()
+    if (!addr || !exprUi.startsWith('=')) {
+        init({ message: 'Formula "=" bilan boshlanishi kerak', color: 'warning' })
+        return
+    }
+    try {
+        const exprWithIds = namesToIdsInFormula(exprUi)  // << nomdan GUIDga
+        await saveAndApplyFormula(addr, exprWithIds)
+        await new Promise(r => requestAnimationFrame(r))
+        await postStaticForCell(addr, { toast: true })
+        init({ message: 'Formula yangilandi', color: 'success' })
+    } catch (e) {
+        console.error(e)
+        init({ message: 'Formula saqlanmadi', color: 'danger' })
+    }
+}
+
+
 async function fetchStaticParams() {
     try {
-        const { data } = await axios.get(`/static-with-numberpage/${numberPage}`)
-        // Array yoki {items} bo‘lishi mumkin
-        const arr = Array.isArray(data) ? data : (data.items || [])
-        staticItems.value = arr
+        const { data } = await axios.get(`/static-with-numberpage/${numberPage}`, {
+            params: { date: ymd(date.value) }   // <-- qo'shildi
+        })
+        staticItems.value = Array.isArray(data) ? data : (data.items || [])
     } catch (e) {
         console.error(e)
         init({ message: 'Static parametrlarni yuklashda xatolik', color: 'danger' })
     }
 }
 
+function rebuildParamReverseIndex() {
+    const m = new Map()
+    for (const [rowIndex, meta] of paramRowMap.value.entries()) {
+        if (meta?.parameterId != null) m.set(String(meta.parameterId), Number(rowIndex))
+    }
+    paramIdToRow.value = m
+}
 // --- helpers
 function dmy(d) {
     const dd = new Date(d)
@@ -171,6 +246,15 @@ async function build() {
             merge('B4:B5'),
             merge('C4:E4'),
         ],
+        onselection: (instance, x1, y1, x2, y2) => {
+            if (x1 !== x2 || y1 !== y2) return
+            const addr = `${L(x1)}${y1 + 1}`
+            selectedCell.value = addr
+            const stable = formulas.value[addr] || ''
+            formulaBar.value = toDisplayFormula(stable)   // << GUID emas, nom ko'rinadi
+        },
+
+
         onchange: async (instance, cell, x, y, value) => {
             if (applyingFormulas || isBuilding) return
 
@@ -187,12 +271,17 @@ async function build() {
             try {
                 if (typeof value === 'string' && value.trim().startsWith('=')) {
                     await saveAndApplyFormula(addr, value.trim())
-                    // 🕒 formula hisobini yakunlash uchun
                     await new Promise(r => requestAnimationFrame(r))
                     await postStaticForCell(addr, { toast: true })
+
+                    // 🔽 tanlangan katak shu bo‘lsa, formula panelini ham xuddi shu xom ifoda bilan yangilaymiz
+                    if (selectedCell.value === addr) {
+                        formulaBar.value = value.trim()
+                    }
                 } else {
                     await postStaticForCell(addr, { toast: true })
                 }
+
             } catch (e) {
                 console.error(e)
                 init({ message: 'Saqlashda xatolik', color: 'danger' })
@@ -311,6 +400,7 @@ async function build() {
                 jexcel.setHeight(r - 1, 24)
                 r++
             }
+            rebuildParamReverseIndex()
         }
 
         // FS blokidan keyin bitta bo'sh qator
@@ -329,7 +419,7 @@ async function build() {
     await new Promise(r => requestAnimationFrame(r))
 
     // Faqat 4–5-qatorni pin qilmoqchi bo‘lsangiz:
-    pinRowsSticky([4, 5])
+    pinRowsSticky([1, 2, 4, 5])
     // Formulalarni qo‘llash
     isBuilding = false
 }
@@ -517,23 +607,50 @@ function paintRowAcrossAtoJ(rowIdx, styleStr) {
 
 
 // --- QATORLARNI /static dan FS->Group->Param bo‘yicha to‘ldirish
-async function evaluateFormula(expr, dateObj) {
+async function evaluateFormula(expr, dateObj, { currentCell } = {}) {
     let s = String(expr).trim()
-    const reRef = /REF\(\s*(\d+)\s*,\s*"([A-Z]+\d+)"\s*\)/g   // REF(304,"B6")
-    const reBang = /'?(\d+)'?\!([A-Z]+\d+)/g                    // 304!B6 yoki '304'!B6
 
+    // P(<param_id>,"slot") -> A1
+    let defaultSlot = null
+    if (currentCell) {
+        const m = currentCell.match(/^([A-Z]+)\d+$/)
+        if (m) defaultSlot = colToSlot(m[1])
+    }
+    s = s.replace(/P\(\s*([0-9A-F-]{8,})\s*(?:,\s*"(daily_plan|daily_fact_20_08|daily_fact_08_20|daily_fact_total|daily_percent|monthly_plan|monthly_fact|monthly_percent)")?\s*\)/gi,
+        (_, pid, slotRaw) => {
+            const row = paramIdToRow.value.get(String(pid).toUpperCase())
+            const col = slotToCol(slotRaw || defaultSlot || 'daily_plan')
+            return (row && col) ? `${col}${row}` : '0'
+        })
+
+    // REF(304,"B6") / 304!B6 -> son
+    const reRef = /REF\(\s*(\d+)\s*,\s*"([A-Z]+\d+)"\s*\)/g
+    const reBang = /'?(\d+)'?\!([A-Z]+\d+)/g
     const refs = []
     s.replace(reRef, (_, p, c) => { refs.push({ page: +p, cell: c }); return '' })
     s.replace(reBang, (_, p, c) => { refs.push({ page: +p, cell: c }); return '' })
-
     const vals = await Promise.all(refs.map(r => fetchRemoteCell(r.page, r.cell, dateObj)))
-
     let i = 0
     s = s.replace(reRef, () => String(vals[i++]))
     s = s.replace(reBang, () => String(vals[i++]))
     if (!s.startsWith('=')) s = '=' + s
     return s
 }
+
+function toStableFormula(expr) {
+    let s = String(expr || '')
+    // faqat C..J oralig’i
+    s = s.replace(/\b([CDEFGHIJ])(\d+)\b/g, (m, col, rowStr) => {
+        const row = Number(rowStr)
+        const meta = paramRowMap.value.get(row)
+        if (!meta?.parameterId) return m
+        const slot = colToSlot(col)
+        if (!slot) return m
+        return `P(${meta.parameterId},"${slot}")`
+    })
+    return s
+}
+
 function colToSlot(colLtr) {
     switch (colLtr) {
         case 'C': return 'daily_plan'
@@ -558,40 +675,48 @@ function slotToCol(slot) {
 
 // Excel ifodasidagi kross-sahifa qismini sonlarga almashtirib, qolganini
 // jSpreadsheet ga formula sifatida beramiz (ichki C7, B4 larni u o‘zi hisoblaydi)
-async function saveAndApplyFormula(cellAddr, expr) {
-    // 1) Local cache
-    formulas.value[cellAddr] = expr
+async function saveAndApplyFormula(cellAddr, exprRaw) {
+    // maqsad (chap tomondagi) parametr va slot
+    const rowIdx = Number(cellAddr.match(/\d+/)?.[0] || 0)
+    const colLtr = String(cellAddr.match(/^[A-Z]+/)?.[0] || '')
+    const meta = paramRowMap.value.get(rowIdx)
+    const slot = colToSlot(colLtr)
 
-    // 2) Ushbu qatorning parametr metasi (param_id yuborish uchun)
-    const m = cellAddr.match(/\d+/)
-    const rowIdx = m ? Number(m[0]) : null
-    const meta = rowIdx ? paramRowMap.value.get(rowIdx) : null
+    if (!meta?.parameterId || !slot) {
+        console.warn('Parametr yoki slot topilmadi', cellAddr, meta, slot)
+        return
+    }
 
-    // 3) Backendga saqlash (har ikkala nom bilan jo‘natamiz — moslik uchun)
+    // stabil ko‘rinishga o‘giramiz
+    const exprStable = toStableFormula(exprRaw)
+    formulas.value[cellAddr] = exprStable
+
+    // DBga parametrga bog‘lab yuboramiz
     await axios.post('/sheet/formula', {
         numberPage,
-        number_page: numberPage,          // moslik uchun qo‘shib yuboramiz
-        param_id: meta?.parameterId || null,
-        cell: cellAddr,
-        expr,
+        number_page: numberPage,
+        // ikkala nom ham – backend qaysi birini olishi noaniq bo‘lsa
+        param_id: meta.parameterId,
+        parameter_id: meta.parameterId,
+        slot,                          // ← qaysi ustun uchun
+        cell: cellAddr,                // ← diag. uchun qoldiramiz
+        expr: exprStable,              // asosiy ustun
+        expr_stable: exprStable,       // agar backend saqlasa
+        expr_raw: exprRaw,             // foydalanuvchi kiritgani
         scope: 'permanent',
-        date: ymd(date.value),            // ishlatilayotgan sana
-        for_date: null,                   // doimiy formula bo‘lsa, null
+        date: ymd(date.value),
+        for_date: null,
     })
 
-    // 4) Cross-page linklarni sonlarga aylantirib, katakka qo‘yamiz
-    const compiled = await evaluateFormula(expr, date.value)
+    // Jadvalga qo‘yish (tokenlarni kengaytirib)
+    const compiled = await evaluateFormula(exprStable, date.value, { currentCell: cellAddr })
     applyingFormulas = true
     jexcel.setValue(cellAddr, compiled)
     applyingFormulas = false
-
-    // 📌 Muhim: formula engine hisobini tugatishi uchun bitta frame kutamiz
     await new Promise(r => requestAnimationFrame(r))
-
-    // Ko‘rinish uchun border
-    const st = {}; st[cellAddr] = 'border:1px dashed #444;font-weight:600;'
-    jexcel.setStyle(st)
+    jexcel.setStyle({ [cellAddr]: 'border:1px dashed #444;font-weight:600;' })
 }
+
 
 
 // Formulalarni yuklash paytida ham static’ga yozib qo‘yish:
@@ -599,65 +724,121 @@ async function loadAndApplyAllFormulas() {
     const { data } = await axios.get('/sheet/formula', {
         params: { numberPage, date: apiDate(date.value) }
     })
-        ; (data?.items || data || []).forEach(f => { formulas.value[f.cell] = f.expr })
-    for (const [cell, expr] of Object.entries(formulas.value)) {
-        try {
-            const compiled = await evaluateFormula(expr, date.value)
-            applyingFormulas = true
-            jexcel.setValue(cell, compiled)
-            applyingFormulas = false
-            const st = {}; st[cell] = 'border:1px dashed #444;font-weight:600;'
-            jexcel.setStyle(st)
+    const items = (data?.items || data || [])
 
-            // computed natijani static_parameters ga ham yozamiz
-            await postStaticForCell(cell)
-        } catch (e) { console.error('Formula error', cell, expr, e) }
+    for (const f of items) {
+        // maqsad katakni topamiz
+        let rowIndex = null, colLtr = null
+
+        if (f.param_id || f.parameter_id) {
+            const pid = String(f.param_id ?? f.parameter_id)
+            rowIndex = paramIdToRow.value.get(pid)
+            colLtr = f.slot ? slotToCol(f.slot) : (String(f.cell || '').match(/^[A-Z]+/)?.[0] || null)
+        } else if (f.cell) {
+            // legacy: cell bo‘yicha
+            const m = String(f.cell).match(/^([A-Z]+)(\d+)$/)
+            if (m) { colLtr = m[1]; rowIndex = Number(m[2]) }
+        }
+
+        if (!rowIndex || !colLtr) continue
+        const addr = `${colLtr}${rowIndex}`
+
+        // ifodani stabil deb qabul qilamiz; bo‘lmasa ham hozirgi tartib bo‘yicha stabilga o‘girib yuboramiz
+        const exprStable = f.expr_stable || f.expr || ''
+        formulas.value[addr] = exprStable
+
+        try {
+            const compiled = await evaluateFormula(exprStable, date.value, { currentCell: addr })
+            applyingFormulas = true
+            jexcel.setValue(addr, compiled)
+            applyingFormulas = false
+            jexcel.setStyle({ [addr]: 'border:1px dashed #444;font-weight:600;' })
+            await postStaticForCell(addr)   // computed qiymatni static’ga ham yozib qo‘yish
+        } catch (e) {
+            console.error('Formula error', addr, exprStable, e)
+        }
     }
 }
+
 let _unpin = null
-function pinRowsSticky(rows = [4, 5]) {
-    // Eski pin’ni tozalash
+
+function pinRowsSticky(rows = [1, 2, 4, 5]) {
     if (_unpin) { _unpin(); _unpin = null }
 
     const content = sheetEl.value?.querySelector('.jexcel_content')
     const tbody = content?.querySelector('tbody')
     if (!content || !tbody) return
 
-    const trs = rows
-        .map(r => tbody.children[r - 1])
-        .filter(Boolean)
-
-    // Qatorlar balandligiga qarab ketma-ket top hisoblaymiz
-    let top = 0
+    const BASE_Z = 1000
     const restore = []
 
-    trs.forEach((tr, i) => {
-        const h = tr.getBoundingClientRect().height || tr.offsetHeight
-        Array.from(tr.children).forEach(td => {
-            // keyin tiklash uchun eski style’ni saqlab qo‘yamiz
-            const old = {
-                position: td.style.position,
-                top: td.style.top,
-                zIndex: td.style.zIndex,
-                bg: td.style.backgroundColor,
-            }
+    // 1) Ustun sarlavhalari (A,B,...) ni sticky qilish
+    const headerRow =
+        content.querySelector('thead tr') ||
+        content.querySelector('.jexcel_headers tr') ||
+        content.querySelector('.jexcel_headers')
+
+    const headerCells = headerRow ? Array.from(headerRow.children) : []
+    const headerH = headerRow
+        ? (headerRow.getBoundingClientRect().height || headerRow.offsetHeight || 28)
+        : 28
+
+    if (headerRow) {
+        headerCells.forEach(td => {
+            const old = { position: td.style.position, top: td.style.top, z: td.style.zIndex, bg: td.style.backgroundColor, boxShadow: td.style.boxShadow }
             restore.push(() => {
                 td.style.position = old.position
                 td.style.top = old.top
-                td.style.zIndex = old.zIndex
+                td.style.zIndex = old.z
                 td.style.backgroundColor = old.bg
+                td.style.boxShadow = old.boxShadow
             })
-
             td.style.position = 'sticky'
-            td.style.top = `${top}px`  // shu paytgacha pin qilingan satrlarning yig‘indi balandligi
-            td.style.zIndex = String(100 + i) // griddan yuqori
-            td.style.backgroundColor = '#eef7ff' // yopishtirilganida oqish ko‘rinsin
+            td.style.top = '0px'
+            td.style.zIndex = String(BASE_Z + rows.length + 1)
+            td.style.backgroundColor = '#eaf2fb'
+            td.style.boxShadow = '0 1px 0 rgba(0,0,0,.08)'
+        })
+    }
+
+    // 2) Belgilangan qatorlarni sarlavha PASTIDAN sticky qilish
+    let top = headerH
+    const trs = rows.map(r => tbody.children[r - 1]).filter(Boolean)
+    trs.forEach((tr, i) => {
+        const h = tr.getBoundingClientRect().height || tr.offsetHeight
+        Array.from(tr.children).forEach(td => {
+            const old = { position: td.style.position, top: td.style.top, z: td.style.zIndex, bg: td.style.backgroundColor, boxShadow: td.style.boxShadow }
+            restore.push(() => {
+                td.style.position = old.position
+                td.style.top = old.top
+                td.style.zIndex = old.z
+                td.style.backgroundColor = old.bg
+                td.style.boxShadow = old.boxShadow
+            })
+            td.style.position = 'sticky'
+            td.style.top = `${top}px`
+            td.style.zIndex = String(BASE_Z + i)
+            td.style.backgroundColor = '#eef7ff'
+            td.style.boxShadow = '0 1px 0 rgba(0,0,0,.08)'
         })
         top += h
     })
 
-    _unpin = () => restore.forEach(fn => fn())
+    const onScroll = () => {
+        const scrolled = content.scrollTop > 0
+            ;[...headerCells, ...trs.flatMap(tr => Array.from(tr.children))].forEach(td => {
+                td.style.boxShadow = scrolled ? '0 2px 4px rgba(0,0,0,.06)' : '0 1px 0 rgba(0,0,0,.08)'
+            })
+    }
+    content.addEventListener('scroll', onScroll)
+
+    _unpin = () => {
+        content.removeEventListener('scroll', onScroll)
+        restore.forEach(fn => fn())
+    }
 }
+
+
 
 
 async function postStaticForCell(addr, { toast = false } = {}) {
@@ -707,6 +888,7 @@ async function postStaticForCell(addr, { toast = false } = {}) {
         period_end_date,
         value,
         comment,
+        for_date: ymd(date.value)
     })
     if (toast && res && res.status >= 200 && res.status < 300) {
         // i18n ishlatsa:
@@ -723,3 +905,11 @@ onMounted(async () => {
 watch(date, build)
 watch([staticItems, periodTypes], build)
 </script>
+<style>
+/* Vuestic popover/pickerlarni hamma narsadan yuqoriga qo'yamiz */
+.va-dropdown__content,
+.va-popover__content,
+.va-date-picker__panel {
+    z-index: 99999 !important;
+}
+</style>

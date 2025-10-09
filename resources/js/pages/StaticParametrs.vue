@@ -126,7 +126,8 @@ const columnDefs = computed(() => {
     { headerName: t("table.name"), field: "PName", flex: 1 },
     { headerName: t("menu.paramtypes"), field: "PTName" },
     { headerName: t("menu.units"), field: "UName" },
-    { headerName: t("table.value"), field: "value" },
+    { headerName: t("table.OrderNumber"), field: "OrderNumber" },
+
     { headerName: t("table.startingDay"), field: "period_start_date" },
     { headerName: t("table.endingDay"), field: "period_end_date" },
     { headerName: t("table.comment"), field: "Comment", flex: 1 },
@@ -222,7 +223,6 @@ const fetchParams = async () => {
   }
 };
 
-// const { data } = await axios.get(`/getRowGroupWith/${result.NumberPage}`);
 const onPageOrStructureChange = async () => {
   try {
     const page = props.id || result.NumberPage

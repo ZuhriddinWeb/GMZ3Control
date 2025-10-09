@@ -26,10 +26,10 @@ class SheetController extends Controller
     }
 
     /** Katak nomi validatsiyasi: A1..Z9999... */
-    private function isValidCell(string $cell): bool
-    {
-        return (bool) preg_match('/^[A-Z]+[1-9]\d*$/', $cell);
-    }
+    // private function isValidCell(string $cell): bool
+    // {
+    //     return (bool) preg_match('/^[A-Z]+[1-9]\d*$/', $cell);
+    // }
 
     /** GET /sheet/formula?numberPage=303&date=10.09.2025 */
 public function getFormulas(Request $req)
@@ -64,50 +64,167 @@ public function getFormulas(Request $req)
 
     return response()->json(['items' => $items]);
 }
+public function listFormulas(Request $req) {
+  $page = (int)($req->input('numberPage') ?? $req->input('number_page'));
+  $forDate = $this->parseDate((string)$req->input('date')); // yoki null
+
+  $items = \App\Models\SheetFormulas::where('number_page',$page)
+    ->when($forDate !== null, fn($q) => $q->where(function($qq) use($forDate){
+        $qq->whereNull('for_date')->orWhere('for_date',$forDate);
+    }), fn($q)=>$q->whereNull('for_date'))
+    ->get(['param_id','slot','cell','expr_stable as expr','expr_raw','for_date']);
+
+  return response()->json(['items'=>$items]);
+}
 
 
 
     /** POST /sheet/formula  { numberPage, date, cell, expr }  */
 public function saveFormula(Request $req)
 {
-    $page = (int) $req->get('numberPage');
-    $cell = strtoupper(trim($req->get('cell')));
-    $expr = trim((string) $req->get('expr'));
-    $scope = $req->get('scope', 'dated'); // 'permanent' yoki 'dated'
+    // 1) Kiruvchi qiymatlar
+    $page = (int) ($req->input('numberPage') ?? $req->input('number_page'));
+    $cell = strtoupper(trim((string) ($req->input('cell') ?? '')));
+    $paramIdRaw = $req->input('param_id') ?? $req->input('parameter_id');    // ikkala nomni ham qo‘llab
+    $slotRaw    = $req->input('slot');
+    $date    = $req->input('date');
 
-    if (!$this->isValidCell($cell)) {
-        return response()->json(['message' => 'Noto‘g‘ri katak nomi'], 422);
+    $exprRaw    = trim((string) ($req->input('expr_raw') ?? $req->input('expr') ?? ''));  // foydalanuvchi kiritgani
+    $exprStable = trim((string) ($req->input('expr_stable') ?? ''));                      // stabil (P(...,"slot")) bo‘lsa
+
+    $scope = $req->input('scope', 'dated'); // 'permanent' | 'dated'
+
+    if (!$page) {
+        return response()->json(['message' => 'numberPage/mumber_page kiritilmadi'], 422);
     }
-    if (!str_starts_with($expr, '=')) {
-        $expr = '=' . $expr;
+    if ($exprRaw === '' && $exprStable === '') {
+        return response()->json(['message' => 'Formula bo‘sh bo‘lishi mumkin emas'], 422);
     }
 
-    // permanent -> for_date = NULL, aks holda kiritilgan sana
+    // 2) Ifodalarni normalize
+    if ($exprStable === '') { $exprStable = $exprRaw; }
+    if (!Str::startsWith($exprRaw, '='))    { $exprRaw    = '=' . $exprRaw; }
+    if (!Str::startsWith($exprStable, '=')) { $exprStable = '=' . $exprStable; }
+
+    // 3) Sana (for_date)
     $forDate = null;
     if ($scope !== 'permanent') {
-        $dateStr = $req->get('date');                // dd.mm.yyyy yoki yyyy-mm-dd
-        $forDate = $this->parseDate((string) $dateStr);
+        $forDate = $this->parseDate((string) $req->input('date')); // dd.mm.yyyy yoki yyyy-mm-dd
     }
 
-    // (number_page, cell, for_date) bo‘yicha upsert
-    $row = \App\Models\SheetFormulas::firstOrNew([
-        'number_page' => $page,
-        'cell'        => $cell,
-        'for_date'    => $forDate, // NULL bo‘lishi ham mumkin
-    ]);
+    // 4) slot’ni aniqlash (kelmasa — cell’ning harfiga qarab)
+    $slot = $this->normalizeSlot($slotRaw) ?: $this->slotFromCell($cell);
+
+    // 5) Parametr bo‘yicha saqlashga tayyorgarlik
+    $paramId = $this->normalizeUuid($paramIdRaw);
+    $canUseParamKey = $paramId && $slot;
+
+    // 6) Legacy holat: na param_id+slot, na cell bo‘lsa — xato
+    if (!$canUseParamKey && !$this->isValidCell($cell)) {
+        return response()->json(['message' => 'Parametr+slot yoki to‘g‘ri katak kerak'], 422);
+    }
+
+    // 7) Upsert kalitini tanlash
+    if ($canUseParamKey) {
+        // (number_page, param_id, slot, for_date)
+        $row = SheetFormulas::firstOrNew([
+            'number_page' => $page,
+            'param_id'    => $paramId,
+            'slot'        => $slot,
+            'for_date'    => $forDate,   // NULL ham bo‘lishi mumkin
+            'date'    => $date,
+
+        ]);
+    } else {
+        // Legacy: (number_page, cell, for_date)
+        $row = SheetFormulas::firstOrNew([
+            'number_page' => $page,
+            'cell'        => $cell,
+            'for_date'    => $forDate,
+            'date'    => $date,
+        ]);
+    }
 
     if (!$row->exists) {
-        $row->id = (string) \Illuminate\Support\Str::uuid(); // yangi bo‘lsa id beramiz
+        $row->id = (string) Str::uuid();
     }
 
-    $row->expr = $expr;
+    // 8) Ma’lumotlarni yozish
+    //  — Parametrga bog‘lash uchun ustunlar
+    if ($canUseParamKey) {
+        $row->param_id = $paramId;
+        $row->slot     = $slot;
+    }
+    //  — Diagnostika/retro moslik uchun cell’ni ham qoldiramiz (bo‘lsa)
+    if ($this->isValidCell($cell)) {
+        $row->cell = $cell;
+    }
+
+    //  — Ifodalar
+    $row->expr        = $exprStable;  // asosiy ustun sifatida stabilni saqlaymiz
+    $row->expr_stable = $exprStable;
+    $row->expr_raw    = $exprRaw;
+
+    // ixtiyoriy: $row->date maydoni bo‘lsa, for_date ni ham shu yerga qo‘yishingiz mumkin
+    // $row->date = $forDate;
+
     $row->save();
 
     return response()->json([
         'status'  => 200,
-        'message' => 'Formula saqlandi (yangilandi)',
+        'message' => 'Formula saqlandi (parametrga bog‘landi)',
         'item'    => $row,
     ]);
+}
+
+/** --------- Helpers --------- */
+
+private function normalizeUuid($v)
+{
+    $s = strtoupper(trim((string) $v));
+    if ($s === '') return null;
+    // Laravelda mavjud: Str::isUuid
+    return Str::isUuid($s) ? $s : null;
+}
+
+private function normalizeSlot($slot)
+{
+    $s = strtolower(trim((string) $slot));
+    $ok = [
+        'daily_plan',
+        'daily_fact_20_08',
+        'daily_fact_08_20',
+        'daily_fact_total',
+        'daily_percent',
+        'monthly_plan',
+        'monthly_fact',
+        'monthly_percent',
+    ];
+    return in_array($s, $ok, true) ? $s : null;
+}
+
+private function slotFromCell($cell)
+{
+    if (!$this->isValidCell($cell)) return null;
+    if (!preg_match('/^([A-Z]+)/', $cell, $m)) return null;
+    $col = $m[1];
+    $map = [
+        'C' => 'daily_plan',
+        'D' => 'daily_fact_20_08',
+        'E' => 'daily_fact_08_20',
+        'F' => 'daily_fact_total',
+        'G' => 'daily_percent',
+        'H' => 'monthly_plan',
+        'I' => 'monthly_fact',
+        'J' => 'monthly_percent',
+    ];
+    return $map[$col] ?? null;
+}
+
+private function isValidCell($cell)
+{
+    // A1, AB12, ... ko‘rinish
+    return (bool) preg_match('/^[A-Z]+[1-9]\d*$/', $cell);
 }
 
 public function saveValuesBulk(Request $req)

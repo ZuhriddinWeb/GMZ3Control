@@ -39,7 +39,7 @@ const paramIdByName = ref(new Map())
 const periodCols = ref(new Map())       // colIndex (0-based) -> { id, label }
 const colByPeriodId = ref(new Map())    // period_id -> colIndex (0-based)
 // FORMULA SAHIFA
-const numberPage = 303                 // joriy sahifa (GMZ-3)
+const numberPage = 301                 // joriy sahifa (GMZ-3)
 const formulas = ref({})               // { 'C7': '=B4 + 304!B6*2', ... }
 let applyingFormulas = false           // jexcel.setValue paytidagi onchange ni cheklash
 // yuqoriga qo‘shing:

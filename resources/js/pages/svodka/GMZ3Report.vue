@@ -651,45 +651,45 @@ function paintRowAcrossAtoJ(rowIdx, styleStr) {
 
 
 async function evaluateFormula(expr, dateObj, { currentCell } = {}) {
-    let s = String(expr).trim()
+  let s = String(expr).trim()
 
-    // 🔹 joriy katak ustunidagi period id (default sifatida)
-    let defaultPeriodId = null
-    if (currentCell) {
-        const m = currentCell.match(/^([A-Z]+)\d+$/)
-        if (m) {
-            const colIndex = colLetterToIndex(m[1])
-            const meta = periodCols.value.get(colIndex) // { id, label }
-            if (meta) defaultPeriodId = meta.id
-        }
+  // default period id (joriy katakdan)
+  let defaultPeriodId = null
+  if (currentCell) {
+    const colIndex = colLetterToIndex(String(currentCell.match(/^[A-Z]+/)?.[0] || ''))
+    const meta = periodCols.value.get(colIndex)
+    if (meta) defaultPeriodId = meta.id
+  }
+
+  // P(uuid,"label") -> A1
+  s = s.replace(
+    /P\(\s*([0-9A-F-]{8,})\s*(?:,\s*"(.*?)")?\s*\)/gi,
+    (_m, pid, argRaw) => {
+      const row = paramIdToRow.value.get(String(pid).toUpperCase())
+      const periodId = argToPeriodId(argRaw, defaultPeriodId)
+      const colIndex = colByPeriodId.value.get(periodId)
+      const colLtr = (colIndex != null) ? L(colIndex) : null
+      return (row && colLtr) ? `${colLtr}${row}` : '0'   // <— qat’iy 0
     }
+  )
 
-    // 🔹 P(<param_id>[,"<name|id|alias>"]) -> <CellRef>
-    s = s.replace(
-        /P\(\s*([0-9A-F-]{8,})\s*(?:,\s*"(.*?)")?\s*\)/gi,
-        (_, pid, argRaw) => {
-            const row = paramIdToRow.value.get(String(pid).toUpperCase())
-            const periodId = argToPeriodId(argRaw, defaultPeriodId)
-            const colIndex = colByPeriodId.value.get(periodId)
-            const colLtr = (colIndex != null) ? L(colIndex) : null
-            return (row && colLtr) ? `${colLtr}${row}` : '0'
-        }
-    )
+  const reRef = /REF\(\s*(\d+)\s*,\s*"([A-Z]+\d+)"\s*\)/g
+  const reBang = /'?(\d+)'?\!([A-Z]+\d+)/g
 
-    // ... (REF/304!B6 qismlari o'zgarishsiz)
-    const reRef = /REF\(\s*(\d+)\s*,\s*"([A-Z]+\d+)"\s*\)/g
-    const reBang = /'?(\d+)'?\!([A-Z]+\d+)/g
-    const refs = []
-    s.replace(reRef, (_, p, c) => { refs.push({ page: +p, cell: c }); return '' })
-    s.replace(reBang, (_, p, c) => { refs.push({ page: +p, cell: c }); return '' })
-    const vals = await Promise.all(refs.map(r => fetchRemoteCell(r.page, r.cell, dateObj)))
-    let i = 0
-    s = s.replace(reRef, () => String(vals[i++]))
-    s = s.replace(reBang, () => String(vals[i++]))
+  const refs = []
+  s.replace(reRef, (_1, p, c) => { refs.push({ page: +p, cell: c }) })
+  s.replace(reBang, (_1, p, c) => { refs.push({ page: +p, cell: c }) })
 
-    if (!s.startsWith('=')) s = '=' + s
-    return s
+  const vals = refs.length ? await Promise.all(refs.map(r => fetchRemoteCell(r.page, r.cell, dateObj))) : []
+
+  let i = 0
+  s = s.replace(reRef, () => String(Number.isFinite(vals[i]) ? vals[i++] : 0))
+  s = s.replace(reBang, () => String(Number.isFinite(vals[i]) ? vals[i++] : 0))
+
+  if (!s.startsWith('=')) s = '=' + s
+  return s
 }
+
 
 
 function toStableFormula(expr) {
@@ -733,88 +733,128 @@ function slotToCol(slot) {
 // Excel ifodasidagi kross-sahifa qismini sonlarga almashtirib, qolganini
 // jSpreadsheet ga formula sifatida beramiz (ichki C7, B4 larni u o‘zi hisoblaydi)
 async function saveAndApplyFormula(cellAddr, exprRaw) {
-    const rowIdx = Number(cellAddr.match(/\d+/)?.[0] || 0)
-    const colLtr = String(cellAddr.match(/^[A-Z]+/)?.[0] || '')
-    const meta = paramRowMap.value.get(rowIdx)
-    if (!meta?.parameterId) return
+  const rowIdx = Number(cellAddr.match(/\d+/)?.[0] || 0)
+  const colLtr = String(cellAddr.match(/^[A-Z]+/)?.[0] || '')
+  const meta = paramRowMap.value.get(rowIdx)
+  if (!meta?.parameterId) return
 
-    const colIndex = colLetterToIndex(colLtr)
-    const pmeta = periodCols.value.get(colIndex) // { id, label }
-    if (!pmeta) return
+  const colIndex = colLetterToIndex(colLtr)
+  const pmeta = periodCols.value.get(colIndex)
+  if (!pmeta) return
 
-    const exprStable = toStableFormula(exprRaw)
-    formulas.value[cellAddr] = exprStable
+  // 1) "P("Nom"...)" -> "P(uuid, ...)"
+  let prepared = namesToIdsInFormula(exprRaw)
 
-    await axios.post('/sheet/formula', {
-        numberPage,
-        number_page: numberPage,
+  // 2) "P(uuid,"daily_plan")" -> "P(uuid,"kun")" (kanonik)
+  prepared = normalizePeriodsInP(prepared, { currentCell: cellAddr })
 
-        // 🔹 asosiy kalit: parametr + period_type_id (+ for_date)
-        param_id: meta.parameterId,
-        period_type_id: pmeta.id,
-        period_label: pmeta.label, // ixtiyoriy, backendda moslash uchun
+  // 3) "C10 + D7" -> "P(uuid,"kun") + P(uuid,"oy")"
+  const exprStable = toStableFormula(prepared)
+  formulas.value[cellAddr] = exprStable
 
-        // legacy diagnostika uchun qoldirishingiz mumkin:
-        cell: cellAddr,
+  await axios.post('/sheet/formula', {
+    numberPage,
+    number_page: numberPage,
+    param_id: meta.parameterId,
+    period_type_id: pmeta.id,
+    period_label: pmeta.label,
+    cell: cellAddr,
+    expr: exprStable,
+    expr_stable: exprStable,
+    expr_raw: exprRaw,
+    scope: 'permanent',
+    date: ymd(date.value),
+    for_date: null,
+  })
 
-        expr: exprStable,
-        expr_stable: exprStable,
-        expr_raw: exprRaw,
-        scope: 'permanent',      // yoki 'dated' bo'lsa for_date ishlatiladi
-        date: ymd(date.value),
-        for_date: null,
-    })
-
-    const compiled = await evaluateFormula(exprStable, date.value, { currentCell: cellAddr })
-    applyingFormulas = true
-    jexcel.setValue(cellAddr, compiled)
-    applyingFormulas = false
-    await new Promise(r => requestAnimationFrame(r))
-    jexcel.setStyle({ [cellAddr]: 'border:1px dashed #444;font-weight:600;' })
+  const compiled = await evaluateFormula(exprStable, date.value, { currentCell: cellAddr })
+  applyingFormulas = true
+  jexcel.setValue(cellAddr, compiled)
+  applyingFormulas = false
+  await new Promise(r => requestAnimationFrame(r))
+  jexcel.setStyle({ [cellAddr]: 'border:1px dashed #444;font-weight:600;' })
 }
+
 
 
 
 
 // Formulalarni yuklash paytida ham static’ga yozib qo‘yish:
 async function loadAndApplyAllFormulas() {
-    const { data } = await axios.get('/sheet/formula', {
-        params: { numberPage, date: apiDate(date.value) }
-    })
-    const items = (data?.items || data || [])
+  const { data } = await axios.get('/sheet/formula', {
+    params: { numberPage, date: apiDate(date.value) }
+  })
+  const items = (data?.items || data || [])
 
-    for (const f of items) {
-        // ✅ Yangi backend: param_id + period_type_id
-        let rowIndex = null, colIndex = null
-
-        if (f.param_id && (f.period_type_id != null)) {
-            rowIndex = paramIdToRow.value.get(String(f.param_id))
-            colIndex = colByPeriodId.value.get(Number(f.period_type_id))
-        }
-
-        // 🔁 Legacy fallback (cell bo'yicha)
-        if ((rowIndex == null || colIndex == null) && f.cell) {
-            const m = String(f.cell).match(/^([A-Z]+)(\d+)$/)
-            if (m) { colIndex = colLetterToIndex(m[1]); rowIndex = Number(m[2]) }
-        }
-
-        if (!rowIndex || colIndex == null) continue
-        const addr = `${L(colIndex)}${rowIndex}`
-
-        const exprStable = f.expr_stable || f.expr || ''
-        formulas.value[addr] = exprStable
-
-        try {
-            const compiled = await evaluateFormula(exprStable, date.value, { currentCell: addr })
-            applyingFormulas = true
-            jexcel.setValue(addr, compiled)
-            applyingFormulas = false
-            jexcel.setStyle({ [addr]: 'border:1px dashed #444;font-weight:600;' })
-            await postStaticForCell(addr) // computed qiymatni static’ga
-        } catch (e) {
-            console.error('Formula error', addr, exprStable, e)
-        }
+  for (const f of items) {
+    let rowIndex = null, colIndex = null
+    if (f.param_id && (f.period_type_id != null)) {
+      rowIndex = paramIdToRow.value.get(String(f.param_id))
+      colIndex = colByPeriodId.value.get(Number(f.period_type_id))
     }
+    if ((rowIndex == null || colIndex == null) && f.cell) {
+      const m = String(f.cell).match(/^([A-Z]+)(\d+)$/)
+      if (m) { colIndex = colLetterToIndex(m[1]); rowIndex = Number(m[2]) }
+    }
+    if (!rowIndex || colIndex == null) continue
+
+    const addr = `${L(colIndex)}${rowIndex}`
+    // 1) Eski ifodani olib, period argumentlarini kanonizatsiya qilamiz
+    const raw = f.expr_stable || f.expr || ''
+    const normalized = normalizePeriodsInP(raw, { currentCell: addr })
+    const exprStable = toStableFormula(normalized)
+
+    formulas.value[addr] = exprStable
+
+    try {
+      const compiled = await evaluateFormula(exprStable, date.value, { currentCell: addr })
+      applyingFormulas = true
+      jexcel.setValue(addr, compiled)
+      applyingFormulas = false
+      jexcel.setStyle({ [addr]: 'border:1px dashed #444;font-weight:600;' })
+      await postStaticForCell(addr) // computed qiymatni static’ga
+    } catch (e) {
+      console.error('Formula error', addr, exprStable, e)
+    }
+  }
+}
+
+// Yangi yordamchi: argumentni kanonik period labelga aylantirish
+function normalizePeriodArg(arg, { currentCell } = {}) {
+  // 1) Agar argument yo‘q bo‘lsa — joriy katak periodi
+  let defaultPeriodId = null
+  if (currentCell) {
+    const colLtr = String(currentCell.match(/^[A-Z]+/)?.[0] || '')
+    const colIndex = colLetterToIndex(colLtr)
+    const meta = periodCols.value.get(colIndex) // { id, label }
+    if (meta) defaultPeriodId = meta.id
+  }
+
+  // 2) Aliasni (daily_plan, monthly_fact, “oy”, “kun”, “yil”...) period_id ga xaritalash
+  const pid = argToPeriodId(arg, defaultPeriodId)    // sizdagi funksiya
+
+  // 3) id -> label (DBdagi to‘liq nom)
+  if (pid != null) {
+    // ustunlar orqali aniq label
+    const byCol = colByPeriodId.value.get(pid)
+    if (byCol != null) return periodCols.value.get(byCol)?.label || ''
+    // aks holda /periodType’dan
+    const pt = (periodTypes.value || []).find(x => Number(x.id) === Number(pid))
+    return (pt?.name || '').trim()
+  }
+  return '' // topilmasa bo‘sh
+}
+
+// Yangi: formuladagi barcha P(...,"arg") larni kanonik labelga almashtiramiz
+function normalizePeriodsInP(expr, { currentCell } = {}) {
+  return String(expr || '').replace(
+    /P\(\s*([0-9A-F-]{8,})\s*(?:,\s*"(.*?)")?\s*\)/gi,
+    (_m, uuid, argMaybe) => {
+      const label = normalizePeriodArg(argMaybe, { currentCell })
+      // Agar label topilmasa ham, verguldan keyin biror narsa qoldirmaymiz
+      return label ? `P(${uuid},"${label}")` : `P(${uuid})`
+    }
+  )
 }
 
 
@@ -900,44 +940,41 @@ function pinRowsSticky(rows = [1, 2, 4, 5]) {
 
 
 async function postStaticForCell(addr, { toast = false } = {}) {
-    const m = addr.match(/^([A-Z]+)(\d+)$/)
-    if (!m) return
-    const colLtr = m[1], rowIdx = Number(m[2])
-    const x = colLetterToIndex(colLtr)
-    const y = rowIdx - 1
+  const m = addr.match(/^([A-Z]+)(\d+)$/)
+  if (!m) return
+  const colLtr = m[1], rowIdx = Number(m[2])
+  const x = colLetterToIndex(colLtr), y = rowIdx - 1
 
-    const meta = paramRowMap.value.get(rowIdx)
-    if (!meta) return
+  const meta = paramRowMap.value.get(rowIdx)
+  if (!meta) return
+  const pmeta = periodCols.value.get(x)
+  if (!pmeta) return
 
-    const pmeta = periodCols.value.get(x) // { id, label }
-    if (!pmeta) return
+  // qiymatni faqat raqam bo‘lsa olamiz
+  let raw = jexcel.getValueFromCoords(x, y, false)
+  if (raw == null || raw === '') raw = jexcel.getValueFromCoords(x, y, true)
+  const value = toNumber(raw)
+  if (!Number.isFinite(value)) return   // <— faqat raqam saqlanadi
 
-    // qiymat
-    let raw = jexcel.getValueFromCoords(x, y, false); // avval xom qiymat
-    if (raw == null || raw === '') raw = jexcel.getValueFromCoords(x, y, true);
+  const { start: period_start_date, end: period_end_date } =
+    periodRangeFor(pmeta.label, date.value)
 
-    const value = toNumber(raw);
-    if (value === null) return;
+  await axios.post('/static-params/upsert', {
+    number_page: numberPage,
+    factory_structure_id: meta.fsId,
+    parameter_id: meta.parameterId,
+    group_id: meta.groupId,
+    period_type_id: pmeta.id,
+    period_start_date,
+    period_end_date,
+    value,
+    comment: null,
+    for_date: ymd(date.value)
+  })
 
-    // period oraliqlari
-    const { start: period_start_date, end: period_end_date } =
-        periodRangeFor(pmeta.label, date.value)
-
-    await axios.post('/static-params/upsert', {
-        number_page: numberPage,
-        factory_structure_id: meta.fsId,
-        parameter_id: meta.parameterId,
-        group_id: meta.groupId,
-        period_type_id: pmeta.id,
-        period_start_date,
-        period_end_date,
-        value,
-        comment: null,               // endi slotlar yo'q, commentni xohlasangiz null
-        for_date: ymd(date.value)
-    })
-
-    if (toast) init({ message: 'Maʼlumot saqlandi', color: 'success' })
+  if (toast) init({ message: 'Maʼlumot saqlandi', color: 'success' })
 }
+
 function toNumber(val) {
     if (typeof val === 'number') return val;
     if (val == null) return null;

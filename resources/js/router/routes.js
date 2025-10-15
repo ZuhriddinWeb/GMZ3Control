@@ -117,6 +117,14 @@ export default [
       guard: "auth",
     },
   },
+    {
+    path: "/periodType",
+    name: "units",
+    component: () => import("../pages/PeriodTypePage.vue"),
+    meta: {
+      guard: "auth",
+    },
+  },
   {
     path: "/graphics",
     name: "graphics",
@@ -386,6 +394,14 @@ export default [
     path: "/gmz3",
     name: "gmz3-report",
     component: () => import("../pages/svodka/GMZ3Report.vue"),
+    meta: {
+      guard: "auth",
+    },
+  },
+    {
+    path: "/gmz301",
+    name: "gmz3-report301",
+    component: () => import("../pages/svodka/GMZ3Report301.vue"),
     meta: {
       guard: "auth",
     },

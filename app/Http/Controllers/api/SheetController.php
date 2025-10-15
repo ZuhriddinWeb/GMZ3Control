@@ -42,28 +42,45 @@ public function getFormulas(Request $req)
     $page    = (int) $req->get('numberPage');
     $forDate = $this->parseDate($req->get('date'));
 
-    // 1) doimiy (for_date = NULL)
+    // Doimiy (for_date = NULL)
     $permanent = \App\Models\SheetFormulas::query()
         ->where('number_page', $page)
         ->whereNull('for_date')
-        ->get(['cell','expr']);
+        ->get(['param_id','period_type_id','cell','expr','expr_stable']);
 
-    // 2) shu kunga tegishli
+    // Shu kunga tegishli
     $dated = \App\Models\SheetFormulas::query()
         ->where('number_page', $page)
         ->where('for_date', $forDate)
-        ->get(['cell','expr']);
+        ->get(['param_id','period_type_id','cell','expr','expr_stable']);
 
-    // 3) merge: dated > permanent
+    // Merge: dated > permanent  (kalit: param_id+period_type_id bo‘lsa shunga, bo‘lmasa cell bo‘yicha)
     $map = [];
-    foreach ($permanent as $r) $map[$r->cell] = $r->expr;
-    foreach ($dated as $r)     $map[$r->cell] = $r->expr;
+
+    $keyOf = function($r) {
+        if ($r->param_id && $r->period_type_id) {
+            return 'P:' . $r->param_id . ':' . $r->period_type_id;
+        }
+        return 'C:' . strtoupper((string)$r->cell);
+    };
+
+    foreach ($permanent as $r) $map[$keyOf($r)] = $r;
+    foreach ($dated as $r)     $map[$keyOf($r)] = $r;
 
     $items = [];
-    foreach ($map as $cell => $expr) $items[] = ['cell'=>$cell,'expr'=>$expr];
+    foreach ($map as $r) {
+        $items[] = [
+            'param_id'       => $r->param_id,
+            'period_type_id' => $r->period_type_id,
+            'cell'           => $r->cell,
+            'expr'           => $r->expr_stable ?: $r->expr,
+            'expr_stable'    => $r->expr_stable ?: $r->expr,
+        ];
+    }
 
     return response()->json(['items' => $items]);
 }
+
 public function listFormulas(Request $req) {
   $page = (int)($req->input('numberPage') ?? $req->input('number_page'));
   $forDate = $this->parseDate((string)$req->input('date')); // yoki null
@@ -82,91 +99,86 @@ public function listFormulas(Request $req) {
     /** POST /sheet/formula  { numberPage, date, cell, expr }  */
 public function saveFormula(Request $req)
 {
-    // 1) Kiruvchi qiymatlar
     $page = (int) ($req->input('numberPage') ?? $req->input('number_page'));
     $cell = strtoupper(trim((string) ($req->input('cell') ?? '')));
-    $paramIdRaw = $req->input('param_id') ?? $req->input('parameter_id');    // ikkala nomni ham qo‘llab
-    $slotRaw    = $req->input('slot');
-    $date    = $req->input('date');
+    $paramIdRaw = $req->input('param_id') ?? $req->input('parameter_id');
+    $periodTypeIdRaw = $req->input('period_type_id'); // 🔹 yangi
+    $periodLabel = $req->input('period_label');       // ixtiyoriy, nom bilan moslashtirishga yordam beradi
+    $date = $req->input('date');
 
-    $exprRaw    = trim((string) ($req->input('expr_raw') ?? $req->input('expr') ?? ''));  // foydalanuvchi kiritgani
-    $exprStable = trim((string) ($req->input('expr_stable') ?? ''));                      // stabil (P(...,"slot")) bo‘lsa
-
+    $exprRaw    = trim((string) ($req->input('expr_raw') ?? $req->input('expr') ?? ''));
+    $exprStable = trim((string) ($req->input('expr_stable') ?? ''));
     $scope = $req->input('scope', 'dated'); // 'permanent' | 'dated'
 
     if (!$page) {
-        return response()->json(['message' => 'numberPage/mumber_page kiritilmadi'], 422);
+        return response()->json(['message' => 'numberPage/number_page kiritilmadi'], 422);
     }
     if ($exprRaw === '' && $exprStable === '') {
         return response()->json(['message' => 'Formula bo‘sh bo‘lishi mumkin emas'], 422);
     }
-
-    // 2) Ifodalarni normalize
     if ($exprStable === '') { $exprStable = $exprRaw; }
-    if (!Str::startsWith($exprRaw, '='))    { $exprRaw    = '=' . $exprRaw; }
-    if (!Str::startsWith($exprStable, '=')) { $exprStable = '=' . $exprStable; }
+    if (!\Illuminate\Support\Str::startsWith($exprRaw, '='))    { $exprRaw    = '=' . $exprRaw; }
+    if (!\Illuminate\Support\Str::startsWith($exprStable, '=')) { $exprStable = '=' . $exprStable; }
 
-    // 3) Sana (for_date)
+    // for_date
     $forDate = null;
     if ($scope !== 'permanent') {
-        $forDate = $this->parseDate((string) $req->input('date')); // dd.mm.yyyy yoki yyyy-mm-dd
+        $forDate = $this->parseDate((string) $req->input('date'));
     }
 
-    // 4) slot’ni aniqlash (kelmasa — cell’ning harfiga qarab)
-    $slot = $this->normalizeSlot($slotRaw) ?: $this->slotFromCell($cell);
-
-    // 5) Parametr bo‘yicha saqlashga tayyorgarlik
+    // param_id
     $paramId = $this->normalizeUuid($paramIdRaw);
-    $canUseParamKey = $paramId && $slot;
 
-    // 6) Legacy holat: na param_id+slot, na cell bo‘lsa — xato
-    if (!$canUseParamKey && !$this->isValidCell($cell)) {
-        return response()->json(['message' => 'Parametr+slot yoki to‘g‘ri katak kerak'], 422);
+    // 🔹 period_type_id ni aniqlash (raqam bo'lsa to'g'ridan-to'g'ri, bo'lmasa nomdan topamiz)
+    $periodTypeId = null;
+    if ($periodTypeIdRaw !== null && is_numeric($periodTypeIdRaw)) {
+        $periodTypeId = (int) $periodTypeIdRaw;
+    } elseif ($periodLabel) {
+        $name = trim(mb_strtolower($periodLabel));
+        $found = \DB::table('period_types')
+            ->whereRaw('LOWER(TRIM(name)) = ?', [$name])
+            ->value('id');
+        if ($found) $periodTypeId = (int) $found;
     }
 
-    // 7) Upsert kalitini tanlash
-    if ($canUseParamKey) {
-        // (number_page, param_id, slot, for_date)
-        $row = SheetFormulas::firstOrNew([
-            'number_page' => $page,
-            'param_id'    => $paramId,
-            'slot'        => $slot,
-            'for_date'    => $forDate,   // NULL ham bo‘lishi mumkin
-            'date'    => $date,
+    $canUseParamKey = $paramId && $periodTypeId;
 
+    if (!$canUseParamKey && !$this->isValidCell($cell)) {
+        return response()->json(['message' => 'Parametr+period_type_id yoki to‘g‘ri katak kerak'], 422);
+    }
+
+    // 🔹 Upsert kaliti: (number_page, param_id, period_type_id, for_date)
+    if ($canUseParamKey) {
+        $row = \App\Models\SheetFormulas::firstOrNew([
+            'number_page'    => $page,
+            'param_id'       => $paramId,
+            'period_type_id' => $periodTypeId,
+            'for_date'       => $forDate,
         ]);
     } else {
-        // Legacy: (number_page, cell, for_date)
-        $row = SheetFormulas::firstOrNew([
+        // Legacy: cell bo‘yicha
+        $row = \App\Models\SheetFormulas::firstOrNew([
             'number_page' => $page,
             'cell'        => $cell,
             'for_date'    => $forDate,
-            'date'    => $date,
         ]);
     }
 
     if (!$row->exists) {
-        $row->id = (string) Str::uuid();
+        $row->id = (string) \Illuminate\Support\Str::uuid();
     }
 
-    // 8) Ma’lumotlarni yozish
-    //  — Parametrga bog‘lash uchun ustunlar
     if ($canUseParamKey) {
-        $row->param_id = $paramId;
-        $row->slot     = $slot;
+        $row->param_id       = $paramId;
+        $row->period_type_id = $periodTypeId;
     }
-    //  — Diagnostika/retro moslik uchun cell’ni ham qoldiramiz (bo‘lsa)
     if ($this->isValidCell($cell)) {
-        $row->cell = $cell;
+        $row->cell = $cell; // diagnostika uchun
     }
-
-    //  — Ifodalar
-    $row->expr        = $exprStable;  // asosiy ustun sifatida stabilni saqlaymiz
+    $row->date        = $date;
+    $row->expr        = $exprStable;
     $row->expr_stable = $exprStable;
     $row->expr_raw    = $exprRaw;
-
-    // ixtiyoriy: $row->date maydoni bo‘lsa, for_date ni ham shu yerga qo‘yishingiz mumkin
-    // $row->date = $forDate;
 
     $row->save();
 
@@ -176,6 +188,7 @@ public function saveFormula(Request $req)
         'item'    => $row,
     ]);
 }
+
 
 /** --------- Helpers --------- */
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\api\DocumentNumberPageController;
 use App\Http\Controllers\api\DocumentsController;
 use App\Http\Controllers\api\FormulaController;
 use App\Http\Controllers\api\GroupsController;
+use App\Http\Controllers\api\PeriodTypeController;
 use App\Http\Controllers\api\ServersController;
 
 use App\Http\Controllers\api\SheetController;
@@ -82,6 +83,8 @@ Route::match(['get', 'post', 'put', 'delete'], '/servers/{id?}', [ServersControl
 Route::match(['get', 'post', 'put', 'delete'], '/groups/{id?}', [GroupsController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/static/{id?}', [StaticParametersController::class, 'handle']);
 Route::match(['get', 'post', 'put', 'delete'], '/svodkaFormula/{id?}', [SvodkaFormulaController::class, 'handle']);
+Route::match(['get', 'post', 'put', 'delete'], '/periodType/{id?}', [PeriodTypeController::class, 'handle']);
+
 Route::get('/static', [StaticParametersController::class, 'index']); // sendagi bor
 Route::get('/static-with-numberpage/{id}', [StaticParametersController::class, 'staticWithNumberPage']); // sendagi bor
 
@@ -106,7 +109,7 @@ Route::get('/pages-number/{sexId}', [DocumentNumberPageController::class, 'getPa
 
 Route::get('/groups-number/{sexId}/{pageId}', [DocumentNumberPageController::class, 'getGroups']);
 Route::get('/parameters-number/{sexId}/{pageId}/{groupId}', [DocumentNumberPageController::class, 'getParameters']);
-Route::get('/periodType', [StaticParametersController::class, 'periodType']);
+// Route::get('/periodType', [StaticParametersController::class, 'periodType']);
 
 
 Route::get('/getUserData/{id}', [DocumentsController::class, 'getUserData']);

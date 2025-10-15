@@ -124,6 +124,7 @@ const menu = ref([
       { title: 'menu.structure', icon: 'dashboard', path: '/structure' },
       { title: 'menu.blogs', icon: 'account_tree', path: '/blogs' },
       { title: 'menu.units', icon: 'ad_units', path: '/units' },
+      { title: 'menu.period', icon: 'hourglass_top', path: '/periodType' },
       { title: 'menu.graphics', icon: 'schedule', path: '/graphics' },
       { title: 'menu.term', icon: 'gavel', path: '/graphicterms' },
       { title: 'menu.graphictimes', icon: 'alarm', path: '/graphictimes' },

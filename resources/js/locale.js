@@ -64,7 +64,8 @@ export default {
       create_document:"Создать oтчет",
       operator_count:"Отчет оператора",
       groups:"Группы",
-      static:"Статические параметры"
+      static:"Статические параметры",
+      period:"Периоды"
     },
     buttons: {
       save: "Сохранить",
@@ -218,7 +219,8 @@ export default {
       create_document:"Hisobot yaratish",
       operator_count:"Operator hisoboti",
       groups:"Guruhlar",
-      static:"Static parametrlar"
+      static:"Static parametrlar",
+      period:"Davrlar"
     },
     buttons: {
       save: "Saqlash",

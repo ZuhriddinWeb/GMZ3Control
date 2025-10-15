@@ -88,6 +88,10 @@ const onTabClick = async (numberPage) => {
     router.push({ name: 'gmz3-report', query: { date: formatDate(value.value) } })
     return
   }
+  else if (Number(numberPage) === 301) {
+    router.push({ name: 'gmz3-report301', query: { date: formatDate(value.value) } })
+    return
+  }
   activeTab.value = numberPage
   await fetchData(activeTab.value, value.value)
 }
